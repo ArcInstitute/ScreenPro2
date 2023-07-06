@@ -5,7 +5,7 @@ Welcome to ScreenPro2's documentation!
    :maxdepth: 2
    :caption: Contents:
 
-   readme
+   README
    usage
    PhenoScore
    history
