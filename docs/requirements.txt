@@ -1,5 +1,7 @@
 sphinx
-nbsphinx
-sphinx_rtd_theme
+pandas
 anndata
-pydeseq2
+sphinx_bootstrap_theme
+pip
+nbsphinx
+sphinx-rtd-theme
