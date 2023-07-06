@@ -1,9 +1,5 @@
-python==3.11.4
-pydeseq2
 sphinx==5.3.0
-pandas
-anndata==0.8.0
-sphinx_bootstrap_theme
-pip
 nbsphinx==0.9.2
 sphinx_rtd_theme==0.4.3
+anndata==0.8.0
+pydeseq2==0.3.5
