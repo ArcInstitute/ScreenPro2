@@ -32,6 +32,21 @@ Phenotype score for each :math:`T` comparing :math:`y` vs :math:`x`:
 - :math:`\sigma(\text{...}) \rightarrow` standard deviation
 - :math:`d_{growth} \rightarrow` growth rate...
 
+Statistical test comparing :math:`y` vs :math:`x` per each target, :math:`T`:
+
+.. math::
+    \text{p-value}(T,x,y) = \text{t-test} \left(
+    \begin{bmatrix}{N_{x}}\end{bmatrix}_{(a,b)},
+    \begin{bmatrix}{N_{y}}\end{bmatrix}_{(a,b)}
+    \right)
+
+
+(see this wikipedia page: `Dependent t-test for paired samples`_)
+
+(see the link to the implemented tool: `ttest_rel, a scipy module`_)
+
+    This is a test for the null hypothesis that two related or repeated samples have identical average (expected) values.
+
 -----------------------
 
 .. automodule:: screenpro.phenoScore
@@ -39,3 +54,5 @@ Phenotype score for each :math:`T` comparing :math:`y` vs :math:`x`:
    :undoc-members:
    :show-inheritance:
 
+.. _`Dependent t-test for paired samples`: https://en.wikipedia.org/wiki/Student%27s_t-test#Dependent_t-test_for_paired_samples
+.. _`ttest_rel, a scipy module`: https://docs.scipy.org/doc/scipy/reference/generated/scipy.stats.ttest_rel.html
