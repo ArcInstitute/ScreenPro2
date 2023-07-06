@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 from screenpro import __version__
 
 setup(
-    python_requires='>=3.6',
+    python_requires='>=3.8',
     name='ScreenPro2',
     description="Analyze pooled CRISPR screens",
     packages=find_packages(include=['screenpro', 'screenpro.*']),
