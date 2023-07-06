@@ -4,5 +4,5 @@ anndata
 sphinx_bootstrap_theme
 pip
 nbsphinx
-sphinx-rtd-theme
+sphinx_rtd_theme==0.4.3
 pydeseq2
