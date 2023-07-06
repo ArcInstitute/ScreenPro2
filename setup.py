@@ -17,6 +17,7 @@ setup(
         "pandas",
         "numpy",
         "anndata>=0.8.0",
+        "pydeseq2"
     ],
     version=__version__
 )
