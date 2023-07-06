@@ -6,9 +6,7 @@ dependencies:
   - python
   - sphinx
   - pandas
-  - anndata
-  - sphinx_bootstrap_theme
+  - sphinx_rtd_theme
   - pip
   - pip:
     - nbsphinx
-    - sphinx_rtd_theme
