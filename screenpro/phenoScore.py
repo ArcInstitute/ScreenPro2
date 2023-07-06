@@ -25,7 +25,7 @@ def getDelta(x,y):
 
 
 def getScore(x,y,x_ctrl,y_ctrl,growth_rate):
-    """g
+    """
     """
     ctrl_std = np.std(getDelta(x_ctrl,y_ctrl))
     ctrl_median = np.median(getDelta(x_ctrl,y_ctrl))
