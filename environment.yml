@@ -1,0 +1,16 @@
+name: screenpro2
+channels:
+  - anaconda
+  - conda-forge
+dependencies:
+  - anndata
+  - numpy
+  - pandas
+  - scipy
+  - biopython
+  - matplotlib
+  - seaborn
+  - ipykernel
+  - pip
+  - pip:
+      - pydeseq2
