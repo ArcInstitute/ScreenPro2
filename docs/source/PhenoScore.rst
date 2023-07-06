@@ -9,7 +9,7 @@ Log ratio of :math:`y` vs :math:`x`:
 - :math:`x \rightarrow` condition :math:`y` (e.g. :math:`t_{0}` samples)
 - :math:`a \rightarrow` number of oligo constructs with sgRNAs targeting :math:`T`
 - :math:`b \rightarrow` number of biological replicates, :math:`R` (e.g. 2 or 3)
-- :math:`N_{x}` | :math:`N_{y} \rightarrow` read fqcounter normalized for sequencing depth in condition :math:`x` or :math:`y`
+- :math:`N_{x}` | :math:`N_{y} \rightarrow` read counts normalized for sequencing depth in condition :math:`x` or :math:`y`
 
 
 Here is a formula for V3 library with single oligo construct per gene (i.e. 2 sgRNA in one oligo targeting same gene).
