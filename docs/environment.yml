@@ -12,4 +12,4 @@ dependencies:
   - pip
   - pip:
     - nbsphinx
-    - sphinx_rtd_theme==0.4.3
+    - sphinx_rtd_theme

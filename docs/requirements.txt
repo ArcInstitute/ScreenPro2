@@ -4,4 +4,4 @@ anndata
 sphinx_bootstrap_theme
 pip
 nbsphinx
-sphinx_rtd_theme==0.4.3
+sphinx-rtd-theme
