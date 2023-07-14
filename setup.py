@@ -6,18 +6,18 @@ setup(
     name='ScreenPro2',
     description="Analyze pooled CRISPR screens",
     packages=find_packages(include=['screenpro', 'screenpro.*']),
-    install_requires=[
-        "anndata",
-        "numpy",
-        "pandas",
-        "scipy",
-        "biopython",
-        "matplotlib",
-        "seaborn",
-        "pandas",
-        "numpy",
-        "anndata>=0.8.0",
-        "pydeseq2"
-    ],
+    # install_requires=[
+    #     "anndata",
+    #     "numpy",
+    #     "pandas",
+    #     "scipy",
+    #     "biopython",
+    #     "matplotlib",
+    #     "seaborn",
+    #     "pandas",
+    #     "numpy",
+    #     "anndata>=0.8.0",
+    #     "pydeseq2"
+    # ],
     version=__version__
 )
