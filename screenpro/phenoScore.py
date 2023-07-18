@@ -11,7 +11,7 @@ from scipy.stats import ttest_rel
 # from statsmodels.stats.multitest import multipletests
 
 
-def run_deseq2_norm(adata):
+def seqDepthNormalization(adata):
     norm_counts, size_factors = preprocessing.deseq2_norm(adata.X)
 
     adata.obs['size_factors'] = size_factors
@@ -21,41 +21,41 @@ def run_deseq2_norm(adata):
 def getDelta(x,y):
     """log ratio of y / x, averaged across replicates 
     """
-    return np.mean(np.log1p(y) - np.log1p(x),axis=1)
+    return np.mean(np.log1p(y) - np.log1p(x), axis=1)
 
 
-def getScore(x,y,x_ctrl,y_ctrl,growth_rate):
+def getScore(x, y, x_ctrl, y_ctrl, growth_rate):
     """
     """
-    ctrl_std = np.std(getDelta(x_ctrl,y_ctrl))
-    ctrl_median = np.median(getDelta(x_ctrl,y_ctrl))
+    ctrl_std = np.std(getDelta(x_ctrl, y_ctrl))
+    ctrl_median = np.median(getDelta(x_ctrl, y_ctrl))
 
     return ((getDelta(x,y) - ctrl_median) / growth_rate) / ctrl_std
 
 
-def runPhenoScore(adata,cond1,cond2,growth_rate=1,n_reps=2,test='ttest'):
-    ## prep fqcounter
-    df_cond1 = adata[adata.obs.query(f'condition=="{cond1}"').index[:n_reps],].to_df('deseq').T
-    df_cond2 = adata[adata.obs.query(f'condition=="{cond2}"').index[:n_reps],].to_df('deseq').T
+def runPhenoScore(adata, cond1, cond2, growth_rate=1, n_reps=2, test='ttest'):
+    # prep fqcounter
+    df_cond1 = adata[adata.obs.query(f'condition=="{cond1}"').index[:n_reps], ].to_df('deseq').T
+    df_cond2 = adata[adata.obs.query(f'condition=="{cond2}"').index[:n_reps], ].to_df('deseq').T
 
     x = df_cond1.to_numpy()
     y = df_cond2.to_numpy()
 
-    x_ctrl=df_cond1[adata.var.targetType.eq('negCtrl')].to_numpy()
-    y_ctrl=df_cond2[adata.var.targetType.eq('negCtrl')].to_numpy()
+    x_ctrl = df_cond1[adata.var.targetType.eq('negCtrl')].to_numpy()
+    y_ctrl = df_cond2[adata.var.targetType.eq('negCtrl')].to_numpy()
     
-    ## calculate growth score
+    # calculate growth score
     phenotype_score = getScore(x,y,x_ctrl,y_ctrl,growth_rate)
     
     adata.var[f'condition_{cond2}_vs_{cond1}_delta'] = phenotype_score
     
-    ## calculate p-values 
-    if test=='MW':
+    # calculate p-values
+    if test == 'MW':
         # run Mann-Whitney U rank test on replicates
         pass
-    if test=='ttest':
+    if test == 'ttest':
         # run ttest on replicates
-        pvalues = ttest_rel(y,x, axis=1)[1]
+        pvalues = ttest_rel(y, x, axis=1)[1]
         adata.var[f'condition_{cond2}_vs_{cond1}_pvalue'] = pvalues
 
     ## calculate FDR
@@ -77,9 +77,9 @@ def ann_score_df(df_in, up_hit='resistance_hit', down_hit='sensitivity_hit', thr
     
     df['label'] = '.'
 
-    df.loc[(df['score']>0) & (df['gene']!='non-targeting') & (df['score']/pseudo_sd * -np.log10(df['pvalue'])>=threshold), 'label'] = up_hit
+    df.loc[(df['score']>0) & (df['gene'] != 'non-targeting') & (df['score']/pseudo_sd * -np.log10(df['pvalue'])>=threshold), 'label'] = up_hit
 
-    df.loc[(df['score']<0) & (df['gene']!='non-targeting') & (df['score']/pseudo_sd * -np.log10(df['pvalue'])<=-threshold), 'label'] = down_hit
+    df.loc[(df['score']<0) & (df['gene'] != 'non-targeting') & (df['score']/pseudo_sd * -np.log10(df['pvalue'])<=-threshold), 'label'] = down_hit
 
     df.loc[df['label']=='.', 'label'] = 'gene_non_hit'
 
