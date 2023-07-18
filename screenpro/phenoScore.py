@@ -64,28 +64,37 @@ def runPhenoScore(adata, cond1, cond2, growth_rate=1, n_reps=2, test='ttest'):
     # adata.var[f'condition_{cond1}_vs_{cond2}_adj_pvalue'] = adj_pvalues
     
     
-def ann_score_df(df_in, up_hit='resistance_hit', down_hit='sensitivity_hit', threshold=10):
+def ann_score_df(df_in, up_hit='resistance_hit', down_hit='sensitivity_hit', ctrl_label='non-targeting', threshold=10):
     df = df_in.copy()
 
-    df.columns = ['gene', 'score', 'pvalue']
+    df.columns = ['target', 'score', 'pvalue']
     df['score'] = df['score'].astype(float)
     df['pvalue'] = df['pvalue'].astype(float)
 
-    pseudo_sd = df[df['gene']=='non-targeting']['score'].tolist()
+    pseudo_sd = df[df['target'].str.contains(ctrl_label)]['score'].tolist()
     pseudo_sd = np.std(pseudo_sd)
     # print (pseudo_sd)
     
     df['label'] = '.'
 
-    df.loc[(df['score']>0) & (df['gene'] != 'non-targeting') & (df['score']/pseudo_sd * -np.log10(df['pvalue'])>=threshold), 'label'] = up_hit
+    df.loc[
+        (df['score'] > 0) & (~df['target'].str.contains(ctrl_label)) &
+        (df['score']/pseudo_sd * -np.log10(df['pvalue']) >= threshold), 'label'
+    ] = up_hit
 
-    df.loc[(df['score']<0) & (df['gene'] != 'non-targeting') & (df['score']/pseudo_sd * -np.log10(df['pvalue'])<=-threshold), 'label'] = down_hit
+    df.loc[
+        (df['score'] < 0) & (~df['target'].str.contains(ctrl_label)) &
+        (df['score']/pseudo_sd * -np.log10(df['pvalue']) <= -threshold), 'label'
+    ] = down_hit
 
-    df.loc[df['label']=='.', 'label'] = 'gene_non_hit'
+    df.loc[df['target'].str.contains(ctrl_label), 'label'] = ctrl_label
+
+    df.loc[df['label'] == '.', 'label'] = 'target_non_hit'
 
     # reorder factors
-    df['label'] = pd.Categorical(df['label'], categories=[down_hit, up_hit, 'gene_non_hit', 'non-targeting'])
-
-    df.loc[df['gene']=='non-targeting', 'label'] = 'non-targeting'
+    df['label'] = pd.Categorical(
+        df['label'],
+        categories=[down_hit, up_hit, ctrl_label, 'target_non_hit']
+    )
 
     return df
