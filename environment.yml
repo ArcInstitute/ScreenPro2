@@ -3,7 +3,11 @@ channels:
   - anaconda
   - conda-forge
 dependencies:
+  - python=3.9
   - anndata
+  - scanpy
+  - python-igraph
+  - leidenalg
   - numpy
   - pandas
   - scipy
@@ -14,3 +18,4 @@ dependencies:
   - pip
   - pip:
       - pydeseq2
+      - watermark
