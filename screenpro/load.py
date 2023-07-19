@@ -6,7 +6,7 @@ import pandas as pd
 
 def loadScreenProcessingData(experimentName, collapsedToTranscripts=True, premergedCounts=False):
     """load ScreenProcessing outputs
-    (see original code `here <https://github.com/mhorlbeck/ScreenProcessing/blob/master/screen_analysis.py#L70>`)
+    (see original code `here <https://github.com/mhorlbeck/ScreenProcessing/blob/master/screen_analysis.py#L70>`__)
     """
     dataDict = {'library': pd.read_csv(experimentName + '_librarytable.txt', sep='\t', header=0, index_col=0),
                 'counts': pd.read_csv(experimentName + '_mergedcountstable.txt', sep='\t', header=list(range(2)),
