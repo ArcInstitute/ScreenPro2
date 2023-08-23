@@ -18,10 +18,15 @@ def seqDepthNormalization(adata):
     adata.layers['deseq'] = norm_counts
 
     
-def getDelta(x,y):
+def getDelta(x, y, math='log2'):
     """log ratio of y / x, averaged across replicates 
     """
-    return np.mean(np.log1p(y) - np.log1p(x), axis=1)
+    if math == 'log2':
+        return np.mean(np.log2(y) - np.log2(x), axis=1)
+    elif math == 'log10':
+        return np.mean(np.log10(y) - np.log10(x), axis=1)
+    elif math == 'log1p':
+        return np.mean(np.log1p(y) - np.log1p(x), axis=1)
 
 
 def getScore(x, y, x_ctrl, y_ctrl, growth_rate):
