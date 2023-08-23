@@ -15,7 +15,7 @@ def seqDepthNormalization(adata):
     norm_counts, size_factors = preprocessing.deseq2_norm(adata.X)
 
     adata.obs['size_factors'] = size_factors
-    adata.layers['deseq'] = norm_counts
+    adata.layers['seq_depth_norm'] = norm_counts
 
     
 def getDelta(x, y, math='log2'):
@@ -38,10 +38,10 @@ def getScore(x, y, x_ctrl, y_ctrl, growth_rate):
     return ((getDelta(x,y) - ctrl_median) / growth_rate) / ctrl_std
 
 
-def runPhenoScore(adata, cond1, cond2, growth_rate=1, n_reps=2, test='ttest'):
+def runPhenoScore(adata, cond1, cond2, growth_rate=1, n_reps=2, test='ttest', layer='seq_depth_norm'):
     # prep fqcounter
-    df_cond1 = adata[adata.obs.query(f'condition=="{cond1}"').index[:n_reps], ].to_df('deseq').T
-    df_cond2 = adata[adata.obs.query(f'condition=="{cond2}"').index[:n_reps], ].to_df('deseq').T
+    df_cond1 = adata[adata.obs.query(f'condition=="{cond1}"').index[:n_reps], ].to_df(layer).T
+    df_cond2 = adata[adata.obs.query(f'condition=="{cond2}"').index[:n_reps], ].to_df(layer).T
 
     x = df_cond1.to_numpy()
     y = df_cond2.to_numpy()
@@ -50,7 +50,7 @@ def runPhenoScore(adata, cond1, cond2, growth_rate=1, n_reps=2, test='ttest'):
     y_ctrl = df_cond2[adata.var.targetType.eq('negCtrl')].to_numpy()
     
     # calculate growth score
-    phenotype_score = getScore(x,y,x_ctrl,y_ctrl,growth_rate)
+    phenotype_score = getScore(x, y, x_ctrl, y_ctrl, growth_rate)
     
     adata.var[f'condition_{cond2}_vs_{cond1}_delta'] = phenotype_score
     
