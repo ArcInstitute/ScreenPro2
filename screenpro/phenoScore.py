@@ -18,11 +18,11 @@ def seqDepthNormalization(adata):
     adata.layers['seq_depth_norm'] = norm_counts
 
     
-def getDelta(x, y, math='log2'):
+def getDelta(x, y, math='log2(x+1)'):
     """log ratio of y / x, averaged across replicates 
     """
-    if math == 'log2':
-        return np.mean(np.log2(y) - np.log2(x), axis=1)
+    if math == 'log2(x+1)':
+        return np.mean(np.log2(y+1) - np.log2(x+1), axis=1)
     elif math == 'log10':
         return np.mean(np.log10(y) - np.log10(x), axis=1)
     elif math == 'log1p':
