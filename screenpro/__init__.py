@@ -1,6 +1,5 @@
 from .__version__ import __version__
-from . import phenoScore
-from phenoScore import seqDepthNormalization, getDelta, getScore
+from .phenoScore import seqDepthNormalization, getDelta, getScore
 from scipy.stats import ttest_rel
 # from scipy.stats import mannwhitneyu
 # from statsmodels.stats.multitest import multipletests
