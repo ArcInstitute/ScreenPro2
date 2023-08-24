@@ -75,9 +75,10 @@ class ScreenPro(object):
     """`ScreenPro` class for processing CRISPR screen datasets
     """
 
-    def __init__(self, adata):
+    def __init__(self, adata, math='log2(x+1)'):
         self.phenotypes = {}
         self.adata = adata
+        self.math = math
 
     def calculateDrugScreen(self,
                             t0, untreated, treated, growth_rate,
@@ -86,11 +87,11 @@ class ScreenPro(object):
         """
         if method == 'ByReps':
             gamma, gamma_pv, gamma_name= runPhenoScoreByReps(
-                self.adata, cond1=t0, cond2=untreated, growth_rate=growth_rate)
+                self.adata, cond1=t0, cond2=untreated, growth_rate=growth_rate, math=self.math)
             tau, tau_pv, tau_name = runPhenoScoreByReps(
-                self.adata, cond1=t0, cond2=treated, growth_rate=growth_rate)
+                self.adata, cond1=t0, cond2=treated, growth_rate=growth_rate, math=self.math)
             rho, rho_pv, rho_name = runPhenoScoreByReps(
-                self.adata, cond1=untreated, cond2=treated, growth_rate=growth_rate)
+                self.adata, cond1=untreated, cond2=treated, growth_rate=growth_rate, math=self.math)
             targets = self.adata.var.index.str.split('_[-,+]_').str[0].to_list()
 
             self.phenotypes[scoreLevel] = pd.concat({
