@@ -52,13 +52,13 @@ def getDelta(x, y, math='log2(x+1)'):
         return np.mean(np.log1p(y) - np.log1p(x), axis=1)
 
 
-def getScore(x, y, x_ctrl, y_ctrl, growth_rate):
+def getScore(x, y, x_ctrl, y_ctrl, growth_rate, math='log2(x+1)'):
     """Calculate phenotype score normalized by negative control and growth rate
     """
     ctrl_std = np.std(getDelta(x_ctrl, y_ctrl))
     ctrl_median = np.median(getDelta(x_ctrl, y_ctrl))
 
-    return ((getDelta(x, y) - ctrl_median) / growth_rate) / ctrl_std
+    return ((getDelta(x, y, math=math) - ctrl_median) / growth_rate) / ctrl_std
 
 
 def runPhenoScore(adata, cond1, cond2, growth_rate=1, n_reps=2, test='ttest', layer='seq_depth_norm'):
