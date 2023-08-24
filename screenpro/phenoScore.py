@@ -12,6 +12,8 @@ from scipy.stats import ttest_rel
 
 
 def seqDepthNormalization(adata):
+    """Normalize counts by sequencing depth
+    """
     norm_counts, size_factors = preprocessing.deseq2_norm(adata.X)
 
     adata.obs['size_factors'] = size_factors
@@ -51,12 +53,12 @@ def getDelta(x, y, math='log2(x+1)'):
 
 
 def getScore(x, y, x_ctrl, y_ctrl, growth_rate):
-    """
+    """Calculate phenotype score normalized by negative control and growth rate
     """
     ctrl_std = np.std(getDelta(x_ctrl, y_ctrl))
     ctrl_median = np.median(getDelta(x_ctrl, y_ctrl))
 
-    return ((getDelta(x,y) - ctrl_median) / growth_rate) / ctrl_std
+    return ((getDelta(x, y) - ctrl_median) / growth_rate) / ctrl_std
 
 
 def runPhenoScore(adata, cond1, cond2, growth_rate=1, n_reps=2, test='ttest', layer='seq_depth_norm'):
@@ -117,6 +119,9 @@ def generatePseudoGeneLabels(adata, num_pseudogenes=None, ctrl_label='non-target
 
 
 def ann_score_df(df_in, up_hit='resistance_hit', down_hit='sensitivity_hit', ctrl_label='non-targeting', threshold=10):
+    """Annotate score dataframe with hit labels using given `threshold`
+       (i.e. `score/pseudo_sd * -np.log10(pvalue) >= threshold`)
+    """
     df = df_in.copy()
 
     df.columns = ['target', 'score', 'pvalue']
@@ -125,8 +130,7 @@ def ann_score_df(df_in, up_hit='resistance_hit', down_hit='sensitivity_hit', ctr
 
     pseudo_sd = df[df['target'].str.contains(ctrl_label)]['score'].tolist()
     pseudo_sd = np.std(pseudo_sd)
-    # print (pseudo_sd)
-    
+
     df['label'] = '.'
 
     df.loc[
