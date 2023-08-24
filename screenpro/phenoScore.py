@@ -88,8 +88,34 @@ def runPhenoScore(adata, cond1, cond2, growth_rate=1, n_reps=2, test='ttest', la
     # Calculate the adjusted p-values using the Benjamini-Hochberg method
     # _, adj_pvalues, _, _ = multipletests(adata.var[f'condition_{cond1}_vs_{cond2}_pvalue'], alpha=0.05, method='fdr_bh')
     # adata.var[f'condition_{cond1}_vs_{cond2}_adj_pvalue'] = adj_pvalues
-    
-    
+
+
+def generatePseudoGeneLabels(adata, num_pseudogenes=None, ctrl_label='non-targeting'):
+    """Generate new labels per `num_pseudogenes` randomly selected non targeting oligo in `adata.var`
+    """
+    if num_pseudogenes is None:
+        num_pseudogenes = len(adata.var[adata.var.targetType.eq(ctrl_label)]) // 2
+    # get non-targeting oligos
+    ctrl_oligos = adata.var[adata.var.targetType.eq(ctrl_label)].index
+    adata.var['pseudoLabel'] = ''
+    # check if there are more than 1 non-targeting oligos to label as pseudogenes
+    if len(ctrl_oligos) / 2 <= num_pseudogenes:
+        raise TypeError("Define `num_pseudogenes` to be less than total number of non-targeting oligos / 2")
+    else:
+        while len(ctrl_oligos) > num_pseudogenes:
+            # randomly select `num` non-targeting oligos
+            pseudo_oligos = np.random.choice(ctrl_oligos, num_pseudogenes, replace=False)
+            # generate new labels
+            pseudo_labels = [f'pseudo_{i}' for i in range(num_pseudogenes)]
+            # update adata.var
+            adata.var.loc[pseudo_oligos, 'pseudoLabel'] = pseudo_labels
+            # ...
+            ctrl_oligos = ctrl_oligos.drop(pseudo_oligos)
+
+        adata.var.loc[adata.var.targetType.eq('gene'), 'pseudoLabel'] = 'gene'
+        adata.var.loc[adata.var.pseudoLabel.eq(''), 'pseudoLabel'] = np.nan
+
+
 def ann_score_df(df_in, up_hit='resistance_hit', down_hit='sensitivity_hit', ctrl_label='non-targeting', threshold=10):
     df = df_in.copy()
 
@@ -125,26 +151,3 @@ def ann_score_df(df_in, up_hit='resistance_hit', down_hit='sensitivity_hit', ctr
 
     return df
 
-
-def generatePseudoGeneLabels(adata, num_pseudogenes=None, ctrl_label='non-targeting'):
-    """Generate new labels per `num_pseudogenes` randomly selected non targeting oligo in `adata.var`
-    """
-    # get non-targeting oligos
-    ctrl_oligos = adata.var[adata.var.targetType.eq(ctrl_label)].index
-    adata.var['pseudoLabel'] = ''
-    # check if there are more than 1 non-targeting oligos to label as pseudogenes
-    if len(ctrl_oligos) / 2 <= num_pseudogenes:
-        raise TypeError("Define `num_pseudogenes` to be less than total number of non-targeting oligos / 2")
-    else:
-        while len(ctrl_oligos) > num_pseudogenes:
-            # randomly select `num` non-targeting oligos
-            pseudo_oligos = np.random.choice(ctrl_oligos, num_pseudogenes, replace=False)
-            # generate new labels
-            pseudo_labels = [f'pseudo_{i}' for i in range(num_pseudogenes)]
-            # update adata.var
-            adata.var.loc[pseudo_oligos, 'pseudoLabel'] = pseudo_labels
-            # ...
-            ctrl_oligos = ctrl_oligos.drop(pseudo_oligos)
-
-        adata.var.loc[adata.var.targetType.eq('gene'), 'pseudoLabel'] = 'gene'
-        adata.var.loc[adata.var.pseudoLabel.eq(''), 'pseudoLabel'] = np.nan
