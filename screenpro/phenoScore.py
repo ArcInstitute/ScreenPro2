@@ -61,7 +61,7 @@ def getScore(x, y, x_ctrl, y_ctrl, growth_rate, math='log2(x+1)'):
     return ((getDelta(x, y, math=math) - ctrl_median) / growth_rate) / ctrl_std
 
 
-def runPhenoScore(adata, cond1, cond2, growth_rate=1, n_reps=2, test='ttest', layer='seq_depth_norm'):
+def runPhenoScore(adata, cond1, cond2, growth_rate=1, n_reps=2, ctrl_label='negCtrl', test='ttest', layer='seq_depth_norm'):
     # prep fqcounter
     df_cond1 = adata[adata.obs.query(f'condition=="{cond1}"').index[:n_reps], ].to_df(layer).T
     df_cond2 = adata[adata.obs.query(f'condition=="{cond2}"').index[:n_reps], ].to_df(layer).T
@@ -69,8 +69,8 @@ def runPhenoScore(adata, cond1, cond2, growth_rate=1, n_reps=2, test='ttest', la
     x = df_cond1.to_numpy()
     y = df_cond2.to_numpy()
 
-    x_ctrl = df_cond1[adata.var.targetType.eq('negCtrl')].to_numpy()
-    y_ctrl = df_cond2[adata.var.targetType.eq('negCtrl')].to_numpy()
+    x_ctrl = df_cond1[adata.var.targetType.eq(ctrl_label)].to_numpy()
+    y_ctrl = df_cond2[adata.var.targetType.eq(ctrl_label)].to_numpy()
     
     # calculate growth score
     phenotype_score = getScore(x, y, x_ctrl, y_ctrl, growth_rate)
