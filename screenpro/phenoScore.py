@@ -53,6 +53,14 @@ def getDelta(x, y, math, ave):
             return np.mean(np.log10(y) - np.log10(x))
         elif math == 'log1p':
             return np.mean(np.log1p(y) - np.log1p(x))
+    elif ave == 'row':
+        # average across rows
+        if math == 'log2(x+1)':
+            return np.mean(np.log2(y+1) - np.log2(x+1), axis=0)
+        elif math == 'log10':
+            return np.mean(np.log10(y) - np.log10(x), axis=0)
+        elif math == 'log1p':
+            return np.mean(np.log1p(y) - np.log1p(x), axis=0)
     elif ave == 'col':
         # average across columns
         if math == 'log2(x+1)':
