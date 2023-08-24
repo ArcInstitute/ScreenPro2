@@ -1,9 +1,6 @@
 import pandas as pd
 from .__version__ import __version__
-from .phenoScore import seqDepthNormalization, getDelta, getScore
-from scipy.stats import ttest_rel
-# from scipy.stats import mannwhitneyu
-# from statsmodels.stats.multitest import multipletests
+from .phenoScore import seqDepthNormalization, matrixStat, matrixTest
 
 
 def runPhenoScoreByReps(adata,
@@ -28,23 +25,13 @@ def runPhenoScoreByReps(adata,
     x_ctrl = df_cond1[adata.var.targetType.eq(ctrl_label)].to_numpy()
     y_ctrl = df_cond2[adata.var.targetType.eq(ctrl_label)].to_numpy()
 
-    # calculate growth score
-    phenotype_score = getScore(
-        x = x, y = y, x_ctrl = x_ctrl, y_ctrl = y_ctrl,
-        growth_rate = growth_rate, math = math
+    # calculate growth score and p_value
+    scores, p_values = matrixTest(
+        x=x, y=y, x_ctrl=x_ctrl, y_ctrl=y_ctrl,
+        math=math, ave_reps=True, test=test, growth_rate=growth_rate
     )
 
-    # calculate p-values
-    if test == 'MW':
-        # run Mann-Whitney U rank test on replicates
-        pass
-    elif test == 'ttest':
-        # run ttest on replicates
-        pvalues = ttest_rel(y, x, axis=1)[1]
-
-        return phenotype_score, pvalues, result_name
-    else:
-        raise ValueError(f'Test "{test}" not recognized')
+    return scores, p_values, result_name
 
 
 def runPhenoScoreByGuideSet(adata,

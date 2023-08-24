@@ -5,6 +5,9 @@ import numpy as np
 import pandas as pd
 
 from pydeseq2 import preprocessing
+from scipy.stats import ttest_rel
+# from scipy.stats import mannwhitneyu
+# from statsmodels.stats.multitest import multipletests
 
 
 def seqDepthNormalization(adata):
@@ -37,24 +40,37 @@ def addPseudoCount():
     #         'Pseudocount behavior not recognized or not implemented')
 
 
-def getDelta(x, y, math='log2(x+1)'):
-    """log ratio of y / x, averaged across replicates 
+def getDelta(x, y, math, ave):
+    """log ratio of y / x
+    `ave` == 'all' – i.e. averaged across all values, oligo and replicates
+    `ave` == 'col' – i.e. averaged across columns, replicates)
     """
-    if math == 'log2(x+1)':
-        return np.mean(np.log2(y+1) - np.log2(x+1), axis=1)
-    elif math == 'log10':
-        return np.mean(np.log10(y) - np.log10(x), axis=1)
-    elif math == 'log1p':
-        return np.mean(np.log1p(y) - np.log1p(x), axis=1)
+    if ave == 'all':
+        # average across all values
+        if math == 'log2(x+1)':
+            return np.mean(np.log2(y+1) - np.log2(x+1))
+        elif math == 'log10':
+            return np.mean(np.log10(y) - np.log10(x))
+        elif math == 'log1p':
+            return np.mean(np.log1p(y) - np.log1p(x))
+    elif ave == 'col':
+        # average across columns
+        if math == 'log2(x+1)':
+            return np.mean(np.log2(y+1) - np.log2(x+1), axis=1)
+        elif math == 'log10':
+            return np.mean(np.log10(y) - np.log10(x), axis=1)
+        elif math == 'log1p':
+            return np.mean(np.log1p(y) - np.log1p(x), axis=1)
 
 
-def getScore(x, y, x_ctrl, y_ctrl, growth_rate, math='log2(x+1)'):
+def getScore(x, y, x_ctrl, y_ctrl, growth_rate, math, ave):
     """Calculate phenotype score normalized by negative control and growth rate
     """
-    ctrl_std = np.std(getDelta(x_ctrl, y_ctrl))
-    ctrl_median = np.median(getDelta(x_ctrl, y_ctrl))
+    ctrl_std = np.std(getDelta(x=x_ctrl, y=y_ctrl, math=math, ave=ave))
+    ctrl_median = np.median(getDelta(x=x_ctrl, y=y_ctrl, math=math, ave=ave))
+    delta = getDelta(x=x, y=y, math=math, ave=ave)
 
-    return ((getDelta(x, y, math=math) - ctrl_median) / growth_rate) / ctrl_std
+    return ((delta - ctrl_median) / growth_rate) / ctrl_std
 
 
 def generatePseudoGeneLabels(adata, num_pseudogenes=None, ctrl_label='negCtrl'):
@@ -81,6 +97,47 @@ def generatePseudoGeneLabels(adata, num_pseudogenes=None, ctrl_label='negCtrl'):
 
         adata.var.loc[adata.var.targetType.eq('gene'), 'pseudoLabel'] = 'gene'
         adata.var.loc[adata.var.pseudoLabel.eq(''), 'pseudoLabel'] = np.nan
+
+
+def matrixStat(x, y, test, ave_reps):
+    """Get p-values comparing `y` vs `x` matrices
+    """
+    # calculate p-values
+    if test == 'MW':
+        # run Mann-Whitney U rank test
+        pass
+    elif test == 'ttest':
+        # run ttest
+        if ave_reps:
+            p_value = ttest_rel(y, x, axis=1)[1]
+
+        else:
+            p_value = ttest_rel(y, x)[1]
+
+        return p_value
+    else:
+        raise ValueError(f'Test "{test}" not recognized')
+
+
+def matrixTest(x, y, x_ctrl, y_ctrl, math, ave_reps, test = 'ttest', growth_rate = 1):
+    """Calculate phenotype score and p-values comparing `y` vs `x` matrices
+    """
+    if ave_reps:
+        ave = 'col'
+    else:
+        ave = 'all'
+
+    # calculate growth score
+    scores = getScore(
+        x = x, y = y, x_ctrl = x_ctrl, y_ctrl = y_ctrl,
+        growth_rate = growth_rate, math = math,
+        ave = ave
+    )
+
+    # compute p-value
+    p_values = matrixStat(x, y, test=test, ave_reps=ave_reps)
+
+    return scores, p_values
 
 
 def ann_score_df(df_in, up_hit='resistance_hit', down_hit='sensitivity_hit', ctrl_label='non-targeting', threshold=10):
@@ -119,4 +176,3 @@ def ann_score_df(df_in, up_hit='resistance_hit', down_hit='sensitivity_hit', ctr
     )
 
     return df
-
