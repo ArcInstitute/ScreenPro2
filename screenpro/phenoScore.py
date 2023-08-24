@@ -92,7 +92,7 @@ def runPhenoScore(adata, cond1, cond2, growth_rate=1, n_reps=2, ctrl_label='negC
     # adata.var[f'condition_{cond1}_vs_{cond2}_adj_pvalue'] = adj_pvalues
 
 
-def generatePseudoGeneLabels(adata, num_pseudogenes=None, ctrl_label='non-targeting'):
+def generatePseudoGeneLabels(adata, num_pseudogenes=None, ctrl_label='negCtrl'):
     """Generate new labels per `num_pseudogenes` randomly selected non targeting oligo in `adata.var`
     """
     if num_pseudogenes is None:
