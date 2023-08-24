@@ -84,7 +84,7 @@ class ScreenPro(object):
         descriptions = ''
         for scoreLevel in self.phenotypes.keys():
             scores = "', '".join(self.phenotypes[scoreLevel].columns.get_level_values(0).unique().to_list())
-            descriptions += f"    {scoreLevel}:\nscores: '{scores}'\n"
+            descriptions += f"scoreLevel: '{scoreLevel}':\n    scores: '{scores}'\n"
 
         return f'obs->samples\nvar->oligos\n\n{self.adata.__repr__()}\n\nPhenotypes:\n{descriptions}'
 
