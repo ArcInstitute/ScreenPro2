@@ -61,10 +61,16 @@ def getScore(x, y, x_ctrl, y_ctrl, growth_rate, math='log2(x+1)'):
     return ((getDelta(x, y, math=math) - ctrl_median) / growth_rate) / ctrl_std
 
 
-def runPhenoScore(adata, cond1, cond2, growth_rate=1, n_reps=2, ctrl_label='negCtrl', test='ttest', layer='seq_depth_norm'):
-    # prep fqcounter
-    df_cond1 = adata[adata.obs.query(f'condition=="{cond1}"').index[:n_reps], ].to_df(layer).T
-    df_cond2 = adata[adata.obs.query(f'condition=="{cond2}"').index[:n_reps], ].to_df(layer).T
+def runPhenoScoreByReps(adata, cond1, cond2, growth_rate=1, n_reps=2, ctrl_label='negCtrl', test='ttest'):
+    """Calculate phenotype score and p-values comparing `cond2` vs `cond1`
+    """
+    count_layer = 'seq_depth_norm'
+    # check if count_layer exists
+    if 'seq_depth_norm' not in adata.layers.keys():
+        seqDepthNormalization(adata)
+    # prep counts for phenoScore calculation
+    df_cond1 = adata[adata.obs.query(f'condition=="{cond1}"').index[:n_reps], ].to_df(count_layer).T
+    df_cond2 = adata[adata.obs.query(f'condition=="{cond2}"').index[:n_reps], ].to_df(count_layer).T
 
     x = df_cond1.to_numpy()
     y = df_cond2.to_numpy()
@@ -75,8 +81,6 @@ def runPhenoScore(adata, cond1, cond2, growth_rate=1, n_reps=2, ctrl_label='negC
     # calculate growth score
     phenotype_score = getScore(x, y, x_ctrl, y_ctrl, growth_rate)
     
-    adata.var[f'condition_{cond2}_vs_{cond1}_delta'] = phenotype_score
-    
     # calculate p-values
     if test == 'MW':
         # run Mann-Whitney U rank test on replicates
@@ -84,12 +88,8 @@ def runPhenoScore(adata, cond1, cond2, growth_rate=1, n_reps=2, ctrl_label='negC
     if test == 'ttest':
         # run ttest on replicates
         pvalues = ttest_rel(y, x, axis=1)[1]
-        adata.var[f'condition_{cond2}_vs_{cond1}_pvalue'] = pvalues
 
-    ## calculate FDR
-    # Calculate the adjusted p-values using the Benjamini-Hochberg method
-    # _, adj_pvalues, _, _ = multipletests(adata.var[f'condition_{cond1}_vs_{cond2}_pvalue'], alpha=0.05, method='fdr_bh')
-    # adata.var[f'condition_{cond1}_vs_{cond2}_adj_pvalue'] = adj_pvalues
+    return phenotype_score, pvalues
 
 
 def generatePseudoGeneLabels(adata, num_pseudogenes=None, ctrl_label='negCtrl'):
