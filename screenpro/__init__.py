@@ -82,7 +82,7 @@ class ScreenPro(object):
 
     def __repr__(self):
         scoreLevels = '\n    '.join([scoreLevel for scoreLevel in self.phenotypes.keys()])
-        return f'obs->samples\nvar->oligos{self.adata.__repr__()}\nPhenotypes:{scoreLevels}'
+        return f'obs->samples\nvar->oligos\n\n{self.adata.__repr__()}\n\nPhenotypes:{scoreLevels}'
 
     def calculateDrugScreen(self,
                             t0, untreated, treated, growth_rate,
