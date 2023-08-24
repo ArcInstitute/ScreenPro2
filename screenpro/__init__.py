@@ -11,6 +11,7 @@ def runPhenoScoreByReps(adata,
                         ctrl_label='negCtrl', test='ttest', math='log2(x+1)'):
     """Calculate phenotype score and p-values comparing `cond2` vs `cond1`
     """
+    result_name = f'{cond2}_vs_{cond1}'
     print(f'\t{cond2} vs {cond1}')
 
     count_layer = 'seq_depth_norm'
@@ -41,7 +42,7 @@ def runPhenoScoreByReps(adata,
         # run ttest on replicates
         pvalues = ttest_rel(y, x, axis=1)[1]
 
-        return phenotype_score, pvalues
+        return phenotype_score, pvalues, result_name
     else:
         raise ValueError(f'Test "{test}" not recognized')
 
@@ -84,18 +85,18 @@ class ScreenPro(object):
         """Calculate gamma, rho, and tau phenotype scores using given `method` in `scoreLevel`
         """
         if method == 'ByReps':
-            gamma, gamma_pv = runPhenoScoreByReps(
+            gamma, gamma_pv, gamma_name= runPhenoScoreByReps(
                 self.adata, cond1=t0, cond2=untreated, growth_rate=growth_rate)
-            tau, tau_pv = runPhenoScoreByReps(
+            tau, tau_pv, tau_name = runPhenoScoreByReps(
                 self.adata, cond1=t0, cond2=treated, growth_rate=growth_rate)
-            rho, rho_pv = runPhenoScoreByReps(
+            rho, rho_pv, rho_name = runPhenoScoreByReps(
                 self.adata, cond1=untreated, cond2=treated, growth_rate=growth_rate)
             targets = self.adata.var.index.str.split('_[-,+]_').str[0].to_list()
 
             self.phenotypes[scoreLevel] = pd.concat({
-                'rho': convertResultsToDataFrame(self.adata, targets, rho, rho_pv),
-                'gamma': convertResultsToDataFrame(self.adata, targets, gamma, gamma_pv),
-                'tau': convertResultsToDataFrame(self.adata, targets, tau, tau_pv)
+                f'rho:{rho_name}': convertResultsToDataFrame(self.adata, targets, rho, rho_pv),
+                f'gamma:{gamma_name}': convertResultsToDataFrame(self.adata, targets, gamma, gamma_pv),
+                f'tau:{tau_name}': convertResultsToDataFrame(self.adata, targets, tau, tau_pv)
             }, axis=1)
 
         elif method == 'ByGuideSet':
