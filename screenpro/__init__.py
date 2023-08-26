@@ -67,14 +67,13 @@ class ScreenPro(object):
         self.adata = adata
         self.math = math
         self.test = test
-        self.phenotypes = None
-        self.phenotypes_score_level = None
+        self.phenotypes = {}
 
     def __repr__(self):
         descriptions = ''
-        for scoreLevel in self.phenotypes.keys():
-            scores = "', '".join(self.phenotypes[scoreLevel].columns.get_level_values(0).unique().to_list())
-            descriptions += f"Phenotypes in scoreLevel = '{scoreLevel}':\n    scores: '{scores}'\n"
+        for score_level in self.phenotypes.keys():
+            scores = "', '".join(self.phenotypes[score_level].columns.get_level_values(0).unique().to_list())
+            descriptions += f"Phenotypes in score_level = '{score_level}':\n    scores: '{scores}'\n"
 
         return f'obs->samples\nvar->oligos\n\n{self.adata.__repr__()}\n\n{descriptions}'
 
@@ -98,8 +97,7 @@ class ScreenPro(object):
         )
 
         # save all results into a multi-index dataframe
-        self.phenotypes = pd.concat({
+        self.phenotypes[score_level] = pd.concat({
             f'gamma:{gamma_name}': gamma, f'tau:{tau_name}': tau, f'rho:{rho_name}': rho
         }, axis=1)
 
-        self.phenotypes_score_level = score_level
