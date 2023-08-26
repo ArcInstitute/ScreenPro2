@@ -1,11 +1,15 @@
 import pandas as pd
 from .__version__ import __version__
 from .phenoScore import seqDepthNormalization, matrixStat, matrixTest
+from statsmodels.stats.multitest import multipletests
 
 
-def runPhenoScoreByReps(adata,
-                        cond1, cond2, growth_rate=1, n_reps=2,
-                        ctrl_label='negCtrl', test='ttest', math='log2(x+1)'):
+def runPhenoScore(adata,
+                  cond1, cond2, math, test,
+                  score_level,
+                  growth_rate=1, n_reps=2,
+                  ctrl_label='negCtrl',
+                  ):
     """Calculate phenotype score and p-values comparing `cond2` vs `cond1`
     """
     result_name = f'{cond2}_vs_{cond1}'
@@ -15,57 +19,56 @@ def runPhenoScoreByReps(adata,
     # check if count_layer exists
     if 'seq_depth_norm' not in adata.layers.keys():
         seqDepthNormalization(adata)
-    # prep counts for phenoScore calculation
-    df_cond1 = adata[adata.obs.query(f'condition=="{cond1}"').index[:n_reps], ].to_df(count_layer).T
-    df_cond2 = adata[adata.obs.query(f'condition=="{cond2}"').index[:n_reps], ].to_df(count_layer).T
 
-    x = df_cond1.to_numpy()
-    y = df_cond2.to_numpy()
+    if score_level == 'compare_reps':
+        # prep counts for phenoScore calculation
+        df_cond1 = adata[adata.obs.query(f'condition=="{cond1}"').index[:n_reps],].to_df(count_layer).T
+        df_cond2 = adata[adata.obs.query(f'condition=="{cond2}"').index[:n_reps],].to_df(count_layer).T
 
-    x_ctrl = df_cond1[adata.var.targetType.eq(ctrl_label)].to_numpy()
-    y_ctrl = df_cond2[adata.var.targetType.eq(ctrl_label)].to_numpy()
+        x = df_cond1.to_numpy()
+        y = df_cond2.to_numpy()
 
-    # calculate growth score and p_value
-    scores, p_values = matrixTest(
-        x=x, y=y, x_ctrl=x_ctrl, y_ctrl=y_ctrl,
-        math=math, ave_reps=True, test=test, growth_rate=growth_rate
-    )
+        x_ctrl = df_cond1[adata.var.targetType.eq(ctrl_label)].to_numpy()
+        y_ctrl = df_cond2[adata.var.targetType.eq(ctrl_label)].to_numpy()
 
-    return scores, p_values, result_name
+        # calculate growth score and p_value
+        scores, p_values = matrixTest(
+            x=x, y=y, x_ctrl=x_ctrl, y_ctrl=y_ctrl,
+            math=math, ave_reps=True, test=test, growth_rate=growth_rate
+        )
 
+        # Calculate the adjusted p-values using the Benjamini-Hochberg method
+        _, adj_pvalues, _, _ = multipletests(p_values, alpha=0.05, method='fdr_bh')
 
-def runPhenoScoreByGuideSet(adata,
-                            cond1, cond2, growth_rate=1, n_reps=2,
-                            ctrl_label='negCtrl', test='ttest', math='log2(x+1)'
-                            ):
-    """Calculate phenotype score and p-values comparing `cond2` vs `cond1`
-    """
-    print(f'\t{cond2} vs {cond1}')
+        targets = adata.var.index.str.split('_[-,+]_').str[0].to_list()
 
-    count_layer = 'seq_depth_norm'
-    # check if count_layer exists
-    if 'seq_depth_norm' not in adata.layers.keys():
-        seqDepthNormalization(adata)
-    # prep counts for phenoScore calculation
-    pass
+        result = pd.concat([
+            pd.Series(targets, index=adata.var.index, name='target'),
+            pd.Series(scores, index=adata.var.index, name='score'),
+            pd.Series(p_values, index=adata.var.index, name=f'{test} pvalue'),
+            pd.Series(adj_pvalues, index=adata.var.index, name='BH adj_pvalue'),
+        ], axis=1)
 
+        return result_name, result
 
-def convertResultsToDataFrame(adata, targets, scores, pvalues):
-    return pd.concat([
-        pd.Series(targets, index=adata.var.index, name='target'),
-        pd.Series(scores, index=adata.var.index, name='score'),
-        pd.Series(pvalues, index=adata.var.index, name='pvalue')
-    ], axis=1)
+    elif score_level == 'compare_oligos':
+        pass
+    elif score_level == 'compare_oligos_and_reps':
+        pass
+    else:
+        raise ValueError(f'score_level "{score_level}" not recognized')
 
 
 class ScreenPro(object):
     """`ScreenPro` class for processing CRISPR screen datasets
     """
 
-    def __init__(self, adata, math='log2(x+1)'):
-        self.phenotypes = {}
+    def __init__(self, adata, math='log2(x+1)', test='ttest'):
         self.adata = adata
         self.math = math
+        self.test = test
+        self.phenotypes = None
+        self.phenotypes_score_level = None
 
     def __repr__(self):
         descriptions = ''
@@ -77,35 +80,26 @@ class ScreenPro(object):
 
     def calculateDrugScreen(self,
                             t0, untreated, treated, growth_rate,
-                            scoreLevel, method):
-        """Calculate gamma, rho, and tau phenotype scores using given `method` in `scoreLevel`
+                            score_level):
+        """Calculate gamma, rho, and tau phenotype scores for a drug screen dataset in a given `score_level`
         """
-        if method == 'ByReps':
-            gamma, gamma_pv, gamma_name= runPhenoScoreByReps(
-                self.adata, cond1=t0, cond2=untreated, growth_rate=growth_rate, math=self.math)
-            tau, tau_pv, tau_name = runPhenoScoreByReps(
-                self.adata, cond1=t0, cond2=treated, growth_rate=growth_rate, math=self.math)
-            rho, rho_pv, rho_name = runPhenoScoreByReps(
-                self.adata, cond1=untreated, cond2=treated, growth_rate=growth_rate, math=self.math)
-            targets = self.adata.var.index.str.split('_[-,+]_').str[0].to_list()
+        # calculate phenotype scores: gamma, tau, rho
+        gamma_name, gamma = runPhenoScore(
+            self.adata, cond1=t0, cond2=untreated, growth_rate=growth_rate,
+            math=self.math, test=self.test, score_level=score_level
+        )
+        tau_name, tau = runPhenoScore(
+            self.adata, cond1=t0, cond2=treated, growth_rate=growth_rate,
+            math=self.math, test=self.test, score_level=score_level
+        )
+        rho_name, rho = runPhenoScore(
+            self.adata, cond1=untreated, cond2=treated, growth_rate=growth_rate,
+            math=self.math, test=self.test, score_level=score_level
+        )
 
-            self.phenotypes[scoreLevel] = pd.concat({
-                f'rho:{rho_name}': convertResultsToDataFrame(self.adata, targets, rho, rho_pv),
-                f'gamma:{gamma_name}': convertResultsToDataFrame(self.adata, targets, gamma, gamma_pv),
-                f'tau:{tau_name}': convertResultsToDataFrame(self.adata, targets, tau, tau_pv)
-            }, axis=1)
+        # save all results into a multi-index dataframe
+        self.phenotypes = pd.concat({
+            f'gamma:{gamma_name}': gamma, f'tau:{tau_name}': tau, f'rho:{rho_name}': rho
+        }, axis=1)
 
-        elif method == 'ByGuideSet':
-            pass
-
-        else:
-            raise ValueError('Method not recognized')
-
-    # adata.var[f'condition_{cond2}_vs_{cond1}_pvalue'] = pvalues
-    # adata.var[f'condition_{cond2}_vs_{cond1}_delta'] = phenotype_score
-    ## calculate FDR
-    # Calculate the adjusted p-values using the Benjamini-Hochberg method
-    # _, adj_pvalues, _, _ = multipletests(adata.var[f'condition_{cond1}_vs_{cond2}_pvalue'], alpha=0.05, method='fdr_bh')
-    # adata.var[f'condition_{cond1}_vs_{cond2}_adj_pvalue'] = adj_pvalues
-
-
+        self.phenotypes_score_level = score_level
