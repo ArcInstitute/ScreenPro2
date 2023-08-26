@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 from screenpro import __version__
 from pathlib import Path
 
-this_directory = Path(__file__)
+this_directory = Path(__file__).parent
 long_description = (this_directory / "README.rst").read_text()
 
 setup(
