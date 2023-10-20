@@ -15,6 +15,8 @@ dependencies:
   - matplotlib
   - seaborn
   - ipykernel
+  - mscorefonts
+  - plotnine
   - pip
   - pip:
       - pydeseq2
