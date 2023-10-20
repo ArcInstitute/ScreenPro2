@@ -26,6 +26,7 @@ class ScreenPro(object):
                             t0, untreated, treated, growth_rate,
                             score_level):
         """Calculate gamma, rho, and tau phenotype scores for a drug screen dataset in a given `score_level`
+        see this issue for discussion https://github.com/abearab/ScreenPro2/issues/15
         """
         # calculate phenotype scores: gamma, tau, rho
         gamma_name, gamma = runPhenoScore(
@@ -46,3 +47,8 @@ class ScreenPro(object):
             f'gamma:{gamma_name}': gamma, f'tau:{tau_name}': tau, f'rho:{rho_name}': rho
         }, axis=1)
 
+    def calculateFlowBasedScreen(self):
+        """Calculate phenotype scores for a flow-based screen dataset
+        see this issue for discussion https://github.com/abearab/ScreenPro2/issues/17
+        """
+        pass
