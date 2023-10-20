@@ -1,7 +1,7 @@
 ScreenPro2
 =======================
 
-|image| |Documentation Status|
+|image| |Documentation Status| |Downloads|
 
 .. |image| image:: https://img.shields.io/pypi/v/screenpro2.svg
    :target: https://pypi.python.org/pypi/screenpro2
