@@ -6,10 +6,17 @@ from copy import copy
 
 
 class ScreenPro(object):
-    """`ScreenPro` class for processing CRISPR screen datasets
+    """
+    `ScreenPro` class for processing CRISPR screen datasets
     """
 
     def __init__(self, adata, math='log2(x+1)', test='ttest'):
+        """
+        Args:
+            adata (AnnData): AnnData object with adata.X as a matrix of sgRNA counts
+            math (str): math transformation to apply to the data before calculating phenotype scores
+            test (str): statistical test to use for calculating phenotype scores
+        """
         self.adata = adata
         self.math = math
         self.test = test
@@ -26,11 +33,16 @@ class ScreenPro(object):
     def copy(self):
         return copy(self)
 
-    def calculateDrugScreen(self,
-                            t0, untreated, treated, growth_rate,
-                            score_level):
-        """Calculate gamma, rho, and tau phenotype scores for a drug screen dataset in a given `score_level`
-        see this issue for discussion https://github.com/abearab/ScreenPro2/issues/15
+    def calculateDrugScreen(self, t0, untreated, treated, growth_rate, score_level):
+        """
+        Calculate gamma, rho, and tau phenotype scores for a drug screen dataset in a given `score_level`
+        see this issue for discussion https://github.com/abearab/ScreenPro2/issues/15.
+        Args:
+            t0 (str): name of the untreated condition
+            untreated (str): name of the untreated condition
+            treated (str): name of the treated condition
+            growth_rate (float): growth rate of the untreated condition
+            score_level (str): name of the score level
         """
         # calculate phenotype scores: gamma, tau, rho
         gamma_name, gamma = runPhenoScore(
@@ -52,7 +64,9 @@ class ScreenPro(object):
         }, axis=1)
 
     def calculateFlowBasedScreen(self):
-        """Calculate phenotype scores for a flow-based screen dataset
+        """
+        Calculate phenotype scores for a flow-based screen dataset
         see this issue for discussion https://github.com/abearab/ScreenPro2/issues/17
         """
+        # TODO
         pass
