@@ -43,6 +43,8 @@ jobs:
         python-version: ${{ matrix.python-version }}
         channels: conda-forge,bioconda
         environment-file: environment.yml
+        activate-environment: ""
+        auto-activate-base: true
     - name: "Install pytest"
       run: |
         pip install pytest
