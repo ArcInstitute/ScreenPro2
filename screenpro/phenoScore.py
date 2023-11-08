@@ -24,6 +24,9 @@ def runPhenoScore(adata, cond1, cond2, math, test, score_level,
         growth_rate (int): growth rate
         n_reps (int): number of replicates
         ctrl_label (str): control label
+    Returns:
+        str: result name
+        pd.DataFrame: result dataframe
     """
     # format result name
     result_name = f'{cond2}_vs_{cond1}'
@@ -117,6 +120,8 @@ def getDelta(x, y, math, ave):
         y (np.array): array of values
         math (str): math to use for calculating score
         ave (str): average method
+    Returns:
+        np.array: array of log ratio values
     """
     if ave == 'all':
         # average across all values
@@ -155,6 +160,8 @@ def getScore(x, y, x_ctrl, y_ctrl, growth_rate, math, ave):
         growth_rate (int): growth rate
         math (str): math to use for calculating score
         ave (str): average method
+    Returns:
+        np.array: array of scores
     """
     # calculate control median and std
     ctrl_std = np.std(getDelta(x=x_ctrl, y=y_ctrl, math=math, ave=ave))
@@ -213,6 +220,8 @@ def matrixStat(x, y, test, ave_reps):
         y (np.array): array of values
         test (str): test to use for calculating p-value
         ave_reps (bool): average replicates
+    Returns:
+        np.array: array of p-values
     """
     # calculate p-values
     if test == 'MW':
@@ -243,6 +252,9 @@ def matrixTest(x, y, x_ctrl, y_ctrl, math, ave_reps, test = 'ttest', growth_rate
         ave_reps (bool): average replicates
         test (str): test to use for calculating p-value
         growth_rate (int): growth rate
+    Returns:
+        np.array: array of scores
+        np.array: array of p-values
     """
     # check if average across replicates
     ave = 'col' if ave_reps else 'all'
@@ -270,6 +282,8 @@ def ann_score_df(df_in, up_hit='resistance_hit', down_hit='sensitivity_hit', ctr
         down_hit (str): down hit label
         ctrl_label (str): control label
         threshold (int): threshold
+    Returns:
+        pd.DataFrame: annotated score dataframe
     """
     # make a copy of input dataframe
     df = df_in.copy()

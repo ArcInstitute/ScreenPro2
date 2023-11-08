@@ -71,6 +71,8 @@ def plot_ggplot_scatter(adata, x, y, color, size, alpha, shape, facet):
         alpha: alpha variable
         shape: shape variable
         facet: facet variable
+    Returns:
+        plotnine ggplot object
     """
     scatter_p = (
         ggplot(adata.obs)
@@ -118,6 +120,8 @@ def plot_ggplot_pca(adata):
     Plot PCA using ggplot2 style via plotnine.
     Args:
         adata: anndata object
+    Returns:
+        plotnine ggplot object
     """
     # Create a dataframe with the PCA coordinates and the metadata
     pca = pd.concat([

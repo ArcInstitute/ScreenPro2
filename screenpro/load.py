@@ -19,6 +19,8 @@ def loadScreenProcessingData(experimentName, collapsedToTranscripts=True, premer
         experimentName (str): name of the experiment
         collapsedToTranscripts (bool): whether the gene scores are collapsed to transcripts
         premergedCounts (bool): whether the counts are premerged
+    Returns:
+        dict: dictionary of dataframes
     """
     # dict of dataframes
     dataDict = {
