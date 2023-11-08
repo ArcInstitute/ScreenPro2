@@ -19,7 +19,7 @@ def runPhenoScore(adata, cond1, cond2, math, test, score_level,
         cond1 (str): condition 1
         cond2 (str): condition 2
         math (str): math to use for calculating score
-        test (str): test to use for calculating p-value
+        test (str): test to use for calculating p-value ('MW': Mann-Whitney U rank; 'ttest' : t-test)
         score_level (str): score level
         growth_rate (int): growth rate
         n_reps (int): number of replicates
@@ -54,10 +54,13 @@ def runPhenoScore(adata, cond1, cond2, math, test, score_level,
         # calculate growth score and p_value
         scores, p_values = matrixTest(
             x=x, y=y, x_ctrl=x_ctrl, y_ctrl=y_ctrl,
-            math=math, ave_reps=True, test=test, growth_rate=growth_rate
+            math=math, ave_reps=True, test=test, 
+            growth_rate=growth_rate
         )
 
         # Calculate the adjusted p-values using the Benjamini-Hochberg method
+        if p_values is None:
+            raise ValueError('p_values is None')
         _, adj_pvalues, _, _ = multipletests(p_values, alpha=0.05, method='fdr_bh')
         ## get targets
         targets = adata.var.index.str.split('_[-,+]_').str[0].to_list()
