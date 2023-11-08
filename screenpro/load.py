@@ -1,5 +1,5 @@
 """
-Functions for loading screen datasets
+Module for loading screen datasets
 """
 
 # import
