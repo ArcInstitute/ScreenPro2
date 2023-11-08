@@ -19,5 +19,5 @@ dependencies:
   - plotnine=0.12.1
   - pip
   - pip:
-      - pydeseq2
-      - watermark
+      - pydeseq2==0.4.1
+      - watermark==2.4.3
