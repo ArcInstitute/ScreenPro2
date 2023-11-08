@@ -1,10 +1,11 @@
+# import
 import pandas as pd
 import numpy as np
-from plotnine import *
+from plotnine import *          # <-- NOT recommended!
 import matplotlib.pyplot as plt
 import matplotlib
 
-
+# variables
 almost_black = '#111111'
 dark2 = ['#1b9e77',
          '#d95f02',
@@ -21,8 +22,9 @@ yellow_blue = matplotlib.colors.LinearSegmentedColormap.from_list(
     'YlBu', [(0, '#0000ff'), (.49, '#000000'), (.51, '#000000'), (1, '#ffff00')])
 yellow_blue.set_bad('#999999', 1)
 
-plt.rcParams['font.sans-serif'] = ['Helvetica',
-                                   'Arial', 'Verdana', 'Bitstream Vera Sans']
+plt.rcParams['font.sans-serif'] = [
+    'Helvetica', 'Arial', 'Verdana', 'Bitstream Vera Sans'
+]
 plt.rcParams['font.size'] = 8
 plt.rcParams['font.weight'] = 'regular'
 plt.rcParams['text.color'] = almost_black
@@ -58,48 +60,70 @@ plt.rcParams['xtick.major.width'] = axisLineWidth
 
 
 def plot_ggplot_scatter(adata, x, y, color, size, alpha, shape, facet):
+    """
+    Plot scatter plot using ggplot2 style via plotnine.
+    Args:
+        adata: anndata object
+        x: x-axis variable
+        y: y-axis variable
+        color: color variable
+        size: size variable
+        alpha: alpha variable
+        shape: shape variable
+        facet: facet variable
+    Returns:
+        plotnine ggplot object
+    """
     scatter_p = (
-            ggplot(adata.obs)
-            + geom_point(aes(
-             x = x,
-             y = y,
-             color = color,
-             size = size,
-             alpha = alpha,
-             shape = shape
-            ), stroke=0.2)
+        ggplot(adata.obs)
+            + geom_point(
+                aes(
+                    x = x,
+                    y = y,
+                    color = color,
+                    size = size,
+                    alpha = alpha,
+                    shape = shape
+                    ), 
+                stroke=0.2
+            )
             + facet_wrap(facet)
             + theme_classic()
             + theme(
-             panel_grid_major   = element_blank(),
-             panel_grid_minor   = element_blank(),
-             panel_background   = element_blank(),
+                panel_grid_major   = element_blank(),
+                 panel_grid_minor   = element_blank(),
+                panel_background   = element_blank(),
 
-             legend_background  = element_blank(),
-             legend_position    = 'top',
-             legend_direction   = 'horizontal', # affected by the ncol=2
-             legend_text_legend = element_text(size=8),
+                legend_background  = element_blank(),
+                legend_position    = 'top',
+                legend_direction   = 'horizontal', # affected by the ncol=2
+                legend_text_legend = element_text(size=8),
 
-             axis_line          = element_line(size=2),
-             axis_text_x        = element_text(size=8),
-             axis_text_y        = element_text(size=8),
-             axis_title_x       = element_text(weight='bold', size=12),
-             axis_title_y       = element_text(weight='bold', size=12),
+                axis_line          = element_line(size=2),
+                axis_text_x        = element_text(size=8),
+                axis_text_y        = element_text(size=8),
+                axis_title_x       = element_text(weight='bold', size=12),
+                axis_title_y       = element_text(weight='bold', size=12),
 
-             text               = element_text(font = 'arial'),
+                text               = element_text(font = 'arial'),
 
-             figure_size        = (4.5, 5)
+                figure_size        = (4.5, 5)
             )
             + xlim(-60,80)
-            # + ylim(-30,60)
-                  # + scale_color_discrete(guide=False)
-
-            )
+    )
 
     return scatter_p
 
 
 def plot_ggplot_pca(adata):
+    """
+    Plot PCA using ggplot2 style via plotnine.
+    Args:
+        adata: anndata object
+    Returns:
+        plotnine ggplot object
+    """
+    # Create a dataframe with the PCA coordinates and the metadata
     pca = pd.concat([
         pd.DataFrame(
             adata.obsm['X_pca'][:,[0,1]],
@@ -110,47 +134,49 @@ def plot_ggplot_pca(adata):
     ], axis=1)
 
     pca_p = (
-            ggplot(pca)
-            + geom_point(aes(
-             x = 'PC-1',
-             y = 'PC-2',
-             fill='score',
-             # shape = 'treatment'
-            ), color='black', size=8)
-            + geom_text(aes(
-             x='PC-1',
-             y='PC-2',
-             label='score',
-             size=3
-            ),
-             nudge_y=3,
-             nudge_x=7,
-                    )
+        ggplot(pca)
+            + geom_point(
+                aes(
+                    x = 'PC-1',
+                    y = 'PC-2',
+                    fill='score',
+                    # shape = 'treatment'
+                ), 
+                color='black', 
+                size=8
+            )
+            + geom_text(
+                aes(
+                    x='PC-1',
+                    y='PC-2',
+                    label='score',
+                    size=3
+                ),
+                nudge_y=3,
+                nudge_x=7,
+            )
             + theme_classic()
             + theme(
-             panel_grid_major   = element_blank(),
-             panel_grid_minor   = element_blank(),
-             panel_background   = element_blank(),
+                panel_grid_major   = element_blank(),
+                panel_grid_minor   = element_blank(),
+                panel_background   = element_blank(),
 
-             legend_background  = element_blank(),
-             legend_position    = 'top',
-             legend_direction   = 'horizontal', # affected by the ncol=2
-             legend_text_legend = element_text(size=8),
+                legend_background  = element_blank(),
+                legend_position    = 'top',
+                legend_direction   = 'horizontal', # affected by the ncol=2
+                legend_text_legend = element_text(size=8),
 
-             axis_line          = element_line(size=2),
-             axis_text_x        = element_text(size=8),
-             axis_text_y        = element_text(size=8),
-             axis_title_x       = element_text(weight='bold', size=12),
-             axis_title_y       = element_text(weight='bold', size=12),
+                axis_line          = element_line(size=2),
+                axis_text_x        = element_text(size=8),
+                axis_text_y        = element_text(size=8),
+                axis_title_x       = element_text(weight='bold', size=12),
+                axis_title_y       = element_text(weight='bold', size=12),
 
-             text               = element_text(font = 'arial'),
+                text               = element_text(font = 'arial'),
 
-             figure_size        = (4.5, 5)
+                figure_size        = (4.5, 5)
             )
             + xlim(-60,80)
-            # + ylim(-30,60)
-                  # + scale_color_discrete(guide=False)
-
-            )
+    )
 
     return pca_p

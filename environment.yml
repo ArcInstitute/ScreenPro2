@@ -4,20 +4,20 @@ channels:
   - conda-forge
 dependencies:
   - python=3.9
-  - anndata
-  - scanpy
-  - python-igraph
-  - leidenalg
-  - numpy
-  - pandas
-  - scipy
-  - biopython
-  - matplotlib
-  - seaborn
-  - ipykernel
-  - mscorefonts
-  - plotnine
-  - pip
+  - pip=23.3
+  - anndata=0.10.3
+  - scanpy=1.9.6
+  - python-igraph=0.10.2
+  - leidenalg=0.8.8
+  - numpy=1.23.5
+  - pandas=2.0.3
+  - scipy=1.11.3
+  - biopython=1.78
+  - matplotlib=3.8.0
+  - seaborn=0.12.2
+  - ipykernel=6.25.0
+  - mscorefonts=0.0.1
+  - plotnine=0.12.1
   - pip:
-      - pydeseq2
-      - watermark
+      - pydeseq2==0.4.1
+      - watermark==2.4.3
