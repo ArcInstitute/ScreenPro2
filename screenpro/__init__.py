@@ -10,7 +10,7 @@ class ScreenPro(object):
     `ScreenPro` class for processing CRISPR screen datasets
     """
 
-    def __init__(self, adata, math='log2(x+1)', test='ttest'):
+    def __init__(self, adata, math='log2(x+1)', test='ttest', n_reps=3):
         """
         Args:
             adata (AnnData): AnnData object with adata.X as a matrix of sgRNA counts
@@ -20,6 +20,7 @@ class ScreenPro(object):
         self.adata = adata
         self.math = math
         self.test = test
+        self.n_reps = n_reps
         self.phenotypes = {}
 
     def __repr__(self):
@@ -33,7 +34,7 @@ class ScreenPro(object):
     def copy(self):
         return copy(self)
 
-    def calculateDrugScreen(self, t0, untreated, treated, growth_rate, score_level, n_reps=2):
+    def calculateDrugScreen(self, t0, untreated, treated, growth_rate, score_level):
         """
         Calculate gamma, rho, and tau phenotype scores for a drug screen dataset in a given `score_level`
         see this issue for discussion https://github.com/abearab/ScreenPro2/issues/15.
@@ -46,15 +47,15 @@ class ScreenPro(object):
         """
         # calculate phenotype scores: gamma, tau, rho
         gamma_name, gamma = runPhenoScore(
-            self.adata, cond1=t0, cond2=untreated, growth_rate=growth_rate, n_reps=n_reps,
+            self.adata, cond1=t0, cond2=untreated, growth_rate=growth_rate, n_reps=self.n_reps,
             math=self.math, test=self.test, score_level=score_level
         )
         tau_name, tau = runPhenoScore(
-            self.adata, cond1=t0, cond2=treated, growth_rate=growth_rate, n_reps=n_reps,
+            self.adata, cond1=t0, cond2=treated, growth_rate=growth_rate, n_reps=self.n_reps,
             math=self.math, test=self.test, score_level=score_level
         )
         rho_name, rho = runPhenoScore(
-            self.adata, cond1=untreated, cond2=treated, growth_rate=growth_rate, n_reps=n_reps,
+            self.adata, cond1=untreated, cond2=treated, growth_rate=growth_rate, n_reps=self.n_reps,
             math=self.math, test=self.test, score_level=score_level
         )
 
