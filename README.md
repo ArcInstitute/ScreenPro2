@@ -66,7 +66,7 @@ between screen arms.
 screen experiment. This method calculates `gamma`, `rho`, and `tau` scores for each gene and adds them to the 
 `.pheno
 
-Here is an example for running the workflow on a [CRISPRi-dual-sgRNA-screens](#CRISPRi-dual-sgRNA-screens) dataset:
+Here is an example for running the workflow on a [CRISPRi-dual-sgRNA-screens](#crispri-dual-sgrna-screens) dataset:
 
 ```python
 # Run the ScreenPro2 workflow for CRISPRi-dual-sgRNA-screens
