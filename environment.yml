@@ -17,7 +17,6 @@ dependencies:
   - seaborn=0.12.2
   - ipykernel=6.25.0
   - mscorefonts=0.0.1
-  - plotnine=0.12.1
   - pip:
       - pydeseq2==0.4.1
       - watermark==2.4.3
