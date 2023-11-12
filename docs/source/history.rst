@@ -2,13 +2,11 @@
 History
 =======
 
-0.2.3 (Oct 2023)
+0.2.1 - 0.2.3 (July 2023 - Nov 2023)
 ~~~~~~~~~~~~~~~~~
-*
-
-0.2.1 (July 2023)
-~~~~~~~~~~~~~~~~~
-*
+* Included PyPi package installation.
+* Introduced `ScreenPro` class.
+* Introduced a method in `ScreenPro` class for common drug screen analysis.
 
 0.2.0 (May 2022)
 ~~~~~~~~~~~~~~~~
