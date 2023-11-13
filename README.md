@@ -94,4 +94,4 @@ platform to calculate the enrichment of each gene between screen arms.
 
 ## License
 ScreenPro2 is licensed under the terms of the MIT license (see [LICENSE](LICENSE) for more information) and developed 
-by Abolfazl (Abe) Arab ([@abearab](https://github.com/abearab)), a Research Associate in the Gilbert lab at the UCSF and the Arc Institue.  
+by Abolfazl (Abe) Arab ([@abearab](https://github.com/abearab)), a Research Associate in the Gilbert lab at UCSF and Arc Institute.  
