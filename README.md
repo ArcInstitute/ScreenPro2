@@ -7,7 +7,7 @@ ScreenPro2
 The docs are available at [https://screenpro2.readthedocs.io](https://screenpro2.readthedocs.io)
 
 This package is conceptually similar to the [**ScreenProcessing**](https://github.com/mhorlbeck/ScreenProcessing) 
-pipeline but **ScreenPro2** is designed to be more modular, flexible, and extensible as the field of Functinoal 
+pipeline but **ScreenPro2** is designed to be more modular, flexible, and extensible as the field of Functional 
 Genomics evolves and newer CRISPR screen platforms are developed.
 
 For more information about the statistical methods used in ScreenPro2, please refer to the detailed documentation
