@@ -56,6 +56,7 @@ adata = ad.AnnData(
 
 screen = scp.ScreenPro(adata)
 ```
+<img width="600" alt="image" src="https://github.com/abearab/ScreenPro2/assets/53412130/d1c8c3ad-3668-4390-8b1d-bf72b591a927">
 
 ### Perform Screen Processing Analysis
 Once the `ScreenPro` object is created, you can use several available workflows to calculate the enrichment of each oligo 
