@@ -88,7 +88,7 @@ Currently, ScreenPro2 has easy-to-use workflows for the following CRISPR screen 
 [Replogle et al., _eLife_ (2022)](https://elifesciences.org/articles/81856)
 
 Replogle et al. developed a CRISPRi screening platform that uses two sgRNAs per gene within a single plasmid and it has
-been used to perform genome-scale CRISPRi screens. If you follow the codes in the provided [GitHub](https://github.com/josephreplogle/CRISPRi-dual-sgRNA-screens) repository, you 
+been used to perform genome-scale CRISPRi screens. If you follow the codes in the provided [GitHub repository](https://github.com/josephreplogle/CRISPRi-dual-sgRNA-screens), you 
 will end up with oligo counts and once you make `ScreenPro` object, you can use the ScreenPro2 workflow for this
 platform to calculate the enrichment of each gene between screen arms.
 
