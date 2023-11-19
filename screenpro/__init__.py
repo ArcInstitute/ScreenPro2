@@ -1,9 +1,9 @@
 import pandas as pd
 from . import plotting as pl
+from . import phenoScore as ps
+from . import utils
 
 from .__version__ import __version__
-from .phenoScore import seqDepthNormalization, matrixStat, matrixTest
-from .phenoScore import runPhenoScore
 from copy import copy
 
 
@@ -48,15 +48,15 @@ class ScreenPro(object):
             score_level (str): name of the score level
         """
         # calculate phenotype scores: gamma, tau, rho
-        gamma_name, gamma = runPhenoScore(
+        gamma_name, gamma = ps.runPhenoScore(
             self.adata, cond1=t0, cond2=untreated, growth_rate=growth_rate, n_reps=self.n_reps,
             math=self.math, test=self.test, score_level=score_level
         )
-        tau_name, tau = runPhenoScore(
+        tau_name, tau = ps.runPhenoScore(
             self.adata, cond1=t0, cond2=treated, growth_rate=growth_rate, n_reps=self.n_reps,
             math=self.math, test=self.test, score_level=score_level
         )
-        rho_name, rho = runPhenoScore(
+        rho_name, rho = ps.runPhenoScore(
             self.adata, cond1=untreated, cond2=treated, growth_rate=growth_rate, n_reps=self.n_reps,
             math=self.math, test=self.test, score_level=score_level
         )
@@ -66,10 +66,18 @@ class ScreenPro(object):
             f'gamma:{gamma_name}': gamma, f'tau:{tau_name}': tau, f'rho:{rho_name}': rho
         }, axis=1)
 
-    def calculateFlowBasedScreen(self):
+    def calculateFlowBasedScreen(self, low_bin, high_bin, score_level):
         """
         Calculate phenotype scores for a flow-based screen dataset
         see this issue for discussion https://github.com/abearab/ScreenPro2/issues/17
         """
-        # TODO: define the function based on general experimental design
-        pass
+        # calculate phenotype scores
+        phenotype_name, phenotype = ps.runPhenoScore(
+            self.adata, cond1=low_bin, cond2=high_bin, n_reps=self.n_reps,
+            math=self.math, test=self.test, score_level=score_level
+        )
+
+        # save all results into a multi-index dataframe
+        self.phenotypes[score_level] = pd.concat({
+            f'phenotype:{phenotype_name}': phenotype
+        }, axis=1)
