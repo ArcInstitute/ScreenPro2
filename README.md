@@ -4,10 +4,10 @@
 ScreenPro2
 ==========
 
-The docs are available at [https://screenpro2.readthedocs.io](https://screenpro2.readthedocs.io)
+<!-- The docs are available at [https://screenpro2.readthedocs.io](https://screenpro2.readthedocs.io) -->
 
 This package is conceptually similar to the [**ScreenProcessing**](https://github.com/mhorlbeck/ScreenProcessing) 
-pipeline but **ScreenPro2** is designed to be more modular, flexible, and extensible as the field of Functinoal 
+pipeline but **ScreenPro2** is designed to be more modular, flexible, and extensible as the field of Functional 
 Genomics evolves and newer CRISPR screen platforms are developed.
 
 For more information about the statistical methods used in ScreenPro2, please refer to the detailed documentation
@@ -56,6 +56,7 @@ adata = ad.AnnData(
 
 screen = scp.ScreenPro(adata)
 ```
+<img width="600" alt="image" src="https://github.com/abearab/ScreenPro2/assets/53412130/d1c8c3ad-3668-4390-8b1d-bf72b591a927">
 
 ### Perform Screen Processing Analysis
 Once the `ScreenPro` object is created, you can use several available workflows to calculate the enrichment of each oligo 
@@ -76,6 +77,9 @@ screen.calculateDrugScreen(
   score_level='compare_reps'
 )
 ```
+___
+For example, in a Decitabine CRISPRi drug screen (see Figure 1B-C in [this bioRxiv paper](https://www.biorxiv.org/content/10.1101/2022.12.14.518457v2.full)), each phenotype score represents a comparison between different arms of the screen and `rho` scores shows the main drug phenotype as illustrated here:
+<img width="800" alt="image" src="https://github.com/abearab/ScreenPro2/assets/53412130/b84b3e1f-e049-4da6-b63d-d4c72bc97cda">
 
 ## Supported CRISPR Screen Platforms
 One of the main goals of ScreenPro2 is to make it easy to process data from commonly used CRISPR screen platforms.
@@ -88,10 +92,10 @@ Currently, ScreenPro2 has easy-to-use workflows for the following CRISPR screen 
 [Replogle et al., _eLife_ (2022)](https://elifesciences.org/articles/81856)
 
 Replogle et al. developed a CRISPRi screening platform that uses two sgRNAs per gene within a single plasmid and it has
-been used to perform genome-scale CRISPRi screens. Ifollow the codes in provided [GitHub](https://github.com/josephreplogle/CRISPRi-dual-sgRNA-screens) repository, you 
+been used to perform genome-scale CRISPRi screens. If you follow the codes in the provided [GitHub repository](https://github.com/josephreplogle/CRISPRi-dual-sgRNA-screens), you 
 will end up with oligo counts and once you make `ScreenPro` object, you can use the ScreenPro2 workflow for this
 platform to calculate the enrichment of each gene between screen arms.
 
 ## License
 ScreenPro2 is licensed under the terms of the MIT license (see [LICENSE](LICENSE) for more information) and developed 
-by Abolfazl (Abe) Arab ([@abearab](https://github.com/abearab)), a Research Associate in the Gilbert lab at the UCSF and the Arc Institue.  
+by Abolfazl (Abe) Arab ([@abearab](https://github.com/abearab)), a Research Associate in the Gilbert lab at UCSF and Arc Institute.  
