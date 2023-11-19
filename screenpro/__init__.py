@@ -1,4 +1,6 @@
 import pandas as pd
+from . import plotting as pl
+
 from .__version__ import __version__
 from .phenoScore import seqDepthNormalization, matrixStat, matrixTest
 from .phenoScore import runPhenoScore
@@ -69,5 +71,5 @@ class ScreenPro(object):
         Calculate phenotype scores for a flow-based screen dataset
         see this issue for discussion https://github.com/abearab/ScreenPro2/issues/17
         """
-        # TODO
+        # TODO: define the function based on general experimental design
         pass
