@@ -3,7 +3,7 @@ import numpy as np
 import scanpy as sc
 import matplotlib.pyplot as plt
 import matplotlib
-from phenoScore import ann_score_df
+from .utils import ann_score_df
 
 # variables
 almost_black = '#111111'
