@@ -161,6 +161,10 @@ def label_resistance_hit(ax, df_in, label, threshold, size=2, size_txt=None, t_x
 
 
 def plot_replicate_scatter(ax, adata, x, y, title):
+    """Scatter plot of sample replicates for quality control
+    - x and y are sample names in `adata.obs.index`.
+    - counts are automatically log1p transformed
+    """
     bdata = adata[[x, y], :].copy()
 
     bdata.obs.index = [f'Replicate {str(r)}' for r in bdata.obs.replicate.to_list()]
