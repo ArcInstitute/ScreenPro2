@@ -2,3 +2,5 @@
 **.idea
 docs/build
 dist
+build/
+ScreenPro2.egg-info/
