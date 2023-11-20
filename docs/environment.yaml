@@ -8,6 +8,7 @@ dependencies:
   - pandas
   - sphinx_rtd_theme
   - anndata
+  - scanpy
   - pip
   - pip:
     - nbsphinx

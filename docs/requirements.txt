@@ -1,6 +1,7 @@
 sphinx
 pandas
 anndata
+scanpy
 sphinx_bootstrap_theme
 pip
 nbsphinx
