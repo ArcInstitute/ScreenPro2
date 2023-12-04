@@ -6,11 +6,9 @@ dependencies:
   - python
   - myst-parser
   - sphinx
-  - pandas
   - sphinx_rtd_theme
+  - pandas
   - anndata
-  - scanpy
   - pip
   - pip:
-    - nbsphinx
     - pydeseq2
