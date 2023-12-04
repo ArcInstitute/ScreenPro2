@@ -4,6 +4,7 @@ channels:
   - conda-forge
 dependencies:
   - python
+  - myst-parser
   - sphinx
   - pandas
   - sphinx_rtd_theme
