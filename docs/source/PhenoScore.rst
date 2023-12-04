@@ -20,17 +20,16 @@ Phenotype score for each :math:`T` comparing :math:`y` vs :math:`x`:
     \text{PhenoScore}(T,x,y) =
     \left(
     \frac{
-        \overline{\Delta_{(x,y)}} - \text{median}({\overline{\Delta_{(x_{ctrl},y_{ctrl})}}})
+        \overline{\Delta_{(x,y)}}
     }{
-        \sigma(\overline{\Delta_{(x_{ctrl},y_{ctrl})}})
+        \text{median}( {\overline{\Delta_{(x_{ctrl},y_{ctrl})}}} )
     }
     \right)
     \times \frac{ 1 }{d_{growth}}
 
 - :math:`\overline{\Delta(x,y)} \rightarrow` log ratio averaged across replicates
 - :math:`T \rightarrow` oligo constructs with sgRNAs targeting :math:`T`
-- :math:`\sigma(\text{...}) \rightarrow` standard deviation
-- :math:`d_{growth} \rightarrow` growth rate...
+- :math:`d_{growth} \rightarrow` growth factor to normalize the phenotype score.
 
 Statistical test comparing :math:`y` vs :math:`x` per each target, :math:`T`:
 

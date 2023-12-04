@@ -42,11 +42,11 @@ def runPhenoScore(adata, cond1, cond2, math, test, score_level,
         df_cond1 = adata[adata.obs.query(f'condition=="{cond1}"').index[:n_reps],].to_df(count_layer).T
         df_cond2 = adata[adata.obs.query(f'condition=="{cond2}"').index[:n_reps],].to_df(count_layer).T
 
-        ## convert to numpy arrays
+        # convert to numpy arrays
         x = df_cond1.to_numpy()
         y = df_cond2.to_numpy()
 
-        ## get control values
+        # get control values
         x_ctrl = df_cond1[adata.var.targetType.eq(ctrl_label)].to_numpy()
         y_ctrl = df_cond2[adata.var.targetType.eq(ctrl_label)].to_numpy()
 
@@ -61,9 +61,9 @@ def runPhenoScore(adata, cond1, cond2, math, test, score_level,
         if p_values is None:
             raise ValueError('p_values is None')
         _, adj_pvalues, _, _ = multipletests(p_values, alpha=0.05, method='fdr_bh')
-        ## get targets
+        # get targets
         targets = adata.var.index.str.split('_[-,+]_').str[0].to_list()
-        ## combine results into a dataframe
+        # combine results into a dataframe
         result = pd.concat([
             pd.Series(targets, index=adata.var.index, name='target'),
             pd.Series(scores, index=adata.var.index, name='score'),
@@ -151,7 +151,7 @@ def getDelta(x, y, math, ave):
             return np.mean(np.log1p(y) - np.log1p(x), axis=1)
 
 
-def getScore(x, y, x_ctrl, y_ctrl, growth_rate, math, ave):
+def getPhenotypeScore(x, y, x_ctrl, y_ctrl, growth_rate, math, ave):
     """
     Calculate phenotype score normalized by negative control and growth rate.
     Args:
@@ -166,14 +166,26 @@ def getScore(x, y, x_ctrl, y_ctrl, growth_rate, math, ave):
         np.array: array of scores
     """
     # calculate control median and std
-    ctrl_std = np.std(getDelta(x=x_ctrl, y=y_ctrl, math=math, ave=ave))
     ctrl_median = np.median(getDelta(x=x_ctrl, y=y_ctrl, math=math, ave=ave))
 
     # calculate delta
     delta = getDelta(x=x, y=y, math=math, ave=ave)
 
     # calculate score
-    return ((delta - ctrl_median) / growth_rate) / ctrl_std
+    return (delta - ctrl_median) / growth_rate
+
+
+def getZScorePhenotypeScore(x, y, x_ctrl, y_ctrl, growth_rate, math, ave):
+    pass
+    # # calculate control median and std
+    # ctrl_std = np.std(getDelta(x=x_ctrl, y=y_ctrl, math=math, ave=ave))
+    # ctrl_median = np.median(getDelta(x=x_ctrl, y=y_ctrl, math=math, ave=ave))
+    #
+    # # calculate delta
+    # delta = getDelta(x=x, y=y, math=math, ave=ave)
+    #
+    # # calculate score
+    # return ((delta - ctrl_median) / growth_rate) / ctrl_std
 
 
 def generatePseudoGeneLabels(adata, num_pseudogenes=None, ctrl_label='negCtrl'):
@@ -262,7 +274,7 @@ def matrixTest(x, y, x_ctrl, y_ctrl, math, ave_reps, test = 'ttest', growth_rate
     ave = 'col' if ave_reps else 'all'
 
     # calculate growth score
-    scores = getScore(
+    scores = getPhenotypeScore(
         x = x, y = y, x_ctrl = x_ctrl, y_ctrl = y_ctrl,
         growth_rate = growth_rate, math = math,
         ave = ave
