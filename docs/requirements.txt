@@ -2,6 +2,7 @@ sphinx
 pandas
 anndata
 scanpy
+myst-parser
 sphinx_bootstrap_theme
 pip
 nbsphinx
