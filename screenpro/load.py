@@ -6,6 +6,7 @@ Module for loading screen datasets
 import pickle
 import pandas as pd
 
+
 # functions
 def loadScreenProcessingData(experimentName, collapsedToTranscripts=True, premergedCounts=False):
     """
@@ -79,26 +80,26 @@ def loadScreenProcessingData(experimentName, collapsedToTranscripts=True, premer
     return dataDict
 
 
-def write_adata_pkl(adata, name):
+def write_screen_pkl(screen, name):
     """
     Write AnnData object to a pickle file
     Args:
-        adata (AnnData): AnnData object to save
+        screen (object): ScreenPro object to save
         name (str): name of the output file (.pkl extension will be added)
     """
     file_name = f'{name}.pkl'
     with open(file_name, 'wb') as file:
-        pickle.dump(adata, file)
+        pickle.dump(screen, file)
         print(f'Object successfully saved to "{file_name}"')
 
 
-def read_adata_pkl(name):
+def read_screen_pkl(name):
     """
-    Read AnnData object from a pickle file
+    Read ScreenPro object from a pickle file
     Args:
         name (str): name of the input file (.pkl extension will be added)
     """
     file_name = f'{name}.pkl'
     with open(file_name, 'rb') as f:
-        adata = pickle.load(f)
-    return adata
+        screen = pickle.load(f)
+    return screen
