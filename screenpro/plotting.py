@@ -1,9 +1,9 @@
 import pandas as pd
 import numpy as np
-import scanpy as sc
 import matplotlib.pyplot as plt
 import matplotlib
 from .utils import ann_score_df
+# import scanpy as sc
 
 # variables
 almost_black = '#111111'
@@ -165,26 +165,27 @@ def plot_replicate_scatter(ax, adata, x, y, title):
     - x and y are sample names in `adata.obs.index`.
     - counts are automatically log1p transformed
     """
-    bdata = adata[[x, y], :].copy()
-
-    bdata.obs.index = [f'Replicate {str(r)}' for r in bdata.obs.replicate.to_list()]
-    x_lab, y_lab = [f'Replicate {str(r)}' for r in bdata.obs.replicate.to_list()]
-
-    sc.pp.log1p(bdata)
-    sc.pl.scatter(
-        bdata,
-        x_lab, y_lab,
-        legend_fontsize='xx-large',
-        palette=[almost_black, '#BFBFBF'],
-        color='targetType',
-        title=title,
-        size=5,
-        show=False,
-        ax=ax
-    )
-    ax.set_ylim(-1, 11)
-    ax.set_xlim(-1, 11)
-    ax.tick_params(axis='both', labelsize=10)
-    ax.get_legend().remove()
-
-    ax.grid(False)
+    pass
+    # bdata = adata[[x, y], :].copy()
+    #
+    # bdata.obs.index = [f'Replicate {str(r)}' for r in bdata.obs.replicate.to_list()]
+    # x_lab, y_lab = [f'Replicate {str(r)}' for r in bdata.obs.replicate.to_list()]
+    #
+    # sc.pp.log1p(bdata)
+    # sc.pl.scatter(
+    #     bdata,
+    #     x_lab, y_lab,
+    #     legend_fontsize='xx-large',
+    #     palette=[almost_black, '#BFBFBF'],
+    #     color='targetType',
+    #     title=title,
+    #     size=5,
+    #     show=False,
+    #     ax=ax
+    # )
+    # ax.set_ylim(-1, 11)
+    # ax.set_xlim(-1, 11)
+    # ax.tick_params(axis='both', labelsize=10)
+    # ax.get_legend().remove()
+    #
+    # ax.grid(False)
