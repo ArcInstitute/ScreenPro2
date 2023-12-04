@@ -1,4 +1,4 @@
-Detailed documentation
+Tutorials
 ======================
 
 COMING SOON.
