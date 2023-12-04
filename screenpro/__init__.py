@@ -1,3 +1,4 @@
+import numpy as np
 import pandas as pd
 from . import plotting as pl
 from . import phenoScore as ps
@@ -36,7 +37,7 @@ class ScreenPro(object):
     def copy(self):
         return copy(self)
 
-    def calculateDrugScreen(self, t0, untreated, treated, growth_rate, score_level):
+    def calculateDrugScreen(self, t0, untreated, treated, db_untreated, db_treated, score_level):
         """
         Calculate gamma, rho, and tau phenotype scores for a drug screen dataset in a given `score_level`
         see this issue for discussion https://github.com/abearab/ScreenPro2/issues/15.
@@ -44,20 +45,24 @@ class ScreenPro(object):
             t0 (str): name of the untreated condition
             untreated (str): name of the untreated condition
             treated (str): name of the treated condition
-            growth_rate (float): growth rate of the untreated condition
+            db_untreated (float): doubling rate of the untreated condition
+            db_treated (float): doubling rate of the treated condition
             score_level (str): name of the score level
         """
         # calculate phenotype scores: gamma, tau, rho
         gamma_name, gamma = ps.runPhenoScore(
-            self.adata, cond1=t0, cond2=untreated, growth_rate=growth_rate, n_reps=self.n_reps,
+            self.adata, cond1=t0, cond2=untreated, growth_rate=db_untreated,
+            n_reps=self.n_reps,
             math=self.math, test=self.test, score_level=score_level
         )
         tau_name, tau = ps.runPhenoScore(
-            self.adata, cond1=t0, cond2=treated, growth_rate=growth_rate, n_reps=self.n_reps,
+            self.adata, cond1=t0, cond2=treated, growth_rate=db_treated,
+            n_reps=self.n_reps,
             math=self.math, test=self.test, score_level=score_level
         )
         rho_name, rho = ps.runPhenoScore(
-            self.adata, cond1=untreated, cond2=treated, growth_rate=growth_rate, n_reps=self.n_reps,
+            self.adata, cond1=untreated, cond2=treated, growth_rate=np.abs(db_treated - db_untreated),
+            n_reps=self.n_reps,
             math=self.math, test=self.test, score_level=score_level
         )
 
