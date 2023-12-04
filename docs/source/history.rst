@@ -2,7 +2,11 @@
 History
 =======
 
-0.2.1 - 0.2.3 (July 2023 - Nov 2023)
+0.2.5 (Dec 2023)
+~~~~~~~~~~~~~~~~~
+* fix bugs in phenotype score calculation and growth rate normalization
+
+0.2.1 - 0.2.4 (July 2023 - Nov 2023)
 ~~~~~~~~~~~~~~~~~
 * Included PyPi package installation.
 * Introduced `ScreenPro` class.
