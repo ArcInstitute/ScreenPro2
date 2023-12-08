@@ -65,7 +65,7 @@ between screen arms.
 #### Drug Screen Workflow: calculate `gamma`, `rho`, and `tau` scores
 `.calculateDrugScreen` method can be used to calculate the enrichment of each gene between screen arms for a drug 
 screen experiment. This method calculates `gamma`, `rho`, and `tau` scores for each gene and adds them to the 
-`.pheno
+`.phenotypes` attribute of the `ScreenPro` object.
 
 Here is an example for running the workflow on a [CRISPRi-dual-sgRNA-screens](#crispri-dual-sgrna-screens) dataset:
 
@@ -81,6 +81,18 @@ ___
 For example, in a Decitabine CRISPRi drug screen (see Figure 1B-C in [this bioRxiv paper](https://www.biorxiv.org/content/10.1101/2022.12.14.518457v2.full)), each phenotype score represents a comparison between different arms of the screen and `rho` scores shows the main drug phenotype as illustrated here:
 <img width="800" alt="image" src="https://github.com/abearab/ScreenPro2/assets/53412130/b84b3e1f-e049-4da6-b63d-d4c72bc97cda">
 
+#### Flow cytometry based screen workflow: calculate phenotype score to compare high and low bins
+`.calculateFlowBasedScreen` method can be used to calculate the enrichment of each target between high bin vs. low bin 
+of a flow cytometry-based screen experiment. This method calculates `PhenoScore` for each target and adds them to the 
+`.phenotypes` attribute of the `ScreenPro` object.
+
+```python
+# Run the ScreenPro2 workflow for CRISPRi-dual-sgRNA-screens
+screen.calculateFlowBasedScreen(
+  low_bin='low_bin', high_bin='high_bin',
+  score_level='compare_reps'
+)
+```
 ## Supported CRISPR Screen Platforms
 One of the main goals of ScreenPro2 is to make it easy to process data from commonly used CRISPR screen platforms.
 Also, it is designed to be modular to enable easy extension to custom CRISPR screen platforms or other commonly used
