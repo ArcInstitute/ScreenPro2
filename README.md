@@ -13,8 +13,11 @@ Genomics evolves and newer CRISPR screen platforms are developed.
 For more information about the statistical methods used in ScreenPro2, please refer to the detailed documentation
 about [PhenoScore](https://screenpro2.readthedocs.io/en/latest/PhenoScore.html) module.
 
-Note that ScreenPro2 starts with a counts matrix of oligo counts (samples x oligos) so you will need to process your 
-raw sequencing data into a counts matrix before using ScreenPro2.
+> From: [A new era in functional genomics screens](https://www.nature.com/articles/s41576-021-00409-w)
+
+> Fig. 1: Common types of CRISPR screening modalities indicating advances in CRISPR methods.
+
+> <img width="1000" alt="image" src="https://github.com/GilbertLabUCSF/ScreenPro2/assets/53412130/a39400ad-b24f-4859-b6e7-b4d5f269119c">
 
 ## Installation
 ScreenPro2 is available on PyPI and can be installed with pip:
@@ -28,6 +31,8 @@ pip install git+https://github.com/abearab/ScreenPro2.git
 ```
 
 ## Usage
+Note that ScreenPro2 starts with a counts matrix of oligo counts (samples x oligos) so you will need to process your 
+raw sequencing data into a counts matrix before using ScreenPro2.
 
 ### Load Data
 First, load your data into an `AnnData` object (see [anndata](https://anndata.readthedocs.io/en/latest/index.html) for 
