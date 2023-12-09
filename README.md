@@ -38,7 +38,7 @@ pip install ScreenPro2
 ___
 For the latest version (development version) install from GitHub:
 ```bash
-pip install git+https://github.com/abearab/ScreenPro2.git
+pip install git+https://github.com/ArcInstitute/ScreenPro2.git
 ```
 
 ## Usage
