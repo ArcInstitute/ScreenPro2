@@ -1,17 +1,28 @@
 ![image](https://img.shields.io/pypi/v/screenpro2.svg) [![Documentation Status](https://readthedocs.org/projects/screenpro2/badge/?version=latest)](https://screenpro2.readthedocs.io/en/latest/?version=latest) ![Downloads](https://static.pepy.tech/badge/screenpro2)
 
 
-ScreenPro2
-==========
+# ScreenPro2
 
-<!-- The docs are available at [https://screenpro2.readthedocs.io](https://screenpro2.readthedocs.io) -->
 
+The complete docs are available at [screenpro2.rtfd.io](https://screenpro2.readthedocs.io).
+
+## Table of Contents
+- [Installation](#installation)
+- [Usage](#usage)
+  * [Load Data](#load-data)
+  * [Perform Screen Processing Analysis](#perform-screen-processing-analysis)
+    + [Drug Screen Workflow: calculate `gamma`, `rho`, and `tau` scores](#drug-screen-workflow-calculate--gamma----rho----and--tau---scores)
+    + [Flow cytometry based screen workflow: calculate phenotype score to compare high and low bins](#flow-cytometry-based-screen-workflow-calculate-phenotype-score-to-compare-high-and-low-bins)
+- [Supported CRISPR Screen Platforms](#supported-crispr-screen-platforms)
+    + [CRISPRi-dual-sgRNA-screens](#crispri-dual-sgrna-screens)
+- [License](#license)
+- [Citation](#citation)
+
+## Introduction
 This package is conceptually similar to the [**ScreenProcessing**](https://github.com/mhorlbeck/ScreenProcessing) 
 pipeline but **ScreenPro2** is designed to be more modular, flexible, and extensible as the field of Functional 
-Genomics evolves and newer CRISPR screen platforms are developed.
-
-For more information about the statistical methods used in ScreenPro2, please refer to the detailed documentation
-about [PhenoScore](https://screenpro2.readthedocs.io/en/latest/PhenoScore.html) module.
+Genomics evolves and newer CRISPR screen platforms are developed. Common CRISPR screen methods that we have 
+implemented here are illustrated in a recent review paper:
 
 > From: [A new era in functional genomics screens](https://www.nature.com/articles/s41576-021-00409-w)
 
@@ -108,7 +119,7 @@ Currently, ScreenPro2 has easy-to-use workflows for the following CRISPR screen 
 #### CRISPRi-dual-sgRNA-screens
 [Replogle et al., _eLife_ (2022)](https://elifesciences.org/articles/81856)
 
-Replogle et al. developed a CRISPRi screening platform that uses two sgRNAs per gene within a single plasmid and it has
+Replogle et al. developed a CRISPRi screening platform that uses two sgRNAs per gene within a single plasmid, and it has
 been used to perform genome-scale CRISPRi screens. If you follow the codes in the provided [GitHub repository](https://github.com/josephreplogle/CRISPRi-dual-sgRNA-screens), you 
 will end up with oligo counts and once you make `ScreenPro` object, you can use the ScreenPro2 workflow for this
 platform to calculate the enrichment of each gene between screen arms.
@@ -116,3 +127,6 @@ platform to calculate the enrichment of each gene between screen arms.
 ## License
 ScreenPro2 is licensed under the terms of the MIT license (see [LICENSE](LICENSE) for more information) and developed 
 by Abolfazl (Abe) Arab ([@abearab](https://github.com/abearab)), a Research Associate in the Gilbert lab at UCSF and Arc Institute.  
+
+## Citation
+If you use ScreenPro2 in your research, please cite the following paper.
