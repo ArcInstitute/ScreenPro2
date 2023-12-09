@@ -61,7 +61,7 @@ class ScreenPro(object):
             math=self.math, test=self.test, score_level=score_level
         )
         rho_name, rho = ps.runPhenoScore(
-            self.adata, cond1=untreated, cond2=treated, growth_rate=np.abs(db_treated - db_untreated),
+            self.adata, cond1=untreated, cond2=treated, growth_rate=np.abs(db_untreated - (1 - db_treated)),
             n_reps=self.n_reps,
             math=self.math, test=self.test, score_level=score_level
         )
