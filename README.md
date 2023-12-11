@@ -88,8 +88,11 @@ Here is an example for running the workflow on a [CRISPRi-dual-sgRNA-screens](#c
 ```python
 # Run the ScreenPro2 workflow for CRISPRi-dual-sgRNA-screens
 screen.calculateDrugScreen(
-  t0='T0', untreated='DMSO', treated='Drug', 
-  growth_rate=1, # can be replaced by the growth values (population doublings/doubling differences)
+  t0='T0',
+  untreated='DMSO',  # replace with the label for untreated condition
+  treated='Drug',    # replace with the label for treated condition
+  db_untreated=1,    # replace with doubling rate of untreated condition
+  db_treated=1,      # replace with doubling rate of treated condition
   score_level='compare_reps'
 )
 ```
