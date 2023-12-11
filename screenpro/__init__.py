@@ -60,8 +60,9 @@ class ScreenPro(object):
             n_reps=self.n_reps,
             math=self.math, test=self.test, score_level=score_level
         )
+        # TO-DO: warning / error if db_untreated and db_treated are too close, i.e. growth_rate ~= 0.
         rho_name, rho = ps.runPhenoScore(
-            self.adata, cond1=untreated, cond2=treated, growth_rate=np.abs(db_untreated - (1 - db_treated)),
+            self.adata, cond1=untreated, cond2=treated, growth_rate=np.abs(db_untreated - db_treated),
             n_reps=self.n_reps,
             math=self.math, test=self.test, score_level=score_level
         )
