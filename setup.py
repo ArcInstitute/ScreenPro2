@@ -13,7 +13,7 @@ setup(
     long_description_content_type='text/markdown',
     author='Abe Arab',
     author_email='abea@arcinstitute.org',
-    url='https://github.com/abearab/ScreenPro2',
+    url='https://github.com/ArcInstitute/ScreenPro2',
     packages=find_packages(include=['screenpro', 'screenpro.*']),
     version=__version__,
     classifiers=[
