@@ -5,15 +5,15 @@ channels:
   - bioconda
 dependencies:
   - python=3.9
-  - anndata
   - scanpy
   - python-igraph
   - leidenalg
+  - pandas<2.0
+  - anndata
   - numpy
-  - pandas
   - scipy
   - biopython
-  - matplotlib
+  - matplotlib<3.7
   - seaborn
   - ipykernel
   - mscorefonts
