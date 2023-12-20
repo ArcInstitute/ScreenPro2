@@ -2,6 +2,25 @@ import pandas as pd
 import numpy as np
 
 
+def find_low_counts(adata, filter_type='either', minimum_reads=50):
+    # Do you require greater than or equal to the minimum reads
+    # for both experiments in a comparison or either experiment?
+    # Default is either, other option is all
+    count_bin = adata.X >= minimum_reads
+    if filter_type == 'either':
+        out = adata[:, count_bin.any(axis=0)].copy()
+    elif filter_type == 'all':
+        out = adata[:, count_bin.all(axis=0)].copy()
+
+    # print the number of removed variables
+    n_removed = adata.shape[1] - out.shape[1]
+    print(
+        f"{n_removed} variables with less than {minimum_reads} reads in {filter_type} replicates / experiment"
+    )
+
+    adata.var['low_count'] = ~adata.var.index.isin(out.var.index.to_list())
+
+
 def ann_score_df(df_in, up_hit='resistance_hit', down_hit='sensitivity_hit', ctrl_label='non-targeting', threshold=10):
     """
     Annotate score dataframe with hit labels using given `threshold`
