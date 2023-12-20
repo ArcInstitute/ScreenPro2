@@ -112,7 +112,7 @@ def addPseudoCount():
     #         'Pseudocount behavior not recognized or not implemented')
 
 
-def getDelta(x, y, math, ave):
+def calculateDelta(x, y, math, ave):
     """
     Calculate log ratio of y / x.
     `ave` == 'all' (i.e. averaged across all values, oligo and replicates)
@@ -151,7 +151,7 @@ def getDelta(x, y, math, ave):
             return np.mean(np.log1p(y) - np.log1p(x), axis=1)
 
 
-def getPhenotypeScore(x, y, x_ctrl, y_ctrl, growth_rate, math, ave):
+def calculatePhenotypeScore(x, y, x_ctrl, y_ctrl, growth_rate, math, ave):
     """
     Calculate phenotype score normalized by negative control and growth rate.
     Args:
@@ -166,54 +166,58 @@ def getPhenotypeScore(x, y, x_ctrl, y_ctrl, growth_rate, math, ave):
         np.array: array of scores
     """
     # calculate control median and std
-    ctrl_median = np.median(getDelta(x=x_ctrl, y=y_ctrl, math=math, ave=ave))
+    ctrl_median = np.median(calculateDelta(x=x_ctrl, y=y_ctrl, math=math, ave=ave))
 
     # calculate delta
-    delta = getDelta(x=x, y=y, math=math, ave=ave)
+    delta = calculateDelta(x=x, y=y, math=math, ave=ave)
 
     # calculate score
     return (delta - ctrl_median) / growth_rate
 
 
-def getZScorePhenotypeScore(x, y, x_ctrl, y_ctrl, growth_rate, math, ave):
+def calculateZScorePhenotypeScore(x, y, x_ctrl, y_ctrl, growth_rate, math, ave):
     pass
     # # calculate control median and std
-    # ctrl_std = np.std(getDelta(x=x_ctrl, y=y_ctrl, math=math, ave=ave))
-    # ctrl_median = np.median(getDelta(x=x_ctrl, y=y_ctrl, math=math, ave=ave))
+    # ctrl_std = np.std(calculateDelta(x=x_ctrl, y=y_ctrl, math=math, ave=ave))
+    # ctrl_median = np.median(calculateDelta(x=x_ctrl, y=y_ctrl, math=math, ave=ave))
     #
     # # calculate delta
-    # delta = getDelta(x=x, y=y, math=math, ave=ave)
+    # delta = calculateDelta(x=x, y=y, math=math, ave=ave)
     #
     # # calculate score
     # return ((delta - ctrl_median) / growth_rate) / ctrl_std
 
 
-def getReplicateScore(screen, x_label, y_label, growth_rate=1, ctrl_label='negCtrl'):
+def runPhenoScoreForReplicate(screen, x_label, y_label, score, growth_factor_table, ctrl_label='negCtrl'):
     """
     Calculate phenotype score for each pair of replicates.
     Args:
         screen: ScreenPro object
         x_label: name of the first condition in column `condition` of `screen.adata.obs`
         y_label: name of the second condition in column `condition` of `screen.adata.obs`
-        growth_rate: growth rate term to use for normalizing phenotype score
+        score: score to use for calculating phenotype score, i.e. 'gamma', 'tau', or 'rho'
+        growth_factor_table: dataframe of growth factors, i.e. output from `getGrowthFactors` function
         ctrl_label: string to identify labels of negative control oligos
 
     Returns:
         pd.DataFrame: dataframe of phenotype scores
     """
-    adata_ctrl = screen.adata[:, screen.adata.var.targetType.eq(ctrl_label)].copy()
+    adat = screen.adata.copy()
+
+    adat_ctrl = adat[:, adat.var.targetType.eq(ctrl_label)].copy()
 
     results = {}
 
-    for replicate in screen.adata.obs.replicate.unique():
-        res = getPhenotypeScore(
-            x=screen.adata[screen.adata.obs.query(f'condition == "{x_label}" & replicate == {replicate}').index].X,
-            y=screen.adata[screen.adata.obs.query(f'condition == "{y_label}" & replicate == {replicate}').index].X,
+    for replicate in adat.obs.replicate.unique():
+        res = calculatePhenotypeScore(
+            x=adat[adat.obs.query(f'condition == "{x_label}" & replicate == {str(replicate)}').index].X,
+            y=adat[adat.obs.query(f'condition == "{y_label}" & replicate == {str(replicate)}').index].X,
 
-            x_ctrl=adata_ctrl[adata_ctrl.obs.query(f'condition == "{x_label}" & replicate == {replicate}').index].X,
-            y_ctrl=adata_ctrl[adata_ctrl.obs.query(f'condition == "{y_label}" & replicate == {replicate}').index].X,
+            x_ctrl=adat_ctrl[adat_ctrl.obs.query(f'condition == "{x_label}" & replicate == {str(replicate)}').index].X,
+            y_ctrl=adat_ctrl[adat_ctrl.obs.query(f'condition == "{y_label}" & replicate == {str(replicate)}').index].X,
 
-            growth_rate=growth_rate,
+            growth_rate=growth_factor_table.query(f'score=="{score}" & replicate=={replicate}')['growth_factor'].values[
+                0],
             math=screen.math,
             ave='row'  # there is only one column so `row` option here is equivalent to the value before averaging.
         )
@@ -222,7 +226,7 @@ def getReplicateScore(screen, x_label, y_label, growth_rate=1, ctrl_label='negCt
 
     out = pd.DataFrame(
         results,
-        index=screen.adata.var.index
+        index=adat.var.index
     )
 
     return out
@@ -314,7 +318,7 @@ def matrixTest(x, y, x_ctrl, y_ctrl, math, ave_reps, test = 'ttest', growth_rate
     ave = 'col' if ave_reps else 'all'
 
     # calculate growth score
-    scores = getPhenotypeScore(
+    scores = calculatePhenotypeScore(
         x = x, y = y, x_ctrl = x_ctrl, y_ctrl = y_ctrl,
         growth_rate = growth_rate, math = math,
         ave = ave
