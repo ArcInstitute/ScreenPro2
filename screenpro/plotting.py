@@ -3,7 +3,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib
 from .utils import ann_score_df
-# import scanpy as sc
+import scanpy as sc
 
 # variables
 almost_black = '#111111'
@@ -160,32 +160,27 @@ def label_resistance_hit(ax, df_in, label, threshold, size=2, size_txt=None, t_x
                     color='black', size=size_txt)
 
 
-def plot_replicate_scatter(ax, adata, x, y, title):
-    """Scatter plot of sample replicates for quality control
-    - x and y are sample names in `adata.obs.index`.
-    - counts are automatically log1p transformed
-    """
-    pass
-    # bdata = adata[[x, y], :].copy()
-    #
-    # bdata.obs.index = [f'Replicate {str(r)}' for r in bdata.obs.replicate.to_list()]
-    # x_lab, y_lab = [f'Replicate {str(r)}' for r in bdata.obs.replicate.to_list()]
-    #
-    # sc.pp.log1p(bdata)
-    # sc.pl.scatter(
-    #     bdata,
-    #     x_lab, y_lab,
-    #     legend_fontsize='xx-large',
-    #     palette=[almost_black, '#BFBFBF'],
-    #     color='targetType',
-    #     title=title,
-    #     size=5,
-    #     show=False,
-    #     ax=ax
-    # )
-    # ax.set_ylim(-1, 11)
-    # ax.set_xlim(-1, 11)
-    # ax.tick_params(axis='both', labelsize=10)
-    # ax.get_legend().remove()
-    #
-    # ax.grid(False)
+def plotReplicate_scatter(ax, adata, x, y, title, min_val=-2, max_val=2):
+    bdata = adata[[x, y], :].copy()
+
+    bdata.obs.index = [f'Replicate {str(r)}' for r in bdata.obs.replicate.to_list()]
+    x_lab, y_lab = [f'Replicate {str(r)}' for r in bdata.obs.replicate.to_list()]
+
+    sc.pp.log1p(bdata)
+    sc.pl.scatter(
+        bdata,
+        x_lab, y_lab,
+        legend_fontsize='xx-large',
+        palette=[almost_black, '#BFBFBF'],
+        color='targetType',
+        title=title,
+        size=5,
+        show=False,
+        ax=ax
+    )
+    ax.set_ylim(min_val, max_val)
+    ax.set_xlim(min_val, max_val)
+    ax.tick_params(axis='both', labelsize=10)
+    ax.get_legend().remove()
+
+    ax.grid(False)
