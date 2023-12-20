@@ -188,6 +188,46 @@ def getZScorePhenotypeScore(x, y, x_ctrl, y_ctrl, growth_rate, math, ave):
     # return ((delta - ctrl_median) / growth_rate) / ctrl_std
 
 
+def getReplicateScore(screen, x_label, y_label, growth_rate=1, ctrl_label='negCtrl'):
+    """
+    Calculate phenotype score for each pair of replicates.
+    Args:
+        screen: ScreenPro object
+        x_label: name of the first condition in column `condition` of `screen.adata.obs`
+        y_label: name of the second condition in column `condition` of `screen.adata.obs`
+        growth_rate: growth rate term to use for normalizing phenotype score
+        ctrl_label: string to identify labels of negative control oligos
+
+    Returns:
+        pd.DataFrame: dataframe of phenotype scores
+    """
+    adata_ctrl = screen.adata[:, screen.adata.var.targetType.eq(ctrl_label)].copy()
+
+    results = {}
+
+    for replicate in screen.adata.obs.replicate.unique():
+        res = getPhenotypeScore(
+            x=screen.adata[screen.adata.obs.query(f'condition == "{x_label}" & replicate == {replicate}').index].X,
+            y=screen.adata[screen.adata.obs.query(f'condition == "{y_label}" & replicate == {replicate}').index].X,
+
+            x_ctrl=adata_ctrl[adata_ctrl.obs.query(f'condition == "{x_label}" & replicate == {replicate}').index].X,
+            y_ctrl=adata_ctrl[adata_ctrl.obs.query(f'condition == "{y_label}" & replicate == {replicate}').index].X,
+
+            growth_rate=growth_rate,
+            math=screen.math,
+            ave='row'  # there is only one column so `row` option here is equivalent to the value before averaging.
+        )
+
+        results.update({f'replicate_{replicate}': res})
+
+    out = pd.DataFrame(
+        results,
+        index=screen.adata.var.index
+    )
+
+    return out
+
+
 def generatePseudoGeneLabels(adata, num_pseudogenes=None, ctrl_label='negCtrl'):
     """
     Generate new labels per `num_pseudogenes` randomly selected non targeting oligo in `adata.var`.
