@@ -3,9 +3,17 @@ import numpy as np
 
 
 def find_low_counts(adata, filter_type='either', minimum_reads=50):
-    # Do you require greater than or equal to the minimum reads
-    # for both experiments in a comparison or either experiment?
-    # Default is either, other option is all
+    """
+    Label variables with low counts in either or all samples.
+
+    Args:
+        adata: AnnData object
+        filter_type: either or all
+        minimum_reads:
+
+    Returns: it's adding a True/False column to `adata.var['low_count']`
+        None
+    """
     count_bin = adata.X >= minimum_reads
     if filter_type == 'either':
         out = adata[:, count_bin.any(axis=0)].copy()
