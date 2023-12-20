@@ -32,7 +32,7 @@ implemented here are illustrated in a recent review paper:
 > <img width="1000" alt="image" src="https://github.com/GilbertLabUCSF/ScreenPro2/assets/53412130/a39400ad-b24f-4859-b6e7-b4d5f269119c">
 
 ## Installation
-ScreenPro2 is available on PyPI and can be installed with pip:
+ScreenPro2 is available on [PyPI](https://pypi.org/project/ScreenPro2/) and can be installed with pip:
 ```bash
 pip install ScreenPro2
 ```
