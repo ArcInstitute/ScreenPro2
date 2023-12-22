@@ -60,7 +60,7 @@ def runPhenoScore(adata, cond1, cond2, math, test, score_level,
         # Calculate the adjusted p-values using the Benjamini-Hochberg method
         if p_values is None:
             raise ValueError('p_values is None')
-        _, adj_pvalues, _, _ = multipletests(p_values, alpha=0.05, method='fdr_bh')
+        _, adj_pvalues, _, _ = multipletests(p_values.fillna(1), alpha=0.05, method='fdr_bh')
         # get targets
         targets = adata.var.index.str.split('_[-,+]_').str[0].to_list()
         # combine results into a dataframe
