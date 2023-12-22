@@ -18,5 +18,6 @@ dependencies:
   - mscorefonts
   - pip
   - pip:
+      - numba
       - pydeseq2
       - watermark
