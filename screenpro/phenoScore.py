@@ -70,6 +70,7 @@ def calculatePhenotypeScore(x, y, x_ctrl, y_ctrl, growth_rate, math, ave):
     # calculate score
     return (delta - ctrl_median) / growth_rate
 
+
 def matrixTest(x, y, x_ctrl, y_ctrl, math, ave_reps, test = 'ttest', growth_rate = 1):
     """
     Calculate phenotype score and p-values comparing `y` vs `x` matrices.
