@@ -8,7 +8,7 @@ Welcome to ScreenPro2's documentation!
    README
    usage
    load
-   PhenoScore
+   phenotype
    utils
    history
 

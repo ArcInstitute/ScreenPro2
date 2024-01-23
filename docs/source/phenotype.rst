@@ -1,4 +1,4 @@
-PhenoScore module
+Phenotype calculation modules
 =======================
 
 Log ratio of :math:`y` vs :math:`x`:
@@ -54,6 +54,11 @@ Statistical test comparing :math:`y` vs :math:`x` per each target, :math:`T`:
    :show-inheritance:
 
 .. automodule:: screenpro.phenoStats
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+.. automodule:: screenpro.plotting
    :members:
    :undoc-members:
    :show-inheritance:
