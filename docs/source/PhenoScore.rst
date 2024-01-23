@@ -53,5 +53,11 @@ Statistical test comparing :math:`y` vs :math:`x` per each target, :math:`T`:
    :undoc-members:
    :show-inheritance:
 
+.. automodule:: screenpro.phenoStats
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+
 .. _`Dependent t-test for paired samples`: https://en.wikipedia.org/wiki/Student%27s_t-test#Dependent_t-test_for_paired_samples
 .. _`ttest_rel, a scipy module`: https://docs.scipy.org/doc/scipy/reference/generated/scipy.stats.ttest_rel.html

@@ -9,6 +9,7 @@ Welcome to ScreenPro2's documentation!
    usage
    load
    PhenoScore
+   utils
    history
 
 Indices and tables
