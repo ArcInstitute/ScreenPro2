@@ -154,17 +154,23 @@ def runPhenoScore(adata, cond1, cond2, math, test, score_level,
         adj_p_values = getFDR(p_values)
         # get targets
         targets = adata.var.index.str.split('_[-,+]_').str[0].to_list()
+        
         # combine results into a dataframe
         result = pd.concat([
             pd.Series(targets, index=adata.var.index, name='target'),
             pd.Series(scores, index=adata.var.index, name='score'),
-            pd.Series(p_values, index=adata.var.index, name=f'{test} pvalue'),
-            pd.Series(adj_p_values, index=adata.var.index, name='BH adj_pvalue'),
         ], axis=1)
+        # z-score normalization
+        result['z_score'] = calculateZScorePhenotypeScore(result, ctrl_label=ctrl_label)
+        # add p-values
+        result[f'{test} pvalue'] = p_values
+        result['BH adj_pvalue'] = adj_p_values
 
         return result_name, result
+    
     elif score_level in ['compare_oligos', 'compare_oligos_and_reps']:
         return None
+    
     else:
         raise ValueError(f'score_level "{score_level}" not recognized')
 
@@ -203,20 +209,23 @@ def addPseudoCount():
     #         'Pseudocount behavior not recognized or not implemented')
 
 
-def calculateZScorePhenotypeScore(x, y, x_ctrl, y_ctrl, growth_rate, math, ave):
-    pass
-    # # calculate control median and std
-    # ctrl_std = np.std(calculateDelta(x=x_ctrl, y=y_ctrl, math=math, ave=ave))
-    # ctrl_median = np.median(calculateDelta(x=x_ctrl, y=y_ctrl, math=math, ave=ave))
-    #
-    # # calculate delta
-    # delta = calculateDelta(x=x, y=y, math=math, ave=ave)
-    #
-    # # calculate score
-    # return ((delta - ctrl_median) / growth_rate) / ctrl_std
+def calculateZScorePhenotypeScore(score_df,ctrl_label='negCtrl'):
+    """Calculate z-score normalized phenotype score.
+    Args:
+        score_df (pd.DataFrame): dataframe of scores that includes `score` and `targetType` columns
+        ctrl_label (str): control label, default is 'negCtrl'
+    Returns:
+        pd.Series: z-score normalized phenotype score
+    """
+    # calculate control median and std
+    ctrl_std = score_df[score_df.targetType.eq(ctrl_label)].score.std()
+    # z-score normalization
+    out = score_df.score / ctrl_std
+
+    return out
 
 
-def runPhenoScoreForReplicate(screen, x_label, y_label, score, growth_factor_table, ctrl_label='negCtrl'):
+def runPhenoScoreForReplicate(screen, x_label, y_label, score, growth_factor_table, get_z_score=False, ctrl_label='negCtrl'):
     """
     Calculate phenotype score for each pair of replicates.
     Args:
@@ -225,6 +234,7 @@ def runPhenoScoreForReplicate(screen, x_label, y_label, score, growth_factor_tab
         y_label: name of the second condition in column `condition` of `screen.adata.obs`
         score: score to use for calculating phenotype score, i.e. 'gamma', 'tau', or 'rho'
         growth_factor_table: dataframe of growth factors, i.e. output from `getGrowthFactors` function
+        get_z_score: boolean to calculate z-score normalized phenotype score instead of regular score (default is False)
         ctrl_label: string to identify labels of negative control oligos
 
     Returns:
@@ -249,6 +259,12 @@ def runPhenoScoreForReplicate(screen, x_label, y_label, score, growth_factor_tab
             math=screen.math,
             ave='row'  # there is only one column so `row` option here is equivalent to the value before averaging.
         )
+
+        if get_z_score:
+            res = calculateZScorePhenotypeScore(
+                pd.DataFrame({'score':res,'targetType':adat.var.targetType},index=adat.var.index),
+                ctrl_label=ctrl_label
+            )
 
         results.update({f'replicate_{replicate}': res})
 
