@@ -104,7 +104,8 @@ def matrixTest(x, y, x_ctrl, y_ctrl, math, ave_reps, test = 'ttest', growth_rate
 
 
 def runPhenoScore(adata, cond1, cond2, math, test, score_level,
-                  growth_rate=1, n_reps=2, ctrl_label='negCtrl'):
+                  growth_rate=1, n_reps=2, 
+                  get_z_score=False,ctrl_label='negCtrl'):
     """
     Calculate phenotype score and p-values when comparing `cond2` vs `cond1`.
     Args:
@@ -116,6 +117,7 @@ def runPhenoScore(adata, cond1, cond2, math, test, score_level,
         score_level (str): score level
         growth_rate (int): growth rate
         n_reps (int): number of replicates
+        get_z_score (bool): boolean to calculate z-score normalized phenotype score and add as a new column (default is False)
         ctrl_label (str): control label
     Returns:
         str: result name
@@ -160,8 +162,9 @@ def runPhenoScore(adata, cond1, cond2, math, test, score_level,
             pd.Series(targets, index=adata.var.index, name='target'),
             pd.Series(scores, index=adata.var.index, name='score'),
         ], axis=1)
-        # z-score normalization
-        result['z_score'] = calculateZScorePhenotypeScore(result, ctrl_label=ctrl_label)
+        if get_z_score:
+            # z-score normalization
+            result['z_score'] = calculateZScorePhenotypeScore(result, ctrl_label=ctrl_label)
         # add p-values
         result[f'{test} pvalue'] = p_values
         result['BH adj_pvalue'] = adj_p_values
