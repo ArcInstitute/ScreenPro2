@@ -27,6 +27,8 @@ def read_records(file_path, seq_only=True):
     return records
 
 
+import concurrent.futures
+
 def fastq_to_dataframe(fastq_file_path: str, num_threads: int, seq_only=True) -> pl.DataFrame:
     """
     Reads a FASTQ file and returns a Polars DataFrame with the following columns:
@@ -37,20 +39,22 @@ def fastq_to_dataframe(fastq_file_path: str, num_threads: int, seq_only=True) ->
     t0 = time()
     print('load FASTQ file as a Polars DataFrame')
 
-    # Use joblib to parallelize the reading of the FASTQ file
-    records = Parallel(n_jobs=num_threads)(delayed(read_records)(fastq_file_path) for i in range(num_threads))
-
-    # Flatten the list of records
-    results = [record for sublist in records for record in sublist]
+    # Read the FASTQ file using read_records function
+    records = read_records(fastq_file_path, seq_only)
 
     # Create a Polars DataFrame from the list of tuples
     if seq_only:
-        df = pd.DataFrame(results, columns=['seq'], dtype='str')
+        df = pd.DataFrame(records, columns=['seq'], dtype='str')
     else:
-        df = pd.DataFrame(results, columns=['id', 'seq', 'qual'], dtype='str')
+        df = pd.DataFrame(records, columns=['id', 'seq', 'qual'], dtype='str')
     df = pl.from_pandas(df)
 
     print("done in %0.3fs" % (time() - t0))
+
+    # Enable parallel execution using multiple threads
+    with concurrent.futures.ThreadPoolExecutor(max_workers=num_threads) as executor:
+        df = df.with_workers(num_threads)
+        df = df.lazy()
 
     return df
 
