@@ -254,8 +254,7 @@ def runPhenoScoreForReplicate(screen, x_label, y_label, score, growth_factor_tab
             x_ctrl=adat_ctrl[adat_ctrl.obs.query(f'condition == "{x_label}" & replicate == {str(replicate)}').index].X,
             y_ctrl=adat_ctrl[adat_ctrl.obs.query(f'condition == "{y_label}" & replicate == {str(replicate)}').index].X,
 
-            growth_rate=growth_factor_table.query(f'score=="{score}" & replicate=={replicate}')['growth_factor'].values[
-                0],
+            growth_rate=growth_factor_table.query(f'score=="{score}" & replicate=={replicate}')['growth_factor'].values[0],
             math=screen.math,
             ave='row'  # there is only one column so `row` option here is equivalent to the value before averaging.
         )
