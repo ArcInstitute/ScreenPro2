@@ -1,11 +1,11 @@
 '''Scripts to work with NGS data
 '''
 
-import gzip
 from time import time
 import pandas as pd
 import polars as pl
-import concurrent.futures
+import biobear as bb
+from biobear.compression import Compression
 
 
 def fastq_to_dataframe(fastq_file_path: str, num_threads: int, seq_only=True) -> pl.DataFrame:
@@ -18,19 +18,11 @@ def fastq_to_dataframe(fastq_file_path: str, num_threads: int, seq_only=True) ->
     t0 = time()
     print('load FASTQ file as a Polars DataFrame')
 
-    # TODO: Add support using biobear
-    # # Read the FASTQ file using read_records function
-    # records = read_records(fastq_file_path, seq_only)
-
-    # # Create a Polars DataFrame from the list of tuples
-    # if seq_only:
-    #     df = pl.Series(records,dtype = pl.String).lazy()
-    #     # df.columns = ['seq']
-    # else:
-    #     df = pl.DataFrame(records).lazy()
-    #     df.columns = ['id', 'seq', 'qual']
-    #     df.dtypes = pl.String
-
+    if '.gz' in fastq_file_path:
+        df = bb.FastqReader(fastq_file_path,compression=Compression.GZIP).to_polars()
+    else:
+        df = bb.FastqReader(fastq_file_path).to_polars()
+    print(df.head())
 
     print("done in %0.3fs" % (time() - t0))
 
