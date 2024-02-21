@@ -41,9 +41,9 @@ def fastq_to_count_unique_seq(fastq_file_path: str, n_bp_from_5p= None, n_bp_fro
     print('Count unique sequences')
 
     if n_bp_from_5p is not None:
-        df['sequence'] = df['sequence'].str.slice(n_bp_from_5p)
+        df.sequence = df.get_column('sequence').str.slice(n_bp_from_5p)
     if n_bp_from_3p is not None:
-        df['sequence'] = df['sequence'].str.slice(-n_bp_from_3p)
+        df.sequence = df.get_column('sequence').str.slice(-n_bp_from_3p)
 
     df_count = df.groupby('sequence').count()
 
