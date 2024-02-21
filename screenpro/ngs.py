@@ -10,10 +10,11 @@ from biobear.compression import Compression
 
 def fastq_to_dataframe(fastq_file_path: str) -> pl.DataFrame:
     """
-    Reads a FASTQ file and returns a Polars DataFrame with the following columns:
-    - 'id': the sequence ID (e.g. "@SEQ_ID")
-    - 'seq': the nucleotide sequence
-    - 'qual': the sequence quality scores
+    Reads a FASTQ file and returns a four columns Polars DataFrame
+    - 'name': the name of the sequence
+    - 'description': the description line 
+    - 'sequence': the nucleotide sequence
+    - 'quality_scores': the sequence quality scores
     """
     t0 = time()
     print('load FASTQ file as a Polars DataFrame')
@@ -26,7 +27,7 @@ def fastq_to_dataframe(fastq_file_path: str) -> pl.DataFrame:
 
     print("done in %0.3fs" % (time() - t0))
 
-    # return df
+    return df
 
 
 def fastq_to_count_unique_seq(fastq_file_path: str, num_threads: int) -> pl.DataFrame:
@@ -35,7 +36,7 @@ def fastq_to_count_unique_seq(fastq_file_path: str, num_threads: int) -> pl.Data
     t0 = time()
     print('Count unique sequences')
 
-    df_count = df.groupby('seq').count()
+    df_count = df.groupby('sequence').count()
 
     print("done in %0.3fs" % (time() - t0))
 
@@ -45,9 +46,9 @@ def fastq_to_count_unique_seq(fastq_file_path: str, num_threads: int) -> pl.Data
 def map_sample_counts_to_library(library, sample):
     counts_df = library.copy()
 
-    ol = list(set(library.index.tolist()) & set(sample['seq'].to_list()))
+    ol = list(set(library.index.tolist()) & set(sample['sequence'].to_list()))
 
     counts_df['counts'] = 0
-    counts_df.loc[ol, 'counts'] = sample.to_pandas().set_index('seq').loc[ol, 'count']
+    counts_df.loc[ol, 'counts'] = sample.to_pandas().set_index('sequence').loc[ol, 'count']
 
     return counts_df.reset_index(drop=True).set_index('oligoname')
