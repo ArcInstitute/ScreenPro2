@@ -14,10 +14,13 @@ dependencies:
   - scipy
   - matplotlib<3.7
   - seaborn
+  - pyarrow
   - ipykernel
   - mscorefonts
   - pip
   - pip:
+      - polars
+      - biobear
       - numba
       - pydeseq2
       - watermark
