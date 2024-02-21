@@ -8,7 +8,7 @@ import biobear as bb
 from biobear.compression import Compression
 
 
-def fastq_to_dataframe(fastq_file_path: str, num_threads: int, seq_only=True) -> pl.DataFrame:
+def fastq_to_dataframe(fastq_file_path: str) -> pl.DataFrame:
     """
     Reads a FASTQ file and returns a Polars DataFrame with the following columns:
     - 'id': the sequence ID (e.g. "@SEQ_ID")
