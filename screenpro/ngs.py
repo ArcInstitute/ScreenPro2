@@ -72,8 +72,17 @@ def map_sample_counts_to_library(library, sample):
     counts_df = library.copy()
 
     overlap = list(set(library.index.tolist()) & set(sample['sequence'].to_list()))
+    non_overlap = list(set(sample['sequence'].to_list()) - set(library.index.tolist()))
+    
+    # sum counts of overlapping sequences
+    n_mapped_counts = sample.set_index('sequence').loc[overlap, 'count'].sum()
+    n_unmapped_counts = sample.set_index('sequence').loc[non_overlap, 'count'].sum()
+
+    # print number of overlapping and non-overlapping sequences
+    print(f"% mapped sequences: {n_mapped_counts/sample['count'].sum():.2f}")
+    print(f"% non-mapped sequences: {n_unmapped_counts/sample['count'].sum():.2f}")
 
     counts_df['counts'] = 0
     counts_df.loc[overlap, 'counts'] = sample.set_index('sequence').loc[overlap, 'count']
 
-    return counts_df.reset_index(drop=True).set_index('oligoname')
+    return counts_df
