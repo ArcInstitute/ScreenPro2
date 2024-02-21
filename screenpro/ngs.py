@@ -60,6 +60,8 @@ def fastq_to_count_unique_seq(fastq_file_path: str, n_bp_from_5p= None, n_bp_fro
     df = df.drop(['name','description','quality_scores'])
     
     df_count = df.group_by('sequence').len()
+    # rename "len" column to "count"
+    df_count = df_count.rename({"len":"count"})
 
     print("done in %0.3fs" % (time() - t0))
 
