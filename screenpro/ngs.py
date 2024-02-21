@@ -23,7 +23,6 @@ def fastq_to_dataframe(fastq_file_path: str) -> pl.DataFrame:
         df = bb.FastqReader(fastq_file_path,compression=Compression.GZIP).to_polars()
     else:
         df = bb.FastqReader(fastq_file_path).to_polars()
-    print(df.head())
 
     print("done in %0.3fs" % (time() - t0))
 
