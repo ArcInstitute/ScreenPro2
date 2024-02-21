@@ -29,8 +29,8 @@ def fastq_to_dataframe(fastq_file_path: str) -> pl.DataFrame:
     return df
 
 
-def fastq_to_count_unique_seq(fastq_file_path: str, num_threads: int) -> pl.DataFrame:
-    df = fastq_to_dataframe(fastq_file_path, num_threads)
+def fastq_to_count_unique_seq(fastq_file_path: str) -> pl.DataFrame:
+    df = fastq_to_dataframe(fastq_file_path)
 
     t0 = time()
     print('Count unique sequences')
