@@ -1,37 +1,47 @@
 '''Scripts to work with NGS data
 '''
 
+import gzip
 from time import time
 import pandas as pd
 import polars as pl
 import biobear as bb
+from Bio import SeqIO	
 from biobear.compression import Compression
 
 
-def fastq_to_dataframe(fastq_file_path: str) -> pl.DataFrame:
-    """
-    Reads a FASTQ file and returns a four columns Polars DataFrame
-    - 'name': the name of the sequence
-    - 'description': the description line 
-    - 'sequence': the nucleotide sequence
-    - 'quality_scores': the sequence quality scores
+def read_records(file_path):	
+    if file_path.endswith('.gz'):	
+        handle = gzip.open(file_path, "rt")	
+    else:	
+        handle = open(file_path, "rt")	
 
-    Parameters
-    ----------
-    fastq_file_path : str
-        The path to the FASTQ file
-    """
+    records = []	
+    for record in SeqIO.parse(handle, "fastq"): 
+        records.append((str(record.id), str(record.description), str(record.seq), str(record.letter_annotations["phred_quality"])))
+    handle.close()	
+
+    return records	
+
+
+def fastq_to_dataframe(fastq_file_path: str, engine='biopython') -> pl.DataFrame: 
     t0 = time()
     print('load FASTQ file as a Polars DataFrame')
 
-    if '.gz' in fastq_file_path:
-        df = bb.FastqReader(fastq_file_path,compression=Compression.GZIP).to_polars()
-    else:
-        df = bb.FastqReader(fastq_file_path).to_polars()
+    # Read the FASTQ file using read_records function
+    records = read_records(fastq_file_path)
+    
+    # Create a Polars DataFrame from the list of tuples
+    if engine == 'biopython':
+        df = pd.DataFrame(records, columns=['name', 'description', 'sequence', 'quality_scores'], dtype='str')
+        df = pl.from_pandas(df)	
+    elif engine == 'biobear':
+        if '.gz' in fastq_file_path:
+            df = bb.FastqReader(fastq_file_path,compression=Compression.GZIP).to_polars()
+        else:
+            df = bb.FastqReader(fastq_file_path).to_polars()
 
     print("done in %0.3fs" % (time() - t0))
-
-    return df
 
 
 def fastq_to_count_unique_seq(fastq_file_path: str, slice_seq=None) -> pl.DataFrame:
