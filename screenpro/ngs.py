@@ -44,8 +44,8 @@ def fastq_to_dataframe(fastq_file_path: str, engine='biopython') -> pl.DataFrame
     print("done in %0.3fs" % (time() - t0))
 
 
-def fastq_to_count_unique_seq(fastq_file_path: str, slice_seq=None) -> pl.DataFrame:
-    df = fastq_to_dataframe(fastq_file_path)
+def fastq_to_count_unique_seq(fastq_file_path: str, engine: str='biopython', slice_seq: list=None) -> pl.DataFrame:
+    df = fastq_to_dataframe(fastq_file_path, engine=engine)
 
     t0 = time()
     print('Count unique sequences')
@@ -89,3 +89,4 @@ def map_sample_counts_to_library(library, sample):
     counts_df.loc[overlap, 'counts'] = sample.set_index('sequence').loc[overlap, 'count']
 
     return counts_df
+
