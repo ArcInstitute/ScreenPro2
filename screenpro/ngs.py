@@ -7,8 +7,7 @@ from time import time
 import pandas as pd
 import polars as pl
 import biobear as bb
-from Bio import SeqIO	
-from biobear.compression import Compression
+from Bio import SeqIO
 
 
 def read_records(file_path):	
@@ -38,7 +37,7 @@ def fastq_to_dataframe(fastq_file_path: str, engine='biopython') -> pl.DataFrame
         df = pl.from_pandas(df)	
     elif engine == 'biobear':
         if '.gz' in fastq_file_path:
-            df = bb.FastqReader(fastq_file_path,compression=Compression.GZIP).to_polars()
+            df = bb.FastqReader(fastq_file_path,compression=bb.Compression.GZIP).to_polars()
         else:
             df = bb.FastqReader(fastq_file_path).to_polars()
 
