@@ -1,74 +1,50 @@
 '''Scripts to work with NGS data
 '''
 
-import gzip
 import click
 from time import time
 import pandas as pd
 import polars as pl
 import biobear as bb
-from Bio import SeqIO
 
 
-def read_records(file_path):	
-    if file_path.endswith('.gz'):	
-        handle = gzip.open(file_path, "rt")	
-    else:	
-        handle = open(file_path, "rt")	
-
-    records = []	
-    for record in SeqIO.parse(handle, "fastq"): 
-        records.append((str(record.id), str(record.description), str(record.seq), str(record.letter_annotations["phred_quality"])))
-    handle.close()	
-
-    return records	
-
-
-def fastq_to_dataframe(fastq_file_path: str, engine='biopython') -> pl.DataFrame: 
+def load_fastq(fastq_file_path: str, verbose: bool=False):
     t0 = time()
-    print('load FASTQ file as a Polars DataFrame')
+    if verbose: print('load FASTQ file ...')
 
     # Read the FASTQ file using read_records function
-    records = read_records(fastq_file_path)
-    
-    # Create a Polars DataFrame from the list of tuples
-    if engine == 'biopython':
-        df = pd.DataFrame(records, columns=['name', 'description', 'sequence', 'quality_scores'], dtype='str')
-        df = pl.from_pandas(df)	
-    elif engine == 'biobear':
-        if '.gz' in fastq_file_path:
-            df = bb.FastqReader(fastq_file_path,compression=bb.Compression.GZIP).to_polars()
-        else:
-            df = bb.FastqReader(fastq_file_path).to_polars()
+    if '.gz' in fastq_file_path:
+        df = bb.FastqReader(fastq_file_path,compression=bb.Compression.GZIP)
+    else:
+        df = bb.FastqReader(fastq_file_path).to_polars()
 
-    print("done in %0.3fs" % (time() - t0))
+    if verbose: print("done in %0.3fs" % (time() - t0))
 
     return df
 
 
-def fastq_to_count_unique_seq(fastq_file_path: str, engine: str='biopython', slice_seq: list=None) -> pl.DataFrame:
-    df = fastq_to_dataframe(fastq_file_path, engine=engine)
-
-    t0 = time()
-    print('Count unique sequences')
-
-    # keep full sequence or slice it
-    if slice_seq:
-        # make a copy of the original sequence column into a new column called 'fullsequence'
-        df = df.rename({"sequence":"fullsequence"})
-        
-        df = df.with_columns(
-            sequence = df.get_column('fullsequence').str.slice(slice_seq[0], slice_seq[1])
-        )
-        
-        # drop fullsequence column
-        df = df.drop('fullsequence')
-        
-    df = df.drop(['name','description','quality_scores'])
+def fastq_to_count_unique_seq(fastq_file_path:str, trim5p_start:int=None, trim5p_length:int=Non, verbose: bool=False) -> pl.DataFrame:
     
-    df_count = df.group_by('sequence').len().rename({"len":"count"})
-
-    print("done in %0.3fs" % (time() - t0))
+    if verbose: ('count unique sequences ...')
+    t0 = time()
+    
+    session = bb.connect()
+    if trim5p_start and trim5p_length:
+        df_count = session.sql(f"""
+        SELECT substr(f.sequence, {trim5p_start}, {trim5p_length}) AS sequence, COUNT(*) as count
+        FROM fastq_scan('{fastq_file_path}') f
+        GROUP BY substr(f.sequence, {trim5p_start}, {trim5p_length})
+        """
+        ).to_polars()
+    else:
+        df_count = session.sql(f"""
+        SELECT f.sequence AS sequence, COUNT(*) as count
+        FROM fastq_scan('{fastq_file_path}') f
+        GROUP BY f.sequence
+        """
+        ).to_polars()
+    
+    if verbose: print("done in %0.3fs" % (time() - t0))
 
     return df_count
 
