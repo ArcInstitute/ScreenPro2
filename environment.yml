@@ -17,8 +17,10 @@ dependencies:
   - pyarrow
   - ipykernel
   - mscorefonts
+  - rust
   - pip
   - pip:
+      - click
       - polars
       - biobear
       - numba
