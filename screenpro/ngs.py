@@ -14,16 +14,16 @@ def load_fastq(fastq_file_path: str, verbose: bool=False):
 
     # Read the FASTQ file using read_records function
     if '.gz' in fastq_file_path:
-        df = bb.FastqReader(fastq_file_path,compression=bb.Compression.GZIP)
+        out = bb.FastqReader(fastq_file_path,compression=bb.Compression.GZIP)
     else:
-        df = bb.FastqReader(fastq_file_path).to_polars()
+        out = bb.FastqReader(fastq_file_path)
 
     if verbose: print("done in %0.3fs" % (time() - t0))
 
-    return df
+    return out
 
 
-def fastq_to_count_unique_seq(fastq_file_path:str, trim5p_start:int=None, trim5p_length:int=Non, verbose: bool=False) -> pl.DataFrame:
+def fastq_to_count_unique_seq(fastq_file_path:str, trim5p_start:int=None, trim5p_length:int=None, verbose: bool=False) -> pl.DataFrame:
     
     if verbose: ('count unique sequences ...')
     t0 = time()
