@@ -6,6 +6,7 @@ import numpy as np
 import pandas as pd
 from pydeseq2 import preprocessing
 from .phenoStats import matrixStat, getFDR
+from .utils import evaluate_library_table
 
 
 def calculateDelta(x, y, math, ave):
@@ -154,8 +155,14 @@ def runPhenoScore(adata, cond1, cond2, math, test, score_level,
         )
         # get adjusted p-values
         adj_p_values = getFDR(p_values)
+        
+        # evaluate library table to get targets and riase error if not present
+        required_columns = ['target', 'sequence']
+        missing_columns = list(set(required_columns) - set(adata.var.columns))
+        if len(missing_columns) > 0:
+            raise ValueError(f"Missing required columns in library table: {missing_columns}")
         # get targets
-        targets = adata.var.index.str.split('_[-,+]_').str[0].to_list()
+        targets = adata.var['target']
         
         # combine results into a dataframe
         result = pd.concat([
@@ -171,8 +178,8 @@ def runPhenoScore(adata, cond1, cond2, math, test, score_level,
 
         return result_name, result
     
-    elif score_level in ['compare_oligos', 'compare_oligos_and_reps']:
-        return None
+    elif score_level in ['compare_guides']:
+        pass
     
     else:
         raise ValueError(f'score_level "{score_level}" not recognized')
