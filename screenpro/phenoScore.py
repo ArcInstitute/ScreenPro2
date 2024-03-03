@@ -256,9 +256,9 @@ def runPhenoScore(adata, cond1, cond2, math, score_level, test,
         },axis=1)
 
         # get adjusted p-values
-        result['replicate_1']['BH adj_pvalue'] = pd.Series(getFDR(result['replicate_1'][f'{test} pvalue']), index=targets, name='BH adj_pvalue')
-        result['replicate_2']['BH adj_pvalue'] = pd.Series(getFDR(result['replicate_2'][f'{test} pvalue']), index=targets, name='BH adj_pvalue')
-        result['replicate_ave']['BH adj_pvalue'] = pd.Series(getFDR(result['replicate_ave'][f'{test} pvalue']), index=targets, name='BH adj_pvalue')
+        result['replicate_1'][['BH adj_pvalue']]= pd.Series(getFDR(result['replicate_1'][f'{test} pvalue']), index=targets, name='BH adj_pvalue')
+        result['replicate_2'][['BH adj_pvalue']] = pd.Series(getFDR(result['replicate_2'][f'{test} pvalue']), index=targets, name='BH adj_pvalue')
+        result['replicate_ave'][['BH adj_pvalue']] = pd.Series(getFDR(result['replicate_ave'][f'{test} pvalue']), index=targets, name='BH adj_pvalue')
     
     else:
         raise ValueError(f'score_level "{score_level}" not recognized')
