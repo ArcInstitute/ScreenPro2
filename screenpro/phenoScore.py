@@ -232,24 +232,23 @@ def runPhenoScore(adata, cond1, cond2, math, score_level, test,
             result = pd.concat({
                 'replicate1':pd.concat([
                     pd.Series([s1 for s1,_ in scores], index=targets, name='score'),
-                    pd.Series([p1 for p1,_ in p_values], index=targets, name='p_value'),
-                    # get adjusted p-values
-                    pd.Series(getFDR([p1 for p1,_ in p_values]), index=targets, name='BH adj_pvalue')
+                    pd.Series([p1 for p1,_ in p_values], index=targets, name=f'{test} pvalue'),
                     
                 ],axis=1),
                 'replicate2':pd.concat([
                     pd.Series([s2 for _,s2 in scores], index=targets, name='score'),
-                    pd.Series([p2 for _,p2 in p_values], index=targets, name='p_value'),
-                    # get adjusted p-values
-                    pd.Series(getFDR([p2 for _,p2 in p_values]), index=targets, name='BH adj_pvalue')
+                    pd.Series([p2 for _,p2 in p_values], index=targets, name=f'{test} pvalue'),
                 ],axis=1),
                 'replicate_ave':pd.concat([
                     pd.Series([np.mean([s1,s2]) for s1,s2 in scores], index=targets, name='score'),
                     pd.Series([np.mean([p1,p2]) for p1,p2 in p_values], index=targets, name='p_value'),
-                    # get adjusted p-values
-                    pd.Series(getFDR([np.mean([p1,p2]) for p1,p2 in p_values]), index=targets, name='BH adj_pvalue')
                 ],axis=1)
             },axis=1)
+
+            # get adjusted p-values
+            result['replicate_1']['BH adj_pvalue'] = pd.Series(getFDR(result['replicate_1']), index=targets, name='BH adj_pvalue')
+            result['replicate_2']['BH adj_pvalue'] = pd.Series(getFDR(result['replicate_2']), index=targets, name='BH adj_pvalue')
+            result['replicate_ave']['BH adj_pvalue'] = pd.Series(getFDR(result['replicate_ave']), index=targets, name='BH adj_pvalue')
 
         else:
             raise ValueError(f'n_reps "{n_reps}" not recognized')
