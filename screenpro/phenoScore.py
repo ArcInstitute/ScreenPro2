@@ -236,12 +236,12 @@ def runPhenoScore(adata, cond1, cond2, math, score_level, test,
         if n_reps == 2:
             # combine results into a dataframe
             result = pd.concat({
-                'replicate1':pd.concat([
+                'replicate_1':pd.concat([
                     pd.Series([s1 for s1,_ in scores], index=targets, name='score'),
                     pd.Series([p1 for p1,_ in p_values], index=targets, name=f'{test} pvalue'),
                     
                 ],axis=1),
-                'replicate2':pd.concat([
+                'replicate_2':pd.concat([
                     pd.Series([s2 for _,s2 in scores], index=targets, name='score'),
                     pd.Series([p2 for _,p2 in p_values], index=targets, name=f'{test} pvalue'),
                 ],axis=1),
