@@ -7,29 +7,32 @@ import numpy as np
 from statsmodels.stats.multitest import multipletests
 
 
-def matrixStat(x, y, test, ave_reps):
+def matrixStat(x, y, test, level):
     """
     Get p-values comparing `y` vs `x` matrices.
     Args:
         x (np.array): array of values
         y (np.array): array of values
         test (str): test to use for calculating p-value
-        ave_reps (bool): average replicates
+        level (str): level at which to calculate p-value
     Returns:
         np.array: array of p-values
     """
     # calculate p-values
     if test == 'MW':
         # run Mann-Whitney U rank test
-        pass
+        raise ValueError('Mann-Whitney U rank test not implemented')
     elif test == 'ttest':
         # run ttest
-        if ave_reps:
-            # average across replicates
+        if level == 'col':
             p_value = ttest_rel(y, x, axis=1)[1]
-        else:
+        elif level == 'row':
+            p_value = ttest_rel(y, x, axis=0)[1]
+        elif level == 'all':
             # average across all values
             p_value = ttest_rel(y, x)[1]
+        else:
+            raise ValueError(f'Level "{level}" not recognized')
         return p_value
     else:
         raise ValueError(f'Test "{test}" not recognized')
