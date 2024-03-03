@@ -106,8 +106,10 @@ def plot_volcano(ax, df_in, threshold, up_hit='resistance_hit', down_hit='sensit
     ax.legend()
 
 
-def label_as_black(ax, df_in, label, threshold, size=2, size_txt=None, t_x=.5, t_y=-0.1):
-    df = prep_data(df_in, threshold)
+def label_as_black(ax, df_in, label, threshold, size=2, size_txt=None, 
+                   ctrl_label = 'no-targeting',
+                   t_x=.5, t_y=-0.1):
+    df = prep_data(df_in, threshold, ctrl_label)
 
     target_data = df[df['target'] == label]
 
@@ -125,8 +127,10 @@ def label_as_black(ax, df_in, label, threshold, size=2, size_txt=None, t_x=.5, t
                     color='black', size=size_txt)
 
 
-def label_sensitivity_hit(ax, df_in, label, threshold, size=2, size_txt=None, t_x=-.5, t_y=-0.1):
-    df = prep_data(df_in, threshold)
+def label_sensitivity_hit(ax, df_in, label, threshold, size=2, size_txt=None,
+                          ctrl_label = 'no-targeting',
+                          t_x=.5, t_y=-0.1):
+    df = prep_data(df_in, threshold, ctrl_label)
 
     target_data = df[df['target'] == label]
 
@@ -144,8 +148,10 @@ def label_sensitivity_hit(ax, df_in, label, threshold, size=2, size_txt=None, t_
                     color='black', size=size_txt)
 
 
-def label_resistance_hit(ax, df_in, label, threshold, size=2, size_txt=None, t_x=.5, t_y=-0.1):
-    df = prep_data(df_in, threshold)
+def label_resistance_hit(ax, df_in, label, threshold, size=2, size_txt=None, 
+                         ctrl_label = 'no-targeting',
+                         t_x=.5, t_y=-0.1):
+    df = prep_data(df_in, threshold, ctrl_label)
 
     target_data = df[df['target'] == label]
 
