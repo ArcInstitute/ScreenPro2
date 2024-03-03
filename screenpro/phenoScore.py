@@ -6,23 +6,26 @@ import numpy as np
 import pandas as pd
 from pydeseq2 import preprocessing
 from .phenoStats import matrixStat, getFDR
-from .utils import evaluate_library_table
 
 
-def calculateDelta(x, y, math, ave):
+def calculateDelta(x, y, math, level):
     """
     Calculate log ratio of y / x.
-    `ave` == 'all' (i.e. averaged across all values, oligo and replicates)
-    `ave` == 'col' (i.e. averaged across columns, replicates)
+    `level` == 'all' (i.e. averaged across all values, oligo and replicates)
+    `level` == 'col' (i.e. averaged across columns, replicates)
     Args:
         x (np.array): array of values
         y (np.array): array of values
         math (str): math to use for calculating score
-        ave (str): average method
+        level (str): level to use for calculating score
     Returns:
         np.array: array of log ratio values
     """
-    if ave == 'all':
+    # check if math is implemented
+    if math not in ['log2(x+1)', 'log10', 'log1p']:
+        raise ValueError(f'math "{math}" not recognized')
+    
+    if level == 'all':
         # average across all values
         if math == 'log2(x+1)':
             return np.mean(np.log2(y+1) - np.log2(x+1))
@@ -30,7 +33,7 @@ def calculateDelta(x, y, math, ave):
             return np.mean(np.log10(y) - np.log10(x))
         elif math == 'log1p':
             return np.mean(np.log1p(y) - np.log1p(x))
-    elif ave == 'row':
+    elif level == 'row':
         # average across rows
         if math == 'log2(x+1)':
             return np.mean(np.log2(y+1) - np.log2(x+1), axis=0)
@@ -38,7 +41,7 @@ def calculateDelta(x, y, math, ave):
             return np.mean(np.log10(y) - np.log10(x), axis=0)
         elif math == 'log1p':
             return np.mean(np.log1p(y) - np.log1p(x), axis=0)
-    elif ave == 'col':
+    elif level == 'col':
         # average across columns
         if math == 'log2(x+1)':
             return np.mean(np.log2(y+1) - np.log2(x+1), axis=1)
@@ -48,7 +51,7 @@ def calculateDelta(x, y, math, ave):
             return np.mean(np.log1p(y) - np.log1p(x), axis=1)
 
 
-def calculatePhenotypeScore(x, y, x_ctrl, y_ctrl, growth_rate, math, ave):
+def calculatePhenotypeScore(x, y, x_ctrl, y_ctrl, growth_rate, math, level):
     """
     Calculate phenotype score normalized by negative control and growth rate.
     Args:
@@ -58,21 +61,21 @@ def calculatePhenotypeScore(x, y, x_ctrl, y_ctrl, growth_rate, math, ave):
         y_ctrl (np.array): array of values
         growth_rate (int): growth rate
         math (str): math to use for calculating score
-        ave (str): average method
+        level (str): level to use for calculating score
     Returns:
         np.array: array of scores
     """
     # calculate control median and std
-    ctrl_median = np.median(calculateDelta(x=x_ctrl, y=y_ctrl, math=math, ave=ave))
+    ctrl_median = np.median(calculateDelta(x=x_ctrl, y=y_ctrl, math=math, level=level))
 
     # calculate delta
-    delta = calculateDelta(x=x, y=y, math=math, ave=ave)
+    delta = calculateDelta(x=x, y=y, math=math, level=level)
 
     # calculate score
     return (delta - ctrl_median) / growth_rate
 
 
-def matrixTest(x, y, x_ctrl, y_ctrl, math, ave_reps, test = 'ttest', growth_rate = 1):
+def matrixTest(x, y, x_ctrl, y_ctrl, math, level, test = 'ttest', growth_rate = 1):
     """
     Calculate phenotype score and p-values comparing `y` vs `x` matrices.
     Args:
@@ -81,31 +84,28 @@ def matrixTest(x, y, x_ctrl, y_ctrl, math, ave_reps, test = 'ttest', growth_rate
         x_ctrl (np.array): array of values
         y_ctrl (np.array): array of values
         math (str): math to use for calculating score
-        ave_reps (bool): average replicates
+        level (str): level to use for calculating score and p-value
         test (str): test to use for calculating p-value
         growth_rate (int): growth rate
     Returns:
         np.array: array of scores
         np.array: array of p-values
     """
-    # check if average across replicates
-    ave = 'col' if ave_reps else 'all'
-
     # calculate growth score
     scores = calculatePhenotypeScore(
         x = x, y = y, x_ctrl = x_ctrl, y_ctrl = y_ctrl,
         growth_rate = growth_rate, math = math,
-        ave = ave
+        level = level
     )
 
     # compute p-value
-    p_values = matrixStat(x, y, test=test, ave_reps=ave_reps)
+    p_values = matrixStat(x, y, test=test, level = level)
 
     return scores, p_values
 
 
-def runPhenoScore(adata, cond1, cond2, math, test, score_level,
-                  growth_rate=1, n_reps=2, 
+def runPhenoScore(adata, cond1, cond2, math, score_level, test,
+                  growth_rate=1, n_reps=2, keep_top_n = None,
                   get_z_score=False,ctrl_label='negCtrl'):
     """
     Calculate phenotype score and p-values when comparing `cond2` vs `cond1`.
@@ -132,6 +132,12 @@ def runPhenoScore(adata, cond1, cond2, math, test, score_level,
     # check if count_layer exists
     if 'seq_depth_norm' not in adata.layers.keys():
         seqDepthNormalization(adata)
+    
+    # evaluate library table to get targets and riase error if not present
+    required_columns = ['target', 'sequence']
+    missing_columns = list(set(required_columns) - set(adata.var.columns))
+    if len(missing_columns) > 0:
+        raise ValueError(f"Missing required columns in library table: {missing_columns}")
 
     # calc phenotype score and p-value
     if score_level == 'compare_reps':
@@ -150,39 +156,112 @@ def runPhenoScore(adata, cond1, cond2, math, test, score_level,
         # calculate growth score and p_value
         scores, p_values = matrixTest(
             x=x, y=y, x_ctrl=x_ctrl, y_ctrl=y_ctrl,
-            math=math, ave_reps=True, test=test, 
+            math=math, level='col', test=test, 
             growth_rate=growth_rate
         )
         # get adjusted p-values
         adj_p_values = getFDR(p_values)
-        
-        # evaluate library table to get targets and riase error if not present
-        required_columns = ['target', 'sequence']
-        missing_columns = list(set(required_columns) - set(adata.var.columns))
-        if len(missing_columns) > 0:
-            raise ValueError(f"Missing required columns in library table: {missing_columns}")
+                
         # get targets
         targets = adata.var['target']
-        
+
         # combine results into a dataframe
         result = pd.concat([
-            pd.Series(targets, index=adata.var.index, name='target'),
-            pd.Series(scores, index=adata.var.index, name='score'),
+            pd.Series(targets, index=targets, name='target'),
+            pd.Series(scores, index=targets, name='score'),
         ], axis=1)
+        
         if get_z_score:
             # z-score normalization
             result['z_score'] = calculateZScorePhenotypeScore(result, ctrl_label=ctrl_label)
         # add p-values
         result[f'{test} pvalue'] = p_values
         result['BH adj_pvalue'] = adj_p_values
-
-        return result_name, result
+        
+        result.set_index('target', inplace=True)
     
     elif score_level in ['compare_guides']:
-        pass
+        # generate pseudo gene labels
+        generatePseudoGeneLabels(adata, num_pseudogenes=None, ctrl_label=ctrl_label)
+        # drop categories from target column!
+        adata.var['target'] = adata.var['target'].to_list()
+        # replace values in target columns for negative control with pseudogene label
+        adata.var.loc[
+            adata.var.targetType.eq(ctrl_label), 'target'
+        ] = adata.var.loc[adata.var.targetType.eq(ctrl_label), 'pseudoLabel']
+        # drop pseudoLabel column 
+        adata.var.drop(columns='pseudoLabel', inplace=True)
+
+        # get control values
+        x_ctrl = df_cond1[adata.var.targetType.eq(ctrl_label)].to_numpy()
+        y_ctrl = df_cond2[adata.var.targetType.eq(ctrl_label)].to_numpy()
+
+        targets = []
+        scores = []
+        p_values = []
+
+        # group by target genes or pseudogenes to aggregate counts for score calculation
+        for target_name, target_group in adata.var.groupby('target'):
+            # prep counts for phenoScore calculation
+            df_cond1 = adata[adata.obs.query(f'condition=="{cond1}"').index,].to_df(count_layer).T
+            df_cond1.index = adata.var['target']
+            df_cond2 = adata[adata.obs.query(f'condition=="{cond2}"').index,].to_df(count_layer).T
+            df_cond2.index = adata.var['target']
+
+            # convert to numpy arrays
+            x = df_cond1.to_numpy()
+            y = df_cond2.to_numpy()
+            # Sort and find top n guide per target, see #18
+            if keep_top_n:
+                x.sort()
+                y.sort()
+                x = x[:keep_top_n]
+                y = y[:keep_top_n]
+            
+            # calculate growth score and p_value
+            target_scores, target_p_values = matrixTest(
+                x=x, y=y, x_ctrl=x_ctrl, y_ctrl=y_ctrl,
+                math=math, level='row', test=test,
+                growth_rate=growth_rate
+            )
+
+            scores.append(target_scores)
+            p_values.append(target_p_values)
+            targets.append(target_name)
+        
+        if n_reps == 2:
+            # combine results into a dataframe
+            result = pd.concat({
+                'replicate1':pd.concat([
+                    pd.Series([s1 for s1,_ in scores], index=targets, name='score'),
+                    pd.Series([p1 for p1,_ in p_values], index=targets, name='p_value'),
+                    # get adjusted p-values
+                    pd.Series(getFDR([p1 for p1,_ in p_values]), index=targets, name='BH adj_pvalue')
+                    
+                ],axis=1),
+                'replicate2':pd.concat([
+                    pd.Series([s2 for _,s2 in scores], index=targets, name='score'),
+                    pd.Series([p2 for _,p2 in p_values], index=targets, name='p_value'),
+                    # get adjusted p-values
+                    pd.Series(getFDR([p2 for _,p2 in p_values]), index=targets, name='BH adj_pvalue')
+                ],axis=1),
+                'replicate_ave':pd.concat([
+                    pd.Series([np.mean([s1,s2]) for s1,s2 in scores], index=targets, name='score'),
+                    pd.Series([np.mean([p1,p2]) for p1,p2 in p_values], index=targets, name='p_value'),
+                    # get adjusted p-values
+                    pd.Series(getFDR([np.mean([p1,p2]) for p1,p2 in p_values]), index=targets, name='BH adj_pvalue')
+                ],axis=1)
+            },axis=1)
+
+        else:
+            raise ValueError(f'n_reps "{n_reps}" not recognized')
     
     else:
         raise ValueError(f'score_level "{score_level}" not recognized')
+    
+    
+    return result_name, result
+
 
 
 def seqDepthNormalization(adata):
