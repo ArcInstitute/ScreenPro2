@@ -6,6 +6,7 @@ import numpy as np
 import pandas as pd
 from pydeseq2 import preprocessing
 from .phenoStats import matrixStat, getFDR
+from .utils import find_low_counts
 
 
 def calculateDelta(x, y, math, level):
@@ -181,6 +182,11 @@ def runPhenoScore(adata, cond1, cond2, math, score_level, test,
         result.set_index('target', inplace=True)
     
     elif score_level in ['compare_guides']:
+        find_low_counts(adata)
+        adata = adata[:,~adata.var.low_count].copy()
+
+        adata.var.drop(columns='low_count',inplace=True)
+
         # generate pseudo gene labels
         generatePseudoGeneLabels(adata, num_pseudogenes=num_pseudogenes, ctrl_label=ctrl_label)
         # drop categories from target column!
