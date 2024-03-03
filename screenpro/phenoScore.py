@@ -182,6 +182,11 @@ def runPhenoScore(adata, cond1, cond2, math, score_level, test,
         result.set_index('target', inplace=True)
     
     elif score_level in ['compare_guides']:
+        if n_reps == 2:
+            pass
+        else:
+            raise ValueError(f'n_reps "{n_reps}" not recognized')
+
         find_low_counts(adata)
         adata = adata[:,~adata.var.low_count].copy()
 
@@ -233,31 +238,27 @@ def runPhenoScore(adata, cond1, cond2, math, score_level, test,
             p_values.append(target_p_values)
             targets.append(target_name)
         
-        if n_reps == 2:
-            # combine results into a dataframe
-            result = pd.concat({
-                'replicate_1':pd.concat([
-                    pd.Series([s1 for s1,_ in scores], index=targets, name='score'),
-                    pd.Series([p1 for p1,_ in p_values], index=targets, name=f'{test} pvalue'),
-                    
-                ],axis=1),
-                'replicate_2':pd.concat([
-                    pd.Series([s2 for _,s2 in scores], index=targets, name='score'),
-                    pd.Series([p2 for _,p2 in p_values], index=targets, name=f'{test} pvalue'),
-                ],axis=1),
-                'replicate_ave':pd.concat([
-                    pd.Series([np.mean([s1,s2]) for s1,s2 in scores], index=targets, name='score'),
-                    pd.Series([np.mean([p1,p2]) for p1,p2 in p_values], index=targets, name=f'{test} pvalue'),
-                ],axis=1)
-            },axis=1)
+        # combine results into a dataframe
+        result = pd.concat({
+            'replicate_1':pd.concat([
+                pd.Series([s1 for s1,_ in scores], index=targets, name='score'),
+                pd.Series([p1 for p1,_ in p_values], index=targets, name=f'{test} pvalue'),
+                
+            ],axis=1),
+            'replicate_2':pd.concat([
+                pd.Series([s2 for _,s2 in scores], index=targets, name='score'),
+                pd.Series([p2 for _,p2 in p_values], index=targets, name=f'{test} pvalue'),
+            ],axis=1),
+            'replicate_ave':pd.concat([
+                pd.Series([np.mean([s1,s2]) for s1,s2 in scores], index=targets, name='score'),
+                pd.Series([np.mean([p1,p2]) for p1,p2 in p_values], index=targets, name=f'{test} pvalue'),
+            ],axis=1)
+        },axis=1)
 
-            # get adjusted p-values
-            result['replicate_1']['BH adj_pvalue'] = pd.Series(getFDR(result['replicate_1'][f'{test} pvalue']), index=targets, name='BH adj_pvalue')
-            result['replicate_2']['BH adj_pvalue'] = pd.Series(getFDR(result['replicate_2'][f'{test} pvalue']), index=targets, name='BH adj_pvalue')
-            result['replicate_ave']['BH adj_pvalue'] = pd.Series(getFDR(result['replicate_ave'][f'{test} pvalue']), index=targets, name='BH adj_pvalue')
-
-        else:
-            raise ValueError(f'n_reps "{n_reps}" not recognized')
+        # get adjusted p-values
+        result['replicate_1']['BH adj_pvalue'] = pd.Series(getFDR(result['replicate_1'][f'{test} pvalue']), index=targets, name='BH adj_pvalue')
+        result['replicate_2']['BH adj_pvalue'] = pd.Series(getFDR(result['replicate_2'][f'{test} pvalue']), index=targets, name='BH adj_pvalue')
+        result['replicate_ave']['BH adj_pvalue'] = pd.Series(getFDR(result['replicate_ave'][f'{test} pvalue']), index=targets, name='BH adj_pvalue')
     
     else:
         raise ValueError(f'score_level "{score_level}" not recognized')
