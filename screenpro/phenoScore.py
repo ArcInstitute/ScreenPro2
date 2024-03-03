@@ -105,7 +105,7 @@ def matrixTest(x, y, x_ctrl, y_ctrl, math, level, test = 'ttest', growth_rate = 
 
 
 def runPhenoScore(adata, cond1, cond2, math, score_level, test,
-                  growth_rate=1, n_reps=2, keep_top_n = None,
+                  growth_rate=1, n_reps=2, keep_top_n = None,num_pseudogenes=None,
                   get_z_score=False,ctrl_label='negCtrl'):
     """
     Calculate phenotype score and p-values when comparing `cond2` vs `cond1`.
@@ -182,7 +182,7 @@ def runPhenoScore(adata, cond1, cond2, math, score_level, test,
     
     elif score_level in ['compare_guides']:
         # generate pseudo gene labels
-        generatePseudoGeneLabels(adata, num_pseudogenes=None, ctrl_label=ctrl_label)
+        generatePseudoGeneLabels(adata, num_pseudogenes=num_pseudogenes, ctrl_label=ctrl_label)
         # drop categories from target column!
         adata.var['target'] = adata.var['target'].to_list()
         # replace values in target columns for negative control with pseudogene label
