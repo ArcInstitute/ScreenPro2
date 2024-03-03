@@ -192,6 +192,10 @@ def runPhenoScore(adata, cond1, cond2, math, score_level, test,
         # drop pseudoLabel column 
         adata.var.drop(columns='pseudoLabel', inplace=True)
 
+        # prep counts for phenoScore calculation
+        df_cond1 = adata[adata.obs.query(f'condition=="{cond1}"').index].to_df().T
+        df_cond2 = adata[adata.obs.query(f'condition=="{cond2}"').index].to_df().T        # get control values
+
         # get control values
         x_ctrl = df_cond1[adata.var.targetType.eq(ctrl_label)].to_numpy()
         y_ctrl = df_cond2[adata.var.targetType.eq(ctrl_label)].to_numpy()
@@ -202,12 +206,6 @@ def runPhenoScore(adata, cond1, cond2, math, score_level, test,
 
         # group by target genes or pseudogenes to aggregate counts for score calculation
         for target_name, target_group in adata.var.groupby('target'):
-            # prep counts for phenoScore calculation
-            df_cond1 = adata[adata.obs.query(f'condition=="{cond1}"').index,].to_df(count_layer).T
-            df_cond1.index = adata.var['target']
-            df_cond2 = adata[adata.obs.query(f'condition=="{cond2}"').index,].to_df(count_layer).T
-            df_cond2.index = adata.var['target']
-
             # convert to numpy arrays
             x = df_cond1.to_numpy()
             y = df_cond2.to_numpy()
