@@ -63,19 +63,21 @@ def draw_threshold(x, threshold, pseudo_sd):
     return threshold * pseudo_sd * (1 if x > 0 else -1) / abs(x)
 
 
-def prep_data(df_in, threshold):
+def prep_data(df_in, threshold, ctrl_label):
     df = df_in.copy()
 
-    df = ann_score_df(df, threshold=threshold)
+    df = ann_score_df(df, threshold=threshold, ctrl_label = ctrl_label)
 
     df['-log10(pvalue)'] = np.log10(df.pvalue) * -1
 
     return df
 
 
-def plot_volcano(ax, df_in, threshold, up_hit='resistance_hit', down_hit='sensitivity_hit', xlim_l=-5, xlim_r=5,
+def plot_volcano(ax, df_in, threshold, up_hit='resistance_hit', down_hit='sensitivity_hit', 
+                 ctrl_label = 'no-targeting',
+                 xlim_l=-5, xlim_r=5,
                  ylim=6):
-    df = prep_data(df_in, threshold)
+    df = prep_data(df_in, threshold, ctrl_label)
 
     # Scatter plot for each category
     ax.scatter(df.loc[df['label'] == 'target_non_hit', 'score'],
