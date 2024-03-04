@@ -12,7 +12,7 @@ The complete docs are available at [screenpro2.rtfd.io](https://screenpro2.readt
 - [Usage](#usage)
   * [Load Data](#load-data)
   * [Perform Screen Processing Analysis](#perform-screen-processing-analysis)
-    + [Drug Screen Workflow: calculate `gamma`, `rho`, and `tau` scores](#drug-screen-workflow-calculate--gamma----rho----and--tau---scores)
+    + [Drug Screen Workflow: calculate `gamma`, `rho`, and `tau` scores](#drug-screen-workflow-calculate-gamma-rho-and-tau-scores)
     + [Flow cytometry based screen workflow: calculate phenotype score to compare high and low bins](#flow-cytometry-based-screen-workflow-calculate-phenotype-score-to-compare-high-and-low-bins)
 - [Supported CRISPR Screen Platforms](#supported-crispr-screen-platforms)
     + [CRISPRi-dual-sgRNA-screens](#crispri-dual-sgrna-screens)
