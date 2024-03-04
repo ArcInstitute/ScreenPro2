@@ -164,12 +164,12 @@ def runPhenoScore(adata, cond1, cond2, math, score_level, test,
         adj_p_values = getFDR(p_values)
                 
         # get targets
-        targets = adata.var['target'].to_list()
+        targets = adata.var.index['target'].to_list()
 
         # combine results into a dataframe
         result = pd.concat([
-            pd.Series(targets, index=targets, name='target'),
-            pd.Series(scores, index=targets, name='score'),
+            pd.Series(targets, index=adata.var.index, name='target'),
+            pd.Series(scores, index=adata.var.index, name='score'),
         ], axis=1)
         
         if get_z_score:
@@ -178,8 +178,6 @@ def runPhenoScore(adata, cond1, cond2, math, score_level, test,
         # add p-values
         result[f'{test} pvalue'] = p_values
         result['BH adj_pvalue'] = adj_p_values
-        
-        result.set_index('target', inplace=True)
     
     elif score_level in ['compare_guides']:
         if n_reps == 2:
