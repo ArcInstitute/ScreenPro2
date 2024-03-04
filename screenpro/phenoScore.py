@@ -164,7 +164,7 @@ def runPhenoScore(adata, cond1, cond2, math, score_level, test,
         adj_p_values = getFDR(p_values)
                 
         # get targets
-        targets = adata.var['target']
+        targets = adata.var['target'].to_list()
 
         # combine results into a dataframe
         result = pd.concat([
