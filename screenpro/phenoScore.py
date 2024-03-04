@@ -260,7 +260,6 @@ def runPhenoScore(adata, cond1, cond2, math, score_level, test,
     return result_name, result
 
 
-
 def seqDepthNormalization(adata):
     """
     Normalize counts by sequencing depth.
