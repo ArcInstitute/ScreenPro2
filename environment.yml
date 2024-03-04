@@ -17,7 +17,7 @@ dependencies:
   - pyarrow
   - ipykernel
   - mscorefonts
-  - rust
+  - rust>=1.72
   - pip
   - pip:
       - click
