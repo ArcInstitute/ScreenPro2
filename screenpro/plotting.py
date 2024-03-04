@@ -63,31 +63,34 @@ def draw_threshold(x, threshold, pseudo_sd):
     return threshold * pseudo_sd * (1 if x > 0 else -1) / abs(x)
 
 
-def prep_data(df_in, threshold):
+def prep_data(df_in, threshold, ctrl_label):
     df = df_in.copy()
 
-    df = ann_score_df(df, threshold=threshold)
+    df = ann_score_df(df, threshold=threshold, ctrl_label = ctrl_label)
 
     df['-log10(pvalue)'] = np.log10(df.pvalue) * -1
 
     return df
 
 
-def plot_volcano(ax, df_in, threshold, up_hit='resistance_hit', down_hit='sensitivity_hit', xlim_l=-5, xlim_r=5,
+def plot_volcano(ax, df_in, threshold, up_hit='resistance_hit', down_hit='sensitivity_hit', 
+                 ctrl_label = 'no-targeting',
+                 dot_size=1,
+                 xlim_l=-5, xlim_r=5,
                  ylim=6):
-    df = prep_data(df_in, threshold)
+    df = prep_data(df_in, threshold, ctrl_label)
 
     # Scatter plot for each category
     ax.scatter(df.loc[df['label'] == 'target_non_hit', 'score'],
                df.loc[df['label'] == 'target_non_hit', '-log10(pvalue)'],
-               alpha=0.1, s=1, c='black', label='target_non_hit')
+               alpha=0.1, s=dot_size, c='black', label='target_non_hit')
     ax.scatter(df.loc[df['label'] == up_hit, 'score'], df.loc[df['label'] == up_hit, '-log10(pvalue)'],
-               alpha=0.9, s=1, c='#fcae91', label=up_hit)
+               alpha=0.9, s=dot_size, c='#fcae91', label=up_hit)
     ax.scatter(df.loc[df['label'] == down_hit, 'score'], df.loc[df['label'] == down_hit, '-log10(pvalue)'],
-               alpha=0.9, s=1, c='#bdd7e7', label=down_hit)
+               alpha=0.9, s=dot_size, c='#bdd7e7', label=down_hit)
     ax.scatter(df.loc[df['label'] == 'non-targeting', 'score'],
                df.loc[df['label'] == 'non-targeting', '-log10(pvalue)'],
-               alpha=0.1, s=1, c='gray', label='non-targeting')
+               alpha=0.1, s=dot_size, c='gray', label='non-targeting')
 
     # Set x-axis and y-axis labels
     ax.set_xlabel('phenotype score')
@@ -103,8 +106,10 @@ def plot_volcano(ax, df_in, threshold, up_hit='resistance_hit', down_hit='sensit
     ax.legend()
 
 
-def label_as_black(ax, df_in, label, threshold, size=2, size_txt=None, t_x=.5, t_y=-0.1):
-    df = prep_data(df_in, threshold)
+def label_as_black(ax, df_in, label, threshold, size=2, size_txt=None, 
+                   ctrl_label = 'no-targeting',
+                   t_x=.5, t_y=-0.1):
+    df = prep_data(df_in, threshold, ctrl_label)
 
     target_data = df[df['target'] == label]
 
@@ -122,8 +127,10 @@ def label_as_black(ax, df_in, label, threshold, size=2, size_txt=None, t_x=.5, t
                     color='black', size=size_txt)
 
 
-def label_sensitivity_hit(ax, df_in, label, threshold, size=2, size_txt=None, t_x=-.5, t_y=-0.1):
-    df = prep_data(df_in, threshold)
+def label_sensitivity_hit(ax, df_in, label, threshold, size=2, size_txt=None,
+                          ctrl_label = 'no-targeting',
+                          t_x=.5, t_y=-0.1):
+    df = prep_data(df_in, threshold, ctrl_label)
 
     target_data = df[df['target'] == label]
 
@@ -141,8 +148,10 @@ def label_sensitivity_hit(ax, df_in, label, threshold, size=2, size_txt=None, t_
                     color='black', size=size_txt)
 
 
-def label_resistance_hit(ax, df_in, label, threshold, size=2, size_txt=None, t_x=.5, t_y=-0.1):
-    df = prep_data(df_in, threshold)
+def label_resistance_hit(ax, df_in, label, threshold, size=2, size_txt=None, 
+                         ctrl_label = 'no-targeting',
+                         t_x=.5, t_y=-0.1):
+    df = prep_data(df_in, threshold, ctrl_label)
 
     target_data = df[df['target'] == label]
 

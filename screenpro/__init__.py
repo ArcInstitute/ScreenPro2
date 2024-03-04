@@ -3,6 +3,7 @@ import pandas as pd
 from . import plotting as pl
 from . import phenoScore as ps
 from . import utils
+from . import ngs
 
 from .__version__ import __version__
 from copy import copy
