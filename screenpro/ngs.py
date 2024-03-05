@@ -1,7 +1,6 @@
 '''Scripts to work with NGS data
 '''
 
-import click
 from time import time
 import pandas as pd
 import polars as pl
