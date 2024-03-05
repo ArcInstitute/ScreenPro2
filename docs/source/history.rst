@@ -2,8 +2,17 @@
 History
 =======
 
-0.2.5 (Dec 2023)
+0.2.7 (Mar 2024)
 ~~~~~~~~~~~~~~~~
+* introduce `ngs` module to process fastq files and generate count matrix
+* add missing features to support single-guide-design screens (i.e. V2 CRISPRi/a screens)
+
+0.2.5 – 0.2.6 (Dec 2023 - Feb 2024)
+~~~~~~~~~~~~~~~~
+* public release on Arc's website https://arcinstitute.org/tools/screenpro2
+* improve the conda environment and docker config files
+* improve documentation
+* split phenoScore and phenoStats modules
 * fix bugs in phenotype score calculation and growth rate normalization
 
 0.2.1 - 0.2.4 (July 2023 - Nov 2023)
