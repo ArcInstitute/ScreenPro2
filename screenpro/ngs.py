@@ -21,13 +21,13 @@ def fastq_to_count_single_guide(
         sql_cmd = f"""
         SELECT substr(f.sequence, {trim5p_start}, {trim5p_length}) AS sequence, COUNT(*) as count
         FROM fastq_scan('{fastq_file_path}') f
-        GROUP BY substr(f.sequence, {trim5p_start}, {trim5p_length})
+        GROUP BY sequence
         """
     else:
         sql_cmd = f"""
         SELECT f.sequence AS sequence, COUNT(*) as count
         FROM fastq_scan('{fastq_file_path}') f
-        GROUP BY f.sequence
+        GROUP BY sequence
         """
     
     df_count = session.sql(sql_cmd).to_polars()
