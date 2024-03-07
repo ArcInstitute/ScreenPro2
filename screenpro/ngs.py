@@ -57,11 +57,11 @@ def fastq_to_count_dual_guide(
                 SELECT REPLACE(name, '_R2', '') trimmed_name, *
                 FROM fastq_scan('{R2_fastq_file_path}')
             )
-            SELECT substr(pos1.sequence, {trim5p_pos1_start}, {trim5p_pos1_length}) pos1_sequence, substr(reverse_complement(pos2.sequence), {trim5p_pos2_start}, {trim5p_pos2_length}) pos2_sequence, COUNT(*) count
+            SELECT substr(pos1.sequence, {trim5p_pos1_start}, {trim5p_pos1_length}) protospacer_A, substr(reverse_complement(pos2.sequence), {trim5p_pos2_start}, {trim5p_pos2_length}) protospacer_B, COUNT(*) count
             FROM pos1
             JOIN pos2
                 ON pos1.name = pos2.name
-            GROUP BY pos1_sequence, pos2_sequence
+            GROUP BY protospacer_A, protospacer_B
         """
     elif trim5p_pos1_start==None and trim5p_pos1_length==None and trim5p_pos2_start==None and trim5p_pos2_length==None:
         sql_cmd = f"""
@@ -72,11 +72,11 @@ def fastq_to_count_dual_guide(
                 SELECT REPLACE(name, '_R2', '') trimmed_name, *
                 FROM fastq_scan('{R2_fastq_file_path}')
             )
-            SELECT pos1.sequence pos1_sequence, reverse_complement(pos2.sequence) pos2_sequence, COUNT(*) count
+            SELECT pos1.sequence protospacer_A, reverse_complement(pos2.sequence) protospacer_B, COUNT(*) count
             FROM pos1
             JOIN pos2
                 ON pos1.name = pos2.name
-            GROUP BY pos1_sequence, pos2_sequence
+            GROUP BY protospacer_A, protospacer_B
         """
     else:
         raise ValueError("trim5p_pos1_start, trim5p_pos1_length, \
