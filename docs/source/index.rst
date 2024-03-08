@@ -3,13 +3,24 @@ Welcome to ScreenPro2's documentation!
 
 .. toctree::
    :maxdepth: 2
-   :caption: Contents:
+   :caption: User Guide
 
    README
    usage
-   load
+
+.. toctree::
+   :maxdepth: 2
+   :caption: Module Documentation
+
+   screenpro
+   ngs
    phenotype
-   utils
+   load
+
+.. toctree::
+   :maxdepth: 1
+   :caption: Developer Notes
+
    history
 
 Indices and tables
