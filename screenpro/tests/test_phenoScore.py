@@ -19,7 +19,20 @@ def test_runPhenoScore():
         ),
         var=pd.DataFrame(
             {
-                'targetType': ['gene'] * 10
+                'target': ['targetID_' + str(i) for i in range(10)],
+                'sequence': [
+                    'ATGCGTACATGTATGCGTG',
+                    'ATGCGTATGCATATGCGTC',
+                    'ATGCGTATGCGTCATCGTG',
+                    'ATGCGTATGCGTATGCATC',
+                    'CATCGTATGCGTATGCGTG',
+                    'ATGCGTACATGTATGCGTG',
+                    'ATGCGTATGCATATGCGTC',
+                    'ATGCGTATGCGTCATCGTG',
+                    'ATGCGTATGCGTATGCATC',
+                    'CATCGTATGCGTATGCGTG'
+                ],
+                'targetType': ['gene'] * 8 + ['negCtrl'] * 2
             },
             index=pd.Index(['targetID_' + str(i) for i in range(10)], name='target')
         )
