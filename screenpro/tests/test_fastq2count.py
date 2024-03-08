@@ -4,7 +4,7 @@ from screenpro import ngs
 
 def test_single_guide():
     df_count = ngs.fastq_to_count_single_guide(
-        fastq_file_path='demo/step1_process_fastq_files/example_crispri_v2_sample.fastq',
+        fastq_file_path='demo/step1_process_fastq_files/example_crispri_v2_sample.fastq.gz',
         trim5p_start=2,
         trim5p_length=19,
         verbose=True
