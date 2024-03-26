@@ -24,7 +24,7 @@ master_doc = 'index'
 
 # General information about the project.
 project = 'ScreenPro2'
-copyright = "2022-2023, Abolfazl Arab"
+copyright = "2022-2024 – ScreenPro2 Developers Team, Arc Institute"
 author = "Abolfazl Arab"
 
 # The version info for the project you're documenting, acts as replacement
