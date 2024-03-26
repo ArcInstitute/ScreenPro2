@@ -2,10 +2,17 @@
 History
 =======
 
-0.2.7 (Mar 2024)
+0.3.0 (coming soon)
+~~~~~~~~~~~~~~~~
+* add command line interface
+
+0.2.7 - 0.2.8 (Mar 2024)
 ~~~~~~~~~~~~~~~~
 * introduce `ngs` module to process fastq files and generate count matrix
-* add missing features to support single-guide-design screens (i.e. V2 CRISPRi/a screens)
+  * Support both single-guide and dual-guide library design #37
+  (i.e. V2 and V3 genome-scale dCas9 screen platforms)
+* phenoScore and phenoStats modules
+  * add missing features to support single-guide-design screens (i.e. V2 CRISPRi/a screens)
 
 0.2.5 – 0.2.6 (Dec 2023 - Feb 2024)
 ~~~~~~~~~~~~~~~~
