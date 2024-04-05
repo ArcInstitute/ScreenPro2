@@ -30,3 +30,6 @@ protospacer A and B are not the same pairs as in the reference library. These ev
 - Only one of the protospacer A and B is present in the reference library
 - None of the protospacer A and B is present in the reference library
 '''
+
+from . import cas9
+from . import cas12
