@@ -1,6 +1,9 @@
 **__pycache__
 **.idea
 .vscode
+
+**.DS_Store
+
 docs/build
 dist
 build/
