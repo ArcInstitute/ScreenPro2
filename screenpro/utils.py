@@ -6,12 +6,12 @@ def find_low_counts(adata, filter_type='either', minimum_reads=50):
     """
     Label variables with low counts in either or all samples.
 
-    Args:
-        adata: AnnData object
-        filter_type: either or all
-        minimum_reads:
+    Parameters:
+        adata (AnnData): AnnData object
+        filter_type (str): either or all
+        minimum_reads (int): minimum number of reads
 
-    Returns: it's adding a True/False column to `adata.var['low_count']`
+    Returns:
         None
     """
     count_bin = adata.X >= minimum_reads
@@ -30,6 +30,19 @@ def find_low_counts(adata, filter_type='either', minimum_reads=50):
 
 
 def calculateGrowthFactor(screen, untreated, treated, db_rate_col):
+    """
+    Calculate growth factor for gamma, tau, or rho score per replicates.
+
+    Parameters:
+        screen (ScreenPro): ScreenPro object
+        untreated (str): untreated condition
+        treated (str): treated condition
+        db_rate_col (str): column name for doubling rate
+    
+    Returns:
+        pd.DataFrame: growth factor dataframe
+    """
+
     adat = screen.adata.copy()
 
     growth_factors = []
@@ -52,12 +65,14 @@ def ann_score_df(df_in, up_hit='resistance_hit', down_hit='sensitivity_hit', ctr
     """
     Annotate score dataframe with hit labels using given `threshold`
     (i.e. `score/pseudo_sd * -np.log10(pvalue) >= threshold`).
-    Args:
+
+    Parameters:
         df_in (pd.DataFrame): score dataframe
         up_hit (str): up hit label
         down_hit (str): down hit label
         ctrl_label (str): control label
         threshold (int): threshold
+    
     Returns:
         pd.DataFrame: annotated score dataframe
     """
