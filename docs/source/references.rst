@@ -2,6 +2,8 @@ References
 ----------
 * :cite:t:`Herken2023` *bioRxiv* - Gilbert Lab
 
+* :cite:t:`Hsiung2023` *bioRxiv* - Gilbert Lab
+
 * :cite:t:`Han2020` *Nature* - Bassik Lab
 
 * :cite:t:`Han2017` *Nature Biotechnology* - Bassik Lab
@@ -22,4 +24,4 @@ References
 =============
 
 .. bibliography::
-    :cited:
+    :all:
