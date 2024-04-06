@@ -10,11 +10,13 @@ from statsmodels.stats.multitest import multipletests
 def matrixStat(x, y, test, level):
     """
     Get p-values comparing `y` vs `x` matrices.
-    Args:
+
+    Parameters:
         x (np.array): array of values
         y (np.array): array of values
         test (str): test to use for calculating p-value
         level (str): level at which to calculate p-value
+    
     Returns:
         np.array: array of p-values
     """
@@ -41,6 +43,13 @@ def matrixStat(x, y, test, level):
 def getFDR(p_values, method='fdr_bh'):
     """
     Calculate FDR.
+
+    Parameters:
+        p_values (np.array): array of p-values
+        method (str): method to use for calculating FDR
+    
+    Returns:
+        np.array: array of adjusted p-values
     """
     # fill na with 1
     p_values[np.isnan(p_values)] = 1

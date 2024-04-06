@@ -16,10 +16,12 @@ def loadScreenProcessingData(experimentName, collapsedToTranscripts=True, premer
         * `*_librarytable.txt` => library table
         * `*_mergedcountstable.txt` => merged counts table
         * `*_phenotypetable.txt` => phenotype table
-    Args:
+
+    Parameters:        
         experimentName (str): name of the experiment
         collapsedToTranscripts (bool): whether the gene scores are collapsed to transcripts
         premergedCounts (bool): whether the counts are premerged
+    
     Returns:
         dict: dictionary of dataframes
     """
@@ -83,7 +85,8 @@ def loadScreenProcessingData(experimentName, collapsedToTranscripts=True, premer
 def write_screen_pkl(screen, name):
     """
     Write AnnData object to a pickle file
-    Args:
+    
+    Parameters:
         screen (object): ScreenPro object to save
         name (str): name of the output file (.pkl extension will be added)
     """
@@ -96,7 +99,8 @@ def write_screen_pkl(screen, name):
 def read_screen_pkl(name):
     """
     Read ScreenPro object from a pickle file
-    Args:
+    
+    Parameters:
         name (str): name of the input file (.pkl extension will be added)
     """
     file_name = f'{name}.pkl'
