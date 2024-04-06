@@ -128,6 +128,13 @@ screen.calculateFlowBasedScreen(
   score_level='compare_reps'
 )
 ```
+
+### Step 3: Explore results and QC reports
+
+Once the phenotypes are calculated, you can extract and explore the results using the `.phenotypes` attribute of the `ScreenPro` object. Currently, there are very limited functionalities built-in to visualize the results, but we are working on adding more features to make it easier for users. However, you can easily extract the results and use other libraries like `seaborn` and `matplotlib` in Python or `ggplot2` in R to visualize the results.
+
+___
+
 ## Supported CRISPR Screen Platforms
 One of the main goals of ScreenPro2 is to make it easy to process data from commonly used CRISPR screen platforms.
 Also, it is designed to be modular to enable easy extension to custom CRISPR screen platforms or other commonly used
