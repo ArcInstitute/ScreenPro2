@@ -50,6 +50,7 @@ autodoc_mock_imports = [
 # Bibliography settings
 bibtex_bibfiles = ["references.bib"]
 bibtex_reference_style = "author_year"
+bibtex_default_style = 'unsrt'
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']

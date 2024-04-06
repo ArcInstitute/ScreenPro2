@@ -22,7 +22,4 @@ References
 =============
 
 .. bibliography::
-    :style: plain
     :cited:
-    :labelprefix: B
-    :keyprefix: b-
