@@ -18,4 +18,11 @@ References
 
 * :cite:t:`Bassik2013` *Cell* - Weissman Lab
 
+
+=============
+
 .. bibliography::
+    :style: plain
+    :cited:
+    :labelprefix: B
+    :keyprefix: b-
