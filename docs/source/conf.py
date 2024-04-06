@@ -2,7 +2,7 @@ import os
 import sys
 sys.path.insert(0, os.path.abspath('../..'))
 
-import screenpro
+from screenpro import __version__
 
 
 # -- General configuration ---------------------------------------------
@@ -16,8 +16,8 @@ copyright = "2022-2024 – ScreenPro2 Developers Team"
 
 repository_url = "https://github.com/ArcInstitute/ScreenPro2"
 
-version = screenpro.__version__
-release = version
+version = __version__
+release = __version__
 
 language = 'en'
 
