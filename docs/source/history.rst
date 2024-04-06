@@ -6,11 +6,13 @@ History
 ~~~~~~~~~~~~~~~~
 * add command line interface
 
-0.2.7 - 0.2.8 (Mar 2024)
+0.2.7 - 0.2.9 (Mar 2024 - Apr 2024)
 ~~~~~~~~~~~~~~~~
-* introduce `ngs` module to process fastq files and generate count matrix
-  * Support both single-guide and dual-guide library design #37
+* introduce `ngs` module
+  process fastq files from single, dual, or multiplexed Cas9 and Cas12 screens
+  * Support both single-guide and dual-guide Cas9 library design #37
   (i.e. V2 and V3 genome-scale dCas9 screen platforms)
+  * Support higher-order Cas12 screens #39
 * phenoScore and phenoStats modules
   * add missing features to support single-guide-design screens (i.e. V2 CRISPRi/a screens)
 
