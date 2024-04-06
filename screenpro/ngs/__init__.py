@@ -27,9 +27,10 @@ library of protospacer A and B pairs.
 Theoretically, the algorithm is able to detect any observed sequence since it is counting first
 and then mapping. Therefore, the recombination events can be detected. In dual-guide design
 protospacer A and B are not the same pairs as in the reference library. These events include:
-* Protospacer A and B pairs are present in the reference library but paired differently
-* Only one of the protospacer A and B is present in the reference library
-* None of the protospacer A and B is present in the reference library
+
+- Protospacer A and B pairs are present in the reference library but paired differently
+- Only one of the protospacer A and B is present in the reference library
+- None of the protospacer A and B is present in the reference library
 '''
 
 from . import cas9
