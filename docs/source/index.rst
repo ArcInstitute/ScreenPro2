@@ -9,7 +9,7 @@ Welcome to ScreenPro2's documentation!
    usage
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 3
    :caption: Module Documentation
 
    screenpro
@@ -22,6 +22,12 @@ Welcome to ScreenPro2's documentation!
    :caption: Developer Notes
 
    history
+
+
+References
+===========
+
+.. bibliography::
 
 Indices and tables
 ==================
