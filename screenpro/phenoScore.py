@@ -10,12 +10,11 @@ from .utils import find_low_counts
 
 
 def calculateDelta(x, y, math, level):
-    """
-    Calculate log ratio of y / x.
+    """Calculate log ratio of y / x.
     `level` == 'all' (i.e. averaged across all values, oligo and replicates)
     `level` == 'col' (i.e. averaged across columns, replicates)
 
-    Parameters:
+    Args:
         x (np.array): array of values
         y (np.array): array of values
         math (str): math to use for calculating score
@@ -55,10 +54,9 @@ def calculateDelta(x, y, math, level):
 
 
 def calculatePhenotypeScore(x, y, x_ctrl, y_ctrl, growth_rate, math, level):
-    """
-    Calculate phenotype score normalized by negative control and growth rate.
+    """Calculate phenotype score normalized by negative control and growth rate.
     
-    Parameters:
+    Args:
         x (np.array): array of values
         y (np.array): array of values
         x_ctrl (np.array): array of values
@@ -81,10 +79,9 @@ def calculatePhenotypeScore(x, y, x_ctrl, y_ctrl, growth_rate, math, level):
 
 
 def matrixTest(x, y, x_ctrl, y_ctrl, math, level, test = 'ttest', growth_rate = 1):
-    """
-    Calculate phenotype score and p-values comparing `y` vs `x` matrices.
+    """Calculate phenotype score and p-values comparing `y` vs `x` matrices.
 
-    Parameters:
+    Args:
         x (np.array): array of values
         y (np.array): array of values
         x_ctrl (np.array): array of values
@@ -114,10 +111,9 @@ def matrixTest(x, y, x_ctrl, y_ctrl, math, level, test = 'ttest', growth_rate = 
 def runPhenoScore(adata, cond1, cond2, math, score_level, test,
                   growth_rate=1, n_reps=2, keep_top_n = None,num_pseudogenes=None,
                   get_z_score=False,ctrl_label='negCtrl'):
-    """
-    Calculate phenotype score and p-values when comparing `cond2` vs `cond1`.
+    """Calculate phenotype score and p-values when comparing `cond2` vs `cond1`.
 
-    Parameters:
+    Args:
         adata (AnnData): AnnData object
         cond1 (str): condition 1
         cond2 (str): condition 2
@@ -269,10 +265,9 @@ def runPhenoScore(adata, cond1, cond2, math, score_level, test,
 
 
 def seqDepthNormalization(adata):
-    """
-    Normalize counts by sequencing depth.
+    """Normalize counts by sequencing depth.
     
-    Parameters:
+    Args:
         adata (AnnData): AnnData object
     """
     # normalize counts by sequencing depth
@@ -306,7 +301,7 @@ def addPseudoCount():
 def calculateZScorePhenotypeScore(score_df,ctrl_label='negCtrl'):
     """Calculate z-score normalized phenotype score.
     
-    Parameters:
+    Args:
         score_df (pd.DataFrame): dataframe of scores that includes `score` and `targetType` columns
         ctrl_label (str): control label, default is 'negCtrl'
     
@@ -322,10 +317,9 @@ def calculateZScorePhenotypeScore(score_df,ctrl_label='negCtrl'):
 
 
 def runPhenoScoreForReplicate(screen, x_label, y_label, score, growth_factor_table, get_z_score=False, ctrl_label='negCtrl'):
-    """
-    Calculate phenotype score for each pair of replicates.
+    """Calculate phenotype score for each pair of replicates.
 
-    Parameters:
+    Args:
         screen: ScreenPro object
         x_label: name of the first condition in column `condition` of `screen.adata.obs`
         y_label: name of the second condition in column `condition` of `screen.adata.obs`
@@ -373,10 +367,9 @@ def runPhenoScoreForReplicate(screen, x_label, y_label, score, growth_factor_tab
 
 
 def generatePseudoGeneLabels(adata, num_pseudogenes=None, ctrl_label='negCtrl'):
-    """
-    Generate new labels per `num_pseudogenes` randomly selected non targeting oligo in `adata.var`.
+    """Generate new labels per `num_pseudogenes` randomly selected non targeting oligo in `adata.var`.
 
-    Parameters:
+    Args:
         adata (AnnData): AnnData object
         num_pseudogenes (int): number of pseudogenes
         ctrl_label (str): control label
