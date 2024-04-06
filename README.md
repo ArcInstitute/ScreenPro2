@@ -10,12 +10,18 @@ The complete docs are available at [screenpro2.rtfd.io](https://screenpro2.readt
 ## Table of Contents
 - [Installation](#installation)
 - [Usage](#usage)
-  * [Load Data](#load-data)
-  * [Perform Screen Processing Analysis](#perform-screen-processing-analysis)
-    + [Drug Screen Workflow: calculate `gamma`, `rho`, and `tau` scores](#drug-screen-workflow-calculate-gamma-rho-and-tau-scores)
-    + [Flow cytometry based screen workflow: calculate phenotype score to compare high and low bins](#flow-cytometry-based-screen-workflow-calculate-phenotype-score-to-compare-high-and-low-bins)
+  * [Step 1: FASTQ to counts](#step-1-fastq-to-counts)
+  * [Step 2: Phenotype calculation](#step-2-phenotype-calculation)
+    + [Load Data](#load-data)
+    + [Perform Screen Processing Analysis](#perform-screen-processing-analysis)
+      - [Drug Screen Workflow: calculate `gamma`, `rho`, and `tau` scores](#drug-screen-workflow-calculate-gamma-rho-and-tau-scores)
+      - [Flow cytometry based screen workflow: calculate phenotype score to compare high and low bins](#flow-cytometry-based-screen-workflow-calculate-phenotype-score-to-compare-high-and-low-bins)
+  * [Step 3: Explore results and QC reports](#step-3-explore-results-and-qc-reports)
+
 - [Supported CRISPR Screen Platforms](#supported-crispr-screen-platforms)
-    + [CRISPRi-dual-sgRNA-screens](#crispri-dual-sgrna-screens)
+  * [dCas9 CRISPRa/i single-sgRNA screens](#dcas9-crispra/i-single-sgrna-screens)
+  * [dCas9 CRISPRa/i dual-sgRNA screens](#dcas9-crispra/i-dual-sgrna-screens)
+  <!-- * [multiCas12a CRISPRi screens](#multicas12a-crispri-screens) -->
 - [License](#license)
 - [Citation](#citation)
 
@@ -142,15 +148,17 @@ platforms in addition to the ones currently implemented.
 
 ___
 Currently, ScreenPro2 has easy-to-use workflows for the following CRISPR screen platforms:
-### CRISPRa/i-single-sgRNA-screens
+### dCas9 CRISPRa/i single-sgRNA screens
 [Horlbeck et al., _eLife_ (2016)](http://dx.doi.org/10.7554/eLife.19760)
 
 Horlbeck et al. developed a CRISPR interference (CRISPRi) and CRISPR activation (CRISPRa) screening platform that uses a single sgRNA within a single plasmid and then there are up to 10 sgRNAs per gene. The multiple sgRNAs per gene can be used to perfrom statistical comparisons in guide-level or gene-level between screen arms. [ScreenProcessing](https://github.com/mhorlbeck/ScreenProcessing) has been developed to process data from this type of screen. We reimplemented the same workflow in ScreenPro2 and it has all the necessary tools to process data from this type of screen. An automated workflow / pipeline will be available soon.
 
-### CRISPRa/i-dual-sgRNA-screens
+### dCas9 CRISPRa/i dual-sgRNA screens
 [Replogle et al., _eLife_ (2022)](https://elifesciences.org/articles/81856)
 
 Replogle et al. developed a CRISPR interference (CRISPRi) and CRISPR activation (CRISPRa) screening platform that uses two sgRNAs per gene within a single plasmid, and it has been used to perform genome-scale CRISPRi screens. ScreenPro2 has all the necessary tools to process data from this type of screen. An automated workflow / pipeline will be available soon.
+
+<!-- ### multiCas12a CRISPRi screens -->
 
 ## License
 ScreenPro2 is licensed under the terms of the MIT license (see [LICENSE](LICENSE) for more information) and developed 
