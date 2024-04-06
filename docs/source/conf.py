@@ -7,6 +7,8 @@ from screenpro import __version__
 
 # -- General configuration ---------------------------------------------
 
+# https://brendanhasz.github.io/2019/01/05/sphinx.html
+
 # General information about the project.
 project = 'ScreenPro2'
 author = "ScreenPro2 Development Team"
@@ -66,12 +68,18 @@ pygments_style = 'sphinx'
 # If true, `todo` and `todoList` produce output, else they produce nothing.
 todo_include_todos = False
 
+# Enabling napoleon
+napoleon_google_docstring = True
+napoleon_numpy_docstring = False
+
 extensions = [
     'sphinx.ext.autodoc', 
-    'sphinx.ext.viewcode', 
-    'myst_parser',
-    "sphinxcontrib.bibtex",
+    'sphinx.ext.napoleon',
+    'sphinx.ext.intersphinx',
     "sphinx.ext.extlinks",
+    'sphinx.ext.viewcode', 
+    "sphinxcontrib.bibtex",
+    'myst_parser',
 ]
 
 # -- Options for HTML output -------------------------------------------
@@ -119,7 +127,7 @@ latex_elements = {
 latex_documents = [
     (master_doc, 'screenpro.tex',
      'ScreenPro2 Documentation',
-     'Abolfazl Arab', 
+     'ScreenPro2 Development Team', 
      'manual'),
 ]
 
@@ -141,6 +149,10 @@ texinfo_documents = [
         "Miscellaneous",
     )
 ]
+
+intersphinx_mapping = {
+    'anndata': ('https://anndata.readthedocs.io/en/latest/', None)
+}
 
 # extlinks config
 extlinks = {
