@@ -21,6 +21,30 @@ release = version
 
 language = 'en'
 
+# improve class docs
+# By default, Sphinx ignores docstrings for __init__.py and shows only top-level docstrings for the class itself. 
+
+autoclass_content = 'both'
+
+autodoc_mock_imports = [
+    "numpy",
+    "pandas",
+    "scipy",
+    "matplotlib",
+    "seaborn",
+    "scanpy",
+    "anndata",
+    "screenpro",
+    "pyarrow",
+    "biobear",
+    "click",
+    "polars",
+    "biobear",
+    "numba",
+    "pydeseq2",
+    "watermark"
+]
+
 # Bibliography settings
 bibtex_bibfiles = ["references.bib"]
 bibtex_reference_style = "author_year"

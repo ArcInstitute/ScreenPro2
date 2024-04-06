@@ -1,10 +1,7 @@
 sphinx
-pandas
-anndata
-scanpy
 myst-parser
 sphinx_bootstrap_theme
 pip
 nbsphinx
 sphinx-rtd-theme
-pydeseq2
+sphinxcontrib-bibtex
