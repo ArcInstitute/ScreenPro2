@@ -57,7 +57,7 @@ def get_spacers_cas12(df_count,DRref):
     return df_count, out
 
 
-def map_to_cas12_pairs_library(df_count,library,DR1_seq, get_recominant=False, verbose=False):
+def map_to_cas12_pairs_library(df_count,library,DR1_seq, get_recombinant=False, verbose=False):
     
     t0 = time()
     
@@ -83,7 +83,7 @@ def map_to_cas12_pairs_library(df_count,library,DR1_seq, get_recominant=False, v
         print(f"% counts mapped to library: {perc_mapped}")
         
 
-    if get_recominant:
+    if get_recombinant:
         df_res_unmap = df_count_split.join(
             pl.DataFrame(
                 library[['SP1_sequence','SP2_sequence']].reset_index()
@@ -124,7 +124,7 @@ def map_to_cas12_pairs_library(df_count,library,DR1_seq, get_recominant=False, v
         return df_res
 
 
-def map_to_cas12_triplets_library(df_count,library,DR1_seq, DR2_seq, get_recominant=False, verbose=False):
+def map_to_cas12_triplets_library(df_count,library,DR1_seq, DR2_seq, get_recombinant=False, verbose=False):
     
     t0 = time()
     
@@ -157,7 +157,7 @@ def map_to_cas12_triplets_library(df_count,library,DR1_seq, DR2_seq, get_recomin
         
         print(f"% counts mapped to library: {perc_mapped}")
 
-    if get_recominant:
+    if get_recombinant:
         df_res_unmap = df_count_split.join(
             pl.DataFrame(
                 library[['SP1_sequence','SP2_sequence','SP3_sequence']].reset_index()
