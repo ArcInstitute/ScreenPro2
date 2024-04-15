@@ -1,9 +1,11 @@
 import argparse
 import sys
+import os 
+import pandas as pd
+import polars as pl
 
-# Custom functions
 from .__init__ import __version__
-
+from . import ngs
 
 def add_fq2cnt_parser(parent_subparsers, parent):
     name = "fq2cnt",
@@ -18,6 +20,14 @@ def add_fq2cnt_parser(parent_subparsers, parent):
 
     sub_parser = parent_subparsers.add_parser(
         name, parents=[parent], description=desc, help=help, add_help=True
+    )
+
+    sub_parser.add_argument(
+        '-c',
+        '--cas-type',
+        type=str,
+        default='cas9',
+        help='Type of Cas protein used for the screen. Default: cas9'
     )
 
     sub_parser.add_argument(
