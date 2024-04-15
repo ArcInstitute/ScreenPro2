@@ -83,4 +83,44 @@ def main():
 
     # fq2cnt subcommand
     fq2cnt_parser = add_fq2cnt_parser(parent_subparsers, parent)
+
+    ## Define return values
+    args = parent_parser.parse_args()
+
+    # Help return
+    if args.help:
+        # Retrieve all subparsers from the parent parser
+        subparsers_actions = [
+            action
+            for action in parent_parser._actions
+            if isinstance(action, argparse._SubParsersAction)
+        ]
+        for subparsers_action in subparsers_actions:
+            # Get all subparsers and print help
+            for choice, subparser in subparsers_action.choices.items():
+                print("Subparser '{}'".format(choice))
+                print(subparser.format_help())
+        sys.exit(1)
+
+    # Version return
+    if args.version:
+        print(f"screenpro version: {__version__}")
+        sys.exit(1)
+
+    # Show help when no arguments are given
+    if len(sys.argv) == 1:
+        parent_parser.print_help(sys.stderr)
+        sys.exit(1)
+
+    # Show module specific help if only module but no further arguments are given
+    command_to_parser = {
+        "fq2cnt": fq2cnt_parser,
+    }
+
+    if len(sys.argv) == 2:
+        if sys.argv[1] in command_to_parser:
+            command_to_parser[sys.argv[1]].print_help(sys.stderr)
+        else:
+            parent_parser.print_help(sys.stderr)
+        sys.exit(1)
     
