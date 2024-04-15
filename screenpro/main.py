@@ -5,8 +5,8 @@ import sys
 from .__init__ import __version__
 
 
-def add_fq2count_parser(parent_subparsers, parent):
-    name = "fq2count",
+def add_fq2cnt_parser(parent_subparsers, parent):
+    name = "fq2cnt",
     desc = "Process FASTQ files to count sgRNA sequences."
     help = """
     Example usage:
@@ -81,6 +81,6 @@ def main():
 
     ## screenpro commands
 
-    # fq2count subcommand
-    fq2count_parser = add_fq2count_parser(parent_subparsers, parent)
+    # fq2cnt subcommand
+    fq2cnt_parser = add_fq2cnt_parser(parent_subparsers, parent)
     
