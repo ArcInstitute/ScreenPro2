@@ -5,9 +5,11 @@ from . import phenoScore as ps
 from . import utils
 from . import ngs
 
-from .__version__ import __version__
 from copy import copy
 
+__version__ = "0.2.9"
+__author__ = "Abe Arab"
+__email__ = 'abea@arcinstitute.org' # "abarbiology@gmail.com"
 
 class ScreenPro(object):
     """
@@ -21,7 +23,7 @@ class ScreenPro(object):
             math (str): math transformation to apply to the data before calculating phenotype scores
             test (str): statistical test to use for calculating phenotype scores
         """
-        self.adata = adata
+        self = adata
         self.math = math
         self.test = test
         self.n_reps = n_reps
@@ -33,7 +35,7 @@ class ScreenPro(object):
             scores = "', '".join(self.phenotypes[score_level].columns.get_level_values(0).unique().to_list())
             descriptions += f"Phenotypes in score_level = '{score_level}':\n    scores: '{scores}'\n"
 
-        return f'obs->samples\nvar->oligos\n\n{self.adata.__repr__()}\n\n{descriptions}'
+        return f'obs->samples\nvar->oligos\n\n{self.__repr__()}\n\n{descriptions}'
 
     def copy(self):
         return copy(self)
