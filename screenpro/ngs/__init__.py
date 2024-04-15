@@ -51,34 +51,43 @@ class Counter:
         '''Load library file
         '''
         if self.cas_type == 'cas9':
+            library = pd.read_csv(
+                library_path,
+                sep='\t',
+                index_col=0,
+            )
+
+            # I would like to name the target column 'target' if it is named 'gene'!
+            if 'gene' in library.columns:
+                # rename gene column to target
+                library = library.rename(columns={'gene': 'target'})
+
+            # Evaluate library table
             if self.library_type == "single_guide_design":
-                library = pd.read_csv(
-                    library_path,
-                    sep='\t',
-                    index_col=0,
-                )
-                if 'gene' in library.columns:
-                    library = library.rename(columns={'gene': 'target'})
+                pass
+
             elif self.library_type == "dual_guide_design":
-                library = pd.read_csv(
-                    library_path,
-                    sep='\t',
-                    index_col=0,
-                )
+                # reformat columns for downstream analysis
                 if 'sgID_AB' in library.columns:
                     library = library.set_index('sgID_AB')
-                library = library[eval_columns]
                 library = library.rename(
                     columns={'protospacer_A':'protospacer_a','protospacer_B':'protospacer_b'}
                 )
+
                 if 'sequence' not in library.columns:
+                    # TODO: Enable trimming of protospacer sequences through command line arguments.
                     library.protospacer_a = library.protospacer_a.str.upper()
                     library.protospacer_b = library.protospacer_b.str[1:].str.upper()
                     library['sequence'] = library.protospacer_a + ';' + library.protospacer_b
+
+                # check required columns are present:
                 eval_columns = ['target', 'sequence', 'protospacer_A', 'protospacer_B', 'sequence']
                 for col in eval_columns:
                     if col not in library.columns:
                         raise ValueError(f"Column '{col}' not found in library table.")
+
+                library = library[eval_columns]
+
         elif self.cas_type == 'cas12':
             raise NotImplementedError("Cas12 library is not yet implemented.")
     
