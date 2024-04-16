@@ -11,15 +11,15 @@ class PooledScreens(object):
     pooledScreens class for processing CRISPR screen datasets
     """
 
-    def __init__(self, adata, math='log2(x+1)', test='ttest', n_reps=3):
+    def __init__(self, adata, transformation='log2(x+1)', test='ttest', n_reps=3):
         """
         Args:
             adata (AnnData): AnnData object with adata.X as a matrix of sgRNA counts
-            math (str): math transformation to apply to the data before calculating phenotype scores
+            transformation (str): transformation to apply to the data before calculating phenotype scores
             test (str): statistical test to use for calculating phenotype scores
         """
         self.adata = adata
-        self.math = math
+        self.transformation = transformation
         self.test = test
         self.n_reps = n_reps
         self.phenotypes = {}
@@ -51,18 +51,18 @@ class PooledScreens(object):
         gamma_name, gamma = ps.runPhenoScore(
             self.adata, cond1=t0, cond2=untreated, growth_rate=db_untreated,
             n_reps=self.n_reps,
-            math=self.math, test=self.test, score_level=score_level
+            transformation=self.transformation, test=self.test, score_level=score_level
         )
         tau_name, tau = ps.runPhenoScore(
             self.adata, cond1=t0, cond2=treated, growth_rate=db_treated,
             n_reps=self.n_reps,
-            math=self.math, test=self.test, score_level=score_level
+            transformation=self.transformation, test=self.test, score_level=score_level
         )
         # TO-DO: warning / error if db_untreated and db_treated are too close, i.e. growth_rate ~= 0.
         rho_name, rho = ps.runPhenoScore(
             self.adata, cond1=untreated, cond2=treated, growth_rate=np.abs(db_untreated - db_treated),
             n_reps=self.n_reps,
-            math=self.math, test=self.test, score_level=score_level
+            transformation=self.transformation, test=self.test, score_level=score_level
         )
 
         # save all results into a multi-index dataframe
@@ -83,7 +83,7 @@ class PooledScreens(object):
         # calculate phenotype scores
         phenotype_name, phenotype = ps.runPhenoScore(
             self.adata, cond1=low_bin, cond2=high_bin, n_reps=self.n_reps,
-            math=self.math, test=self.test, score_level=score_level
+            transformation=self.transformation, test=self.test, score_level=score_level
         )
 
         # save all results into a multi-index dataframe
