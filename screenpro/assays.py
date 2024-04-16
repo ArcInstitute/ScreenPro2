@@ -18,7 +18,7 @@ class PooledScreens(object):
             math (str): math transformation to apply to the data before calculating phenotype scores
             test (str): statistical test to use for calculating phenotype scores
         """
-        self = adata
+        self.adata = adata
         self.math = math
         self.test = test
         self.n_reps = n_reps
