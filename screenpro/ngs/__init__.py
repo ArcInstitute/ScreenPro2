@@ -90,7 +90,9 @@ class Counter:
 
         elif self.cas_type == 'cas12':
             raise NotImplementedError("Cas12 library is not yet implemented.")
-    
+        
+        self.library = library
+        
     def get_matrix(self, fastq_dir, samples,library,get_recombinant=False, cas_type='cas9',verbose=False):
         '''Get count matrix for given samples
         '''
