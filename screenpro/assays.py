@@ -1,7 +1,7 @@
 import numpy as np
 import pandas as pd
 
-from . import phenoScore as ps
+from . import phenoscore as ps
 
 from copy import copy
 
