@@ -1,15 +1,15 @@
 """
-phenoScore module
+phenoscore module
 """
 
 import numpy as np
 import pandas as pd
 from pydeseq2 import preprocessing
-from .phenoStats import matrixStat, getFDR
+from .phenostat import matrixStat, getFDR
 from .utils import find_low_counts
 
 
-def calculateDelta(x, y, math, level):
+def calculateDelta(x, y, transformation, level):
     """Calculate log ratio of y / x.
     `level` == 'all' (i.e. averaged across all values, oligo and replicates)
     `level` == 'col' (i.e. averaged across columns, replicates)
@@ -17,43 +17,43 @@ def calculateDelta(x, y, math, level):
     Args:
         x (np.array): array of values
         y (np.array): array of values
-        math (str): math to use for calculating score
+        transformation (str): transformation to use for calculating score
         level (str): level to use for calculating score
     
     Returns:
         np.array: array of log ratio values
     """
-    # check if math is implemented
-    if math not in ['log2(x+1)', 'log10', 'log1p']:
-        raise ValueError(f'math "{math}" not recognized')
+    # check if transformation is implemented
+    if transformation not in ['log2(x+1)', 'log10', 'log1p']:
+        raise ValueError(f'transformation "{transformation}" not recognized')
     
     if level == 'all':
         # average across all values
-        if math == 'log2(x+1)':
+        if transformation == 'log2(x+1)':
             return np.mean(np.log2(y+1) - np.log2(x+1))
-        elif math == 'log10':
+        elif transformation == 'log10':
             return np.mean(np.log10(y) - np.log10(x))
-        elif math == 'log1p':
+        elif transformation == 'log1p':
             return np.mean(np.log1p(y) - np.log1p(x))
     elif level == 'row':
         # average across rows
-        if math == 'log2(x+1)':
+        if transformation == 'log2(x+1)':
             return np.mean(np.log2(y+1) - np.log2(x+1), axis=0)
-        elif math == 'log10':
+        elif transformation == 'log10':
             return np.mean(np.log10(y) - np.log10(x), axis=0)
-        elif math == 'log1p':
+        elif transformation == 'log1p':
             return np.mean(np.log1p(y) - np.log1p(x), axis=0)
     elif level == 'col':
         # average across columns
-        if math == 'log2(x+1)':
+        if transformation == 'log2(x+1)':
             return np.mean(np.log2(y+1) - np.log2(x+1), axis=1)
-        elif math == 'log10':
+        elif transformation == 'log10':
             return np.mean(np.log10(y) - np.log10(x), axis=1)
-        elif math == 'log1p':
+        elif transformation == 'log1p':
             return np.mean(np.log1p(y) - np.log1p(x), axis=1)
 
 
-def calculatePhenotypeScore(x, y, x_ctrl, y_ctrl, growth_rate, math, level):
+def calculatePhenotypeScore(x, y, x_ctrl, y_ctrl, growth_rate, transformation, level):
     """Calculate phenotype score normalized by negative control and growth rate.
     
     Args:
@@ -62,23 +62,23 @@ def calculatePhenotypeScore(x, y, x_ctrl, y_ctrl, growth_rate, math, level):
         x_ctrl (np.array): array of values
         y_ctrl (np.array): array of values
         growth_rate (int): growth rate
-        math (str): math to use for calculating score
+        transformation (str): transformation to use for calculating score
         level (str): level to use for calculating score
     
     Returns:
         np.array: array of scores
     """
     # calculate control median and std
-    ctrl_median = np.median(calculateDelta(x=x_ctrl, y=y_ctrl, math=math, level=level))
+    ctrl_median = np.median(calculateDelta(x=x_ctrl, y=y_ctrl, transformation=transformation, level=level))
 
     # calculate delta
-    delta = calculateDelta(x=x, y=y, math=math, level=level)
+    delta = calculateDelta(x=x, y=y, transformation=transformation, level=level)
 
     # calculate score
     return (delta - ctrl_median) / growth_rate
 
 
-def matrixTest(x, y, x_ctrl, y_ctrl, math, level, test = 'ttest', growth_rate = 1):
+def matrixTest(x, y, x_ctrl, y_ctrl, transformation, level, test = 'ttest', growth_rate = 1):
     """Calculate phenotype score and p-values comparing `y` vs `x` matrices.
 
     Args:
@@ -86,7 +86,7 @@ def matrixTest(x, y, x_ctrl, y_ctrl, math, level, test = 'ttest', growth_rate = 
         y (np.array): array of values
         x_ctrl (np.array): array of values
         y_ctrl (np.array): array of values
-        math (str): math to use for calculating score
+        transformation (str): transformation to use for calculating score
         level (str): level to use for calculating score and p-value
         test (str): test to use for calculating p-value
         growth_rate (int): growth rate
@@ -98,7 +98,7 @@ def matrixTest(x, y, x_ctrl, y_ctrl, math, level, test = 'ttest', growth_rate = 
     # calculate growth score
     scores = calculatePhenotypeScore(
         x = x, y = y, x_ctrl = x_ctrl, y_ctrl = y_ctrl,
-        growth_rate = growth_rate, math = math,
+        growth_rate = growth_rate, transformation = transformation,
         level = level
     )
 
@@ -108,7 +108,7 @@ def matrixTest(x, y, x_ctrl, y_ctrl, math, level, test = 'ttest', growth_rate = 
     return scores, p_values
 
 
-def runPhenoScore(adata, cond1, cond2, math, score_level, test,
+def runPhenoScore(adata, cond1, cond2, transformation, score_level, test,
                   growth_rate=1, n_reps=2, keep_top_n = None,num_pseudogenes=None,
                   get_z_score=False,ctrl_label='negCtrl'):
     """Calculate phenotype score and p-values when comparing `cond2` vs `cond1`.
@@ -117,7 +117,7 @@ def runPhenoScore(adata, cond1, cond2, math, score_level, test,
         adata (AnnData): AnnData object
         cond1 (str): condition 1
         cond2 (str): condition 2
-        math (str): math to use for calculating score
+        transformation (str): transformation to use for calculating score
         test (str): test to use for calculating p-value ('MW': Mann-Whitney U rank; 'ttest' : t-test)
         score_level (str): score level
         growth_rate (int): growth rate
@@ -161,7 +161,7 @@ def runPhenoScore(adata, cond1, cond2, math, score_level, test,
         # calculate growth score and p_value
         scores, p_values = matrixTest(
             x=x, y=y, x_ctrl=x_ctrl, y_ctrl=y_ctrl,
-            math=math, level='col', test=test, 
+            transformation=transformation, level='col', test=test, 
             growth_rate=growth_rate
         )
         # get adjusted p-values
@@ -232,7 +232,7 @@ def runPhenoScore(adata, cond1, cond2, math, score_level, test,
             # calculate growth score and p_value
             target_scores, target_p_values = matrixTest(
                 x=x, y=y, x_ctrl=x_ctrl, y_ctrl=y_ctrl,
-                math=math, level='row', test=test,
+                transformation=transformation, level='row', test=test,
                 growth_rate=growth_rate
             )
 
@@ -346,7 +346,7 @@ def runPhenoScoreForReplicate(screen, x_label, y_label, score, growth_factor_tab
             y_ctrl=adat_ctrl[adat_ctrl.obs.query(f'condition == "{y_label}" & replicate == {str(replicate)}').index].X,
 
             growth_rate=growth_factor_table.query(f'score=="{score}" & replicate=={replicate}')['growth_factor'].values[0],
-            math=screen.math,
+            transformation=screen.transformation,
             level='row'  # there is only one column so `row` option here is equivalent to the value before averaging.
         )
 

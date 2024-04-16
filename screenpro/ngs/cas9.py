@@ -87,21 +87,66 @@ def fastq_to_count_dual_guide(
     return df_count
 
 
-def map_sample_counts_to_library(library, sample):
-    counts_df = library.copy()
+def map_to_library_dual_guide(df_count, library, get_recombinant=False, return_type='all', verbose=False):
+    # get counts for given input
+    res = df_count.copy()
+    res = res.sort('count', descending=True)
+    res = res.with_columns(
+        pl.concat_str(
+            [
+                pl.col("protospacer_a"),
+                pl.col("protospacer_b")
+            ],
+            separator=";",
+        ).alias("sequence"),
+    )
 
-    overlap = list(set(library.index.tolist()) & set(sample['sequence'].to_list()))
-    non_overlap = list(set(sample['sequence'].to_list()) - set(library.index.tolist()))
+    res_map = pl.DataFrame(library).join(
+            res, on="sequence", how="left"
+        )
+    if verbose:
+        print("% mapped reads",
+            100 * \
+            res_map.to_pandas()['count'].fillna(0).sum() / \
+            int(res.select(pl.sum("count")).to_pandas()['count'])
+        )
     
-    # sum counts of overlapping sequences
-    n_mapped_counts = sample.set_index('sequence').loc[overlap, 'count'].sum()
-    n_unmapped_counts = sample.set_index('sequence').loc[non_overlap, 'count'].sum()
+    if get_recombinant:
+        res_unmap = res.join(
+            pl.DataFrame(library), on="sequence", how="anti"
+        )
 
-    # print number of overlapping and non-overlapping sequences
-    print(f"% mapped sequences: {n_mapped_counts/sample['count'].sum():.2f}")
-    print(f"% non-mapped sequences: {n_unmapped_counts/sample['count'].sum():.2f}")
+        if verbose:
+            print("% unmapped reads",
+                100 * \
+                res_unmap.to_pandas()['count'].fillna(0).sum() / \
+                int(res.select(pl.sum("count")).to_pandas()['count'])
+            )
+        
+        res_unmap_remapped_a = res_unmap.join(
+            pl.DataFrame(library[['sgID_A','protospacer_a']]), on=["protospacer_a"], how="left"
+        )
 
-    counts_df['counts'] = 0
-    counts_df.loc[overlap, 'counts'] = sample.set_index('sequence').loc[overlap, 'count']
-
-    return counts_df
+        res_recomb_events = res_unmap_remapped_a.join(
+            pl.DataFrame(library[['sgID_B','protospacer_b']]), 
+            on=["protospacer_b"], how="left"
+        )
+        if verbose:            
+            print("% fully remapped recombination events",
+                100 * \
+                res_recomb_events.drop_nulls().to_pandas()['count'].fillna(0).sum() / \
+                int(res.select(pl.sum("count")).to_pandas()['count'])
+            )
+    
+    if get_recombinant and return_type == 'all':
+        sample_count = {'full': res,'mapped': res_map,'recomb': res_recomb_events}
+        return sample_count
+    elif get_recombinant and return_type == 'recomb':
+        return res_recomb_events
+    elif not get_recombinant and return_type == 'all':
+        sample_count = {'full': res,'mapped': res_map}
+        return sample_count
+    elif not get_recombinant and return_type == 'mapped':
+        return res_map
+    else:
+        raise ValueError("return_type must be either 'all' or 'mapped' or 'recomb'")

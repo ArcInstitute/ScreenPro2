@@ -1,7 +1,7 @@
 import numpy as np
 import anndata as ad
 import pandas as pd
-from screenpro.phenoScore import runPhenoScore
+from screenpro.phenoscore import runPhenoScore
 
 
 def test_runPhenoScore():
@@ -47,7 +47,7 @@ def test_runPhenoScore():
         adata=adat,
         cond1='A',
         cond2='B',
-        math='log2(x+1)',
+        transformation='log2(x+1)',
         test='ttest',
         score_level='compare_reps',
         growth_rate=1,

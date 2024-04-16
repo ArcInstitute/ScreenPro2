@@ -24,5 +24,6 @@ dependencies:
       - polars
       - biobear
       - numba
+      - simple_colors
       - pydeseq2
       - watermark
