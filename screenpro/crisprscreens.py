@@ -74,6 +74,11 @@ class PooledScreens(object):
         """
         Calculate phenotype scores for a flow-based screen dataset
         see this issue for discussion https://github.com/abearab/ScreenPro2/issues/17
+
+        Args:
+            low_bin (str): name of the low bin condition
+            high_bin (str): name of the high bin condition
+            score_level (str): name of the score level
         """
         # calculate phenotype scores
         phenotype_name, phenotype = ps.runPhenoScore(
