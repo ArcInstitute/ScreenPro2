@@ -1,7 +1,7 @@
 import numpy as np
 import pandas as pd
 
-from . import phenoscore as ps
+from .phenoscore import runPhenoScore
 
 from copy import copy
 
@@ -48,18 +48,18 @@ class PooledScreens(object):
             score_level (str): name of the score level
         """
         # calculate phenotype scores: gamma, tau, rho
-        gamma_name, gamma = ps.runPhenoScore(
+        gamma_name, gamma = runPhenoScore(
             self.adata, cond1=t0, cond2=untreated, growth_rate=db_untreated,
             n_reps=self.n_reps,
             transformation=self.transformation, test=self.test, score_level=score_level
         )
-        tau_name, tau = ps.runPhenoScore(
+        tau_name, tau = runPhenoScore(
             self.adata, cond1=t0, cond2=treated, growth_rate=db_treated,
             n_reps=self.n_reps,
             transformation=self.transformation, test=self.test, score_level=score_level
         )
         # TO-DO: warning / error if db_untreated and db_treated are too close, i.e. growth_rate ~= 0.
-        rho_name, rho = ps.runPhenoScore(
+        rho_name, rho = runPhenoScore(
             self.adata, cond1=untreated, cond2=treated, growth_rate=np.abs(db_untreated - db_treated),
             n_reps=self.n_reps,
             transformation=self.transformation, test=self.test, score_level=score_level
@@ -81,7 +81,7 @@ class PooledScreens(object):
             score_level (str): name of the score level
         """
         # calculate phenotype scores
-        phenotype_name, phenotype = ps.runPhenoScore(
+        phenotype_name, phenotype = runPhenoScore(
             self.adata, cond1=low_bin, cond2=high_bin, n_reps=self.n_reps,
             transformation=self.transformation, test=self.test, score_level=score_level
         )
