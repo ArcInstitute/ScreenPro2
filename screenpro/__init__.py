@@ -1,5 +1,5 @@
 from . import plotting as pl
-from . import phenoScore as ps
+from . import phenoscore as ps
 from . import utils
 from . import ngs
 from .assays import PooledScreens, GImaps

@@ -5,7 +5,7 @@ phenoScore module
 import numpy as np
 import pandas as pd
 from pydeseq2 import preprocessing
-from .phenoStats import matrixStat, getFDR
+from .phenostat import matrixStat, getFDR
 from .utils import find_low_counts
 
 
