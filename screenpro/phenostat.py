@@ -1,5 +1,5 @@
 """
-phenoStats module
+phenostat module
 """
 
 from scipy.stats import ttest_rel
