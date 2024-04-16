@@ -134,3 +134,46 @@ def main():
             parent_parser.print_help(sys.stderr)
         sys.exit(1)
     
+    ## fq2cnt return
+    if args.command == "fq2cnt":
+        ### Perform checks on input arguments
+        ## Check if library platform is provided by user
+        if args.single_guide_design:
+            library_type = "single_guide_design"
+        elif args.dual_guide_design:
+            library_type = "dual_guide_design"
+        else:
+            print("Library type not provided. Available options are '--single-guide-design' or '--dual-guide-design'. Exiting...")
+            sys.exit(1)
+
+        if args.out:
+            pass
+        else:
+            print("No output directory provided. Exiting...")
+            sys.exit(1)
+        
+        ### Parse input files: library, sample sheet, and fastq files
+        counter = ngs.Counter(args.cas_type, args.library_type)
+        ## 1. Load library table and check if required columns are present
+        counter.load_library(args.library)
+
+        counter.library.to_csv(
+            f"{args.out}/library.reformatted.tsv",
+            sep='\t'
+        )
+        print(f"Library table saved to {args.out}/library.reformatted.tsv")
+
+        ## 2. Load sample sheet and check if required information are provided
+        # Check if required columns are present
+        # TODO: Add more columns to check for sample sheet
+
+        # Create saving directory
+        directory = "/".join(args.out.split("/")[:-1])
+        if directory != "":
+            os.makedirs(directory, exist_ok=True)        
+        
+        ## 3. Load FASTQ files and count sgRNA sequences
+        # Save count matrix
+
+        # TODO: Implement fq2cnt workflow.
+        # process FASTQ files to generate counts per sample and then save a count matrix.
