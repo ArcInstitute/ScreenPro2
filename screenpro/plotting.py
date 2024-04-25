@@ -180,8 +180,10 @@ def plotReplicateScatter(ax, adat_in, x, y, title, min_val=None, max_val=None, l
     
     if min_val is None:
         min_val = min([adat.to_df().loc[x_lab,:].min(), adat.to_df().loc[y_lab,:].min()])
+        min_val = min_val * 1.1 
     if max_val is None:
         max_val = max([adat.to_df().loc[x_lab,:].max(), adat.to_df().loc[y_lab,:].max()])
+        max_val = max_val * 1.1
     
     sc.pl.scatter(
         adat,
