@@ -169,13 +169,15 @@ def label_resistance_hit(ax, df_in, label, threshold, size=2, size_txt=None,
                     color='black', size=size_txt)
 
 
-def plotReplicateScatter(ax, adata, x, y, title, min_val=-2, max_val=2):
+def plotReplicateScatter(ax, adata, x, y, title, min_val=-2, max_val=2, log_transform=True):
     bdata = adata[[x, y], :].copy()
 
     bdata.obs.index = [f'Replicate {str(r)}' for r in bdata.obs.replicate.to_list()]
     x_lab, y_lab = [f'Replicate {str(r)}' for r in bdata.obs.replicate.to_list()]
 
-    sc.pp.log1p(bdata)
+    if log_transform:
+        bdata = sc.pp.log1p(bdata)
+    
     sc.pl.scatter(
         bdata,
         x_lab, y_lab,
