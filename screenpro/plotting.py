@@ -176,7 +176,7 @@ def plotReplicateScatter(ax, adat_in, x, y, title, min_val=None, max_val=None, l
     x_lab, y_lab = [f'Replicate {str(r)}' for r in adat.obs.replicate.to_list()]
 
     if log_transform:
-        adat = sc.pp.log1p(adat)
+        sc.pp.log1p(adat)
     
     if min_val is None:
         min_val = min(adat[x,:].X.min(), adat[y,:].X.min())
