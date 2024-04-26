@@ -169,15 +169,24 @@ def label_resistance_hit(ax, df_in, label, threshold, size=2, size_txt=None,
                     color='black', size=size_txt)
 
 
-def plotReplicateScatter(ax, adata, x, y, title, min_val=-2, max_val=2):
-    bdata = adata[[x, y], :].copy()
+def plotReplicateScatter(ax, adat_in, x, y, title, min_val=None, max_val=None, log_transform=True):
+    adat = adat_in[[x, y], :].copy()
 
-    bdata.obs.index = [f'Replicate {str(r)}' for r in bdata.obs.replicate.to_list()]
-    x_lab, y_lab = [f'Replicate {str(r)}' for r in bdata.obs.replicate.to_list()]
+    adat.obs.index = [f'Replicate {str(r)}' for r in adat.obs.replicate.to_list()]
+    x_lab, y_lab = [f'Replicate {str(r)}' for r in adat.obs.replicate.to_list()]
 
-    sc.pp.log1p(bdata)
+    if log_transform:
+        sc.pp.log1p(adat)
+    
+    if min_val is None:
+        min_val = min([adat.to_df().loc[x_lab,:].min(), adat.to_df().loc[y_lab,:].min()])
+        min_val = min_val * 1.1 
+    if max_val is None:
+        max_val = max([adat.to_df().loc[x_lab,:].max(), adat.to_df().loc[y_lab,:].max()])
+        max_val = max_val * 1.1
+    
     sc.pl.scatter(
-        bdata,
+        adat,
         x_lab, y_lab,
         legend_fontsize='xx-large',
         palette=[almost_black, '#BFBFBF'],
