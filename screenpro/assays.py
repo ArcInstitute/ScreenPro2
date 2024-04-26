@@ -2,7 +2,6 @@
 Assays module
 """
 
-import sys
 import numpy as np
 import pandas as pd
 
@@ -15,8 +14,6 @@ class PooledScreens(object):
     """
     pooledScreens class for processing CRISPR screen datasets
     """
-
-    sys.setrecursionlimit(10**6)  # Increase the maximum recursion depth
 
     def __init__(self, adata, transformation='log2(x+1)', test='ttest', n_reps=3):
         """
@@ -31,13 +28,13 @@ class PooledScreens(object):
         self.n_reps = n_reps
         self.phenotypes = {}
 
-    def __repr__(self):
-        descriptions = ''
-        for score_level in self.phenotypes.keys():
-            scores = "', '".join(self.phenotypes[score_level].columns.get_level_values(0).unique().to_list())
-            descriptions += f"Phenotypes in score_level = '{score_level}':\n    scores: '{scores}'\n"
+    # def __repr__(self):
+    #     descriptions = ''
+    #     for score_level in self.phenotypes.keys():
+    #         scores = "', '".join(self.phenotypes[score_level].columns.get_level_values(0).unique().to_list())
+    #         descriptions += f"Phenotypes in score_level = '{score_level}':\n    scores: '{scores}'\n"
 
-        return f'obs->samples\nvar->oligos\n\n{self.__repr__()}\n\n{descriptions}'
+    #     return f'obs->samples\nvar->oligos\n\n{self.__repr__()}\n\n{descriptions}'
 
     def copy(self):
         return copy(self)
