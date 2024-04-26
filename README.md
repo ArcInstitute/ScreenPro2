@@ -79,7 +79,7 @@ The `AnnData` object should have the following structure:
   - "targetType" column should be the type of reference oligo. Currently, negative control oligos should have
     `"targetType" == "negCtrl"`
 
-Then you need create a `ScreenPro` object. Here is an example code making a `ScreenPro` object from an `AnnData` object:
+Then you need create a relevant object. Here is an example code making a `PooledScreens` object from an `AnnData` object as input:
 
 ```python
 import pandas as pd
