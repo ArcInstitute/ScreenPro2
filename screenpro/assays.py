@@ -2,6 +2,7 @@
 Assays module
 """
 
+import sys
 import numpy as np
 import pandas as pd
 
@@ -14,6 +15,8 @@ class PooledScreens(object):
     """
     pooledScreens class for processing CRISPR screen datasets
     """
+
+    sys.setrecursionlimit(10**6)  # Increase the maximum recursion depth
 
     def __init__(self, adata, transformation='log2(x+1)', test='ttest', n_reps=3):
         """
