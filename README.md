@@ -84,7 +84,7 @@ Then you need create a `ScreenPro` object. Here is an example code making a `Scr
 ```python
 import pandas as pd
 import anndata as ad
-import screenpro as scp
+from screenpro2.assays import PooledScreens
 
 adata = ad.AnnData(
     X   = counts_df, # pandas dataframe of counts (samples x oligos)
@@ -92,7 +92,7 @@ adata = ad.AnnData(
     var = target_df  # pandas dataframe of oligo metadata including "target" and "targetType" columns
 )
 
-screen = scp.ScreenPro(adata)
+screen = PooledScreens(adata)
 ```
 <img width="600" alt="image" src="https://github.com/abearab/ScreenPro2/assets/53412130/d1c8c3ad-3668-4390-8b1d-bf72b591a927">
 
