@@ -58,8 +58,9 @@ Data analysis for CRISPR screens with NGS readouts can be broken down into three
 
 ### Step 1: FASTQ to counts
 
-Since version 0.2.7, ScreenPro2 has a built-in method to process FASTQ files and generate counts. This method is implemented in the `ngs` module and relvent submodules. A minor novelty here has enabled processing single, dual, or multiple sgRNA CRISPR screens. Also, this approach can retain recombination events which can occur in dual or higher
-order sgRNA CRISPR screens.
+Since version 0.2.7, ScreenPro2 has a built-in method to process FASTQ files and generate counts. This method is implemented in the `ngs` module 
+and relvent submodules. A minor novelty here has enabled processing single, dual, or multiple sgRNA CRISPR screens. Also, this approach can retain 
+recombination events which can occur in dual or higher order sgRNA CRISPR screens.
 
 There is no example code for this step yet, but a command line interface (CLI) will be available soon. 
 
