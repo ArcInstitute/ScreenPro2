@@ -65,31 +65,38 @@ There is no example code for this step yet, but a command line interface (CLI) w
 
 ### Step 2: Phenotype calculation
 
-Once you have the counts, you can use ScreenPro2 `phenoScore` and `phenoStats` modules to calculate the phenotype scores and statistics between screen arms.
+Once you have the counts, you can use ScreenPro2 `phenoscore` and `phenostats` modules to calculate the phenotype scores and statistics between screen arms.
 
 #### Load Data
-First, load your data into an `AnnData` object (see [anndata](https://anndata.readthedocs.io/en/latest/index.html) for 
-more information).
+First, load your data into an `AnnData` object (see [anndata](https://anndata.readthedocs.io/en/latest/index.html) for more information).
 
-The `AnnData` object should have the following structure:
-- `adata.X` should be a pandas dataframe of counts (samples x oligos)
-- `adata.obs` should be a pandas dataframe of sample metadata including "condition" and "replicate" columns
-- `adata.var` should be a pandas dataframe of oligo metadata including "target" and "targetType" columns
-  - "target" column should be the gene name or other identifier for the reference oligo
-  - "targetType" column should be the type of reference oligo. Currently, negative control oligos should have
-    `"targetType" == "negCtrl"`
+The `AnnData` object must have the following contents:
+- `adata.X` – counts matrix (samples x targets) where each value represents the sequencing count from NGS data.
+- `adata.obs` – a pandas dataframe of samples metadata including "condition" and "replicate" columns.
+  - "condition": the condition for each sample in the experiment.
+  - "replicate": the replicate number for each sample in the experiment.
+- `adata.var` – a pandas dataframe of targets in sgRNA library including "target" and "targetType" columns.
+  - "target": the target for each entry in reference sgRNA library. For single sgRNA libraries, this column can be 
+    used to store gene names. For dual or multiple targeting sgRNA libraries, this column can be used to store gene pairs
+    or any other relevant information about the target.
+  - "targetType": the type of target for each entry in reference sgRNA library. Note that this column is used to 
+    distinguish between different types of sgRNAs in the library and negative control sgRNAs can be defined as `"targetType" == "negCtrl"`.
+    This is important for the phenotype calculation step.
 
-Then you need create a relevant object. Here is an example code making a `PooledScreens` object from an `AnnData` object as input:
+
+ScreenPro2 has a built-in class for different types of CRISPR screen assays. Currently, there is a class called `PooledScreens` 
+that can be used to process data from pooled CRISPR screens. To create a `PooledScreens` object from an `AnnData` object, 
+you can use the following example code:
 
 ```python
 import pandas as pd
 import anndata as ad
-from screenpro2.assays import PooledScreens
+from screenpro.assays import PooledScreens
 
 adata = ad.AnnData(
-    X   = counts_df, # pandas dataframe of counts (samples x oligos)
-    obs = meta_df,   # pandas dataframe of sample metadata including "condition" and "replicate" columns
-    var = target_df  # pandas dataframe of oligo metadata including "target" and "targetType" columns
+    X   = counts_df, # pandas dataframe of counts (samples x targets)
+    obs = meta_df,   # pandas dataframe of samples metadata including "condition" and "replicate" columns
+    var = target_df  # pandas dataframe of targets metadata including "target" and "targetType" columns
 )
 
 screen = PooledScreens(adata)
@@ -97,13 +104,12 @@ screen = PooledScreens(adata)
 <img width="600" alt="image" src="https://github.com/abearab/ScreenPro2/assets/53412130/d1c8c3ad-3668-4390-8b1d-bf72b591a927">
 
 #### Perform Screen Processing Analysis
-Once the `ScreenPro` object is created, you can use several available workflows to calculate the enrichment of each oligo 
-between screen arms. 
+Once the screen object is created, you can use several available workflows to calculate the phenotype scores and statisitics by comparing each entry in reference sgRNA library between screen arms. Then, these scores and statistics are used to nominate hits.
 
 ##### Drug Screen Workflow: calculate `gamma`, `rho`, and `tau` scores
 `.calculateDrugScreen` method can be used to calculate the enrichment of each gene between screen arms for a drug 
 screen experiment. This method calculates `gamma`, `rho`, and `tau` scores for each gene and adds them to the 
-`.phenotypes` attribute of the `ScreenPro` object.
+`.phenotypes` attribute of the `PooledScreens` object.
 
 Here is an example for running the workflow on a [CRISPRi-dual-sgRNA-screens](#crispri-dual-sgrna-screens) dataset:
 
@@ -162,7 +168,7 @@ Replogle et al. developed a CRISPR interference (CRISPRi) and CRISPR activation 
 
 ## License
 ScreenPro2 is licensed under the terms of the MIT license (see [LICENSE](LICENSE) for more information) and developed 
-by Abolfazl (Abe) Arab ([@abearab](https://github.com/abearab)), a Research Associate in the Gilbert lab at UCSF and Arc Institute.  
+by Abolfazl (Abe) Arab ([@abearab](https://github.com/abearab)) as a Research Associate in the Gilbert lab at UCSF and Arc Institute.  
 
 ## Citation
 If you use ScreenPro2 in your research, please cite the following paper.
