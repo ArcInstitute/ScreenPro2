@@ -23,9 +23,9 @@ dependencies:
   - sphinxcontrib-bibtex
   - pip
   - pip:
-      - click
       - polars
       - biobear
       - numba
       - pydeseq2
+      - simple_colors
       - watermark

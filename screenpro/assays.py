@@ -34,7 +34,7 @@ class PooledScreens(object):
     #         scores = "', '".join(self.phenotypes[score_level].columns.get_level_values(0).unique().to_list())
     #         descriptions += f"Phenotypes in score_level = '{score_level}':\n    scores: '{scores}'\n"
 
-    #     return f'obs->samples\nvar->oligos\n\n{self.__repr__()}\n\n{descriptions}'
+    #     return f'obs->samples\nvar->elementss\n\n{self.__repr__()}\n\n{descriptions}'
 
     def copy(self):
         return copy(self)

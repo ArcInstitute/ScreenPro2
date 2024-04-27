@@ -11,7 +11,7 @@ from .utils import find_low_counts
 
 def calculateDelta(x, y, transformation, level):
     """Calculate log ratio of y / x.
-    `level` == 'all' (i.e. averaged across all values, oligo and replicates)
+    `level` == 'all' (i.e. averaged across all values, sgRNA library elements and replicates)
     `level` == 'col' (i.e. averaged across columns, replicates)
 
     Args:
@@ -326,7 +326,7 @@ def runPhenoScoreForReplicate(screen, x_label, y_label, score, growth_factor_tab
         score: score to use for calculating phenotype score, i.e. 'gamma', 'tau', or 'rho'
         growth_factor_table: dataframe of growth factors, i.e. output from `getGrowthFactors` function
         get_z_score: boolean to calculate z-score normalized phenotype score instead of regular score (default is False)
-        ctrl_label: string to identify labels of negative control oligos
+        ctrl_label: string to identify labels of negative control elements in sgRNA library (default is 'negCtrl')
 
     Returns:
         pd.DataFrame: dataframe of phenotype scores
@@ -367,7 +367,7 @@ def runPhenoScoreForReplicate(screen, x_label, y_label, score, growth_factor_tab
 
 
 def generatePseudoGeneLabels(adata, num_pseudogenes=None, ctrl_label='negCtrl'):
-    """Generate new labels per `num_pseudogenes` randomly selected non targeting oligo in `adata.var`.
+    """Generate new labels per `num_pseudogenes` randomly selected non-targeting elements in `adata.var`.
 
     Args:
         adata (AnnData): AnnData object
@@ -378,31 +378,31 @@ def generatePseudoGeneLabels(adata, num_pseudogenes=None, ctrl_label='negCtrl'):
         None
     """
     # check if num_pseudogenes is defined. 
-    ## If not, set to half of the number of non-targeting oligos
+    ## If not, set to half of the number of non-targeting elements 
     if num_pseudogenes is None:
         num_pseudogenes = len(adata.var[adata.var.targetType.eq(ctrl_label)]) // 2
-    # Get non-targeting oligos
-    ctrl_oligos = adata.var[adata.var.targetType.eq(ctrl_label)].index
+    # Get non-targeting elements
+    ctrl_elements = adata.var[adata.var.targetType.eq(ctrl_label)].index
     adata.var['pseudoLabel'] = ''
-    # Check if there are more than 1 non-targeting oligos to label as pseudogenes
-    if len(ctrl_oligos) / 2 <= num_pseudogenes:
-        # raise error if `num_pseudogenes` is greater than (total number of non-targeting oligos) / 2
+    # Check if there are more than 1 non-targeting elements to label as pseudogenes
+    if len(ctrl_elements) / 2 <= num_pseudogenes:
+        # raise error if `num_pseudogenes` is greater than (total number of non-targeting elements) / 2
         raise TypeError(
-            "Define `num_pseudogenes` to be less than (total number of non-targeting oligos) / 2"
+            "Define `num_pseudogenes` to be less than (total number of non-targeting elements) / 2"
         )
     else:
-        # randomly select `num` non-targeting oligos
-        while len(ctrl_oligos) > num_pseudogenes:
-            # randomly select `num` non-targeting oligos
-            pseudo_oligos = np.random.choice(ctrl_oligos, num_pseudogenes, replace=False)
+        # randomly select `num` non-targeting elements
+        while len(ctrl_elements) > num_pseudogenes:
+            # randomly select `num` non-targeting elements
+            pseudo_elements = np.random.choice(ctrl_elements, num_pseudogenes, replace=False)
             # generate new labels
             pseudo_labels = [f'pseudo_{i}' for i in range(num_pseudogenes)]
             # update adata.var
-            adata.var.loc[pseudo_oligos, 'pseudoLabel'] = pseudo_labels
-            # remove selected oligos from ctrl_oligos
-            ctrl_oligos = ctrl_oligos.drop(pseudo_oligos)
+            adata.var.loc[pseudo_elements, 'pseudoLabel'] = pseudo_labels
+            # remove selected elements from ctrl_elements
+            ctrl_elements = ctrl_elements.drop(pseudo_elements)
 
-        # label remaining non-targeting oligos as pseudogenes
+        # label remaining non-targeting elements as pseudogenes
         adata.var.loc[adata.var.targetType.eq('gene'), 'pseudoLabel'] = 'gene'
         adata.var.loc[adata.var.pseudoLabel.eq(''), 'pseudoLabel'] = np.nan
 
