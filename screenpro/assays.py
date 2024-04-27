@@ -41,8 +41,9 @@ class PooledScreens(object):
 
     def calculateDrugScreen(self, t0, untreated, treated, db_untreated, db_treated, score_level):
         """
-        Calculate gamma, rho, and tau phenotype scores for a drug screen dataset in a given `score_level`
-        see this issue for discussion https://github.com/abearab/ScreenPro2/issues/15.
+        Calculate `gamma`, `rho`, and `tau` phenotype scores for a drug screen dataset in a given `score_level`.
+        To normalize by growth rate, the doubling rate of the untreated and treated conditions are required.
+
         Args:
             t0 (str): name of the untreated condition
             untreated (str): name of the untreated condition
@@ -76,8 +77,7 @@ class PooledScreens(object):
 
     def calculateFlowBasedScreen(self, low_bin, high_bin, score_level):
         """
-        Calculate phenotype scores for a flow-based screen dataset
-        see this issue for discussion https://github.com/abearab/ScreenPro2/issues/17
+        Calculate phenotype scores for a flow-based screen dataset.
 
         Args:
             low_bin (str): name of the low bin condition
