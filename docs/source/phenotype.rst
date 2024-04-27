@@ -7,12 +7,12 @@ Log ratio of :math:`y` vs :math:`x`:
 
 - :math:`y \rightarrow` condition :math:`x` (e.g. treated samples)
 - :math:`x \rightarrow` condition :math:`y` (e.g. :math:`t_{0}` samples)
-- :math:`a \rightarrow` number of oligo constructs with sgRNAs targeting :math:`T`
+- :math:`a \rightarrow` number of library elements with sgRNAs targeting :math:`T`
 - :math:`b \rightarrow` number of biological replicates, :math:`R` (e.g. 2 or 3)
 - :math:`N_{x}` | :math:`N_{y} \rightarrow` read counts normalized for sequencing depth in condition :math:`x` or :math:`y`
 
 
-Here is a formula for V3 library with single oligo construct per gene (i.e. 2 sgRNA in one oligo targeting same gene).
+Here is a formula for V3 library with single library element per gene (i.e. dual sgRNAs in one construct targeting same gene).
 
 Phenotype score for each :math:`T` comparing :math:`y` vs :math:`x`:
 
@@ -28,7 +28,7 @@ Phenotype score for each :math:`T` comparing :math:`y` vs :math:`x`:
     \times \frac{ 1 }{d_{growth}}
 
 - :math:`\overline{\Delta(x,y)} \rightarrow` log ratio averaged across replicates
-- :math:`T \rightarrow` oligo constructs with sgRNAs targeting :math:`T`
+- :math:`T \rightarrow` library elements with sgRNAs targeting :math:`T`
 - :math:`d_{growth} \rightarrow` growth factor to normalize the phenotype score.
 
 Statistical test comparing :math:`y` vs :math:`x` per each target, :math:`T`:
@@ -48,12 +48,12 @@ Statistical test comparing :math:`y` vs :math:`x` per each target, :math:`T`:
 
 -----------------------
 
-.. automodule:: screenpro.phenoScore
+.. automodule:: screenpro.phenoscore
    :members:
    :undoc-members:
    :show-inheritance:
 
-.. automodule:: screenpro.phenoStats
+.. automodule:: screenpro.phenostats
    :members:
    :undoc-members:
    :show-inheritance:
