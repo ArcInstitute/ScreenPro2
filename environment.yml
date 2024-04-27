@@ -20,10 +20,9 @@ dependencies:
   - rust>=1.72
   - pip
   - pip:
-      - click
       - polars
       - biobear
       - numba
-      - simple_colors
       - pydeseq2
+      - simple_colors
       - watermark
