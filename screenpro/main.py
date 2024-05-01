@@ -7,14 +7,14 @@ import polars as pl
 from .__init__ import __version__
 from . import ngs
 
-def add_fq2cnt_parser(parent_subparsers, parent):
-    name = "fq2cnt",
+def add_counter_parser(parent_subparsers, parent):
+    name = "counter",
     desc = "Process FASTQ files to count sgRNA sequences."
     help = """
     Example usage:
 
-        `screenpro fq2cnt --single-guide-design -l <path-to-library> -s <path-to-sample-sheet>`
-        `screenpro fq2cnt --dual-guide-design -l <path-to-library> -s <path-to-sample-sheet>`
+        `screenpro counter --single-guide-design -l <path-to-library> -s <path-to-sample-sheet>`
+        `screenpro counter --dual-guide-design -l <path-to-library> -s <path-to-sample-sheet>`
     
     """
 
@@ -91,8 +91,8 @@ def main():
 
     ## screenpro commands
 
-    # fq2cnt subcommand
-    fq2cnt_parser = add_fq2cnt_parser(parent_subparsers, parent)
+    # counter subcommand
+    counter_parser = add_counter_parser(parent_subparsers, parent)
 
     ## Define return values
     args = parent_parser.parse_args()
@@ -124,7 +124,7 @@ def main():
 
     # Show module specific help if only module but no further arguments are given
     command_to_parser = {
-        "fq2cnt": fq2cnt_parser,
+        "counter": counter_parser,
     }
 
     if len(sys.argv) == 2:
@@ -134,8 +134,8 @@ def main():
             parent_parser.print_help(sys.stderr)
         sys.exit(1)
     
-    ## fq2cnt return
-    if args.command == "fq2cnt":
+    ## counter return
+    if args.command == "counter":
         ### Perform checks on input arguments
         ## Check if library platform is provided by user
         if args.single_guide_design:
@@ -175,5 +175,5 @@ def main():
         ## 3. Load FASTQ files and count sgRNA sequences
         # Save count matrix
 
-        # TODO: Implement fq2cnt workflow.
+        # TODO: Implement counter workflow.
         # process FASTQ files to generate counts per sample and then save a count matrix.
