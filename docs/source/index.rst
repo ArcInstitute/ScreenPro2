@@ -13,6 +13,7 @@ Welcome to ScreenPro2's documentation!
    :caption: Module Documentation
 
    screenpro
+   assays
    ngs
    phenotype
    load
