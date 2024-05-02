@@ -50,11 +50,11 @@ class Counter:
         self.cas_type = cas_type
         self.library_type = library_type        
 
-    def load_library(self, library_path, sep='\t'):
+    def load_library(self, library_path, sep='\t', verbose=False):
         '''Load library file
         '''
         if self.cas_type == 'cas9':
-            library = load_cas9_sgRNA_library(library_path, library_type=self.library_type, sep=sep)
+            library = load_cas9_sgRNA_library(library_path, library_type=self.library_type, sep=sep, verbose=verbose)
 
         elif self.cas_type == 'cas12':
             raise NotImplementedError("Cas12 library is not yet implemented.")
