@@ -166,9 +166,9 @@ def map_to_library_dual_guide(df_count, library, get_recombinant=False, return_t
             )
     
     if get_recombinant and return_type == 'all':
-        sample_count = {'full': res,'mapped': res_map,'recomb': res_recomb_events}
+        sample_count = {'full': res,'mapped': res_map,'recombinant': res_recomb_events}
         return sample_count
-    elif get_recombinant and return_type == 'recomb':
+    elif get_recombinant and return_type == 'recombinant':
         return res_recomb_events
     elif not get_recombinant and return_type == 'all':
         sample_count = {'full': res,'mapped': res_map}
@@ -176,4 +176,4 @@ def map_to_library_dual_guide(df_count, library, get_recombinant=False, return_t
     elif not get_recombinant and return_type == 'mapped':
         return res_map
     else:
-        raise ValueError("return_type must be either 'all' or 'mapped' or 'recomb'")
+        raise ValueError("return_type must be either 'all' or 'mapped' or 'recombinant'")
