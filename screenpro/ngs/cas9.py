@@ -87,6 +87,33 @@ def fastq_to_count_dual_guide(
     return df_count
 
 
+def map_to_library_single_guide(df_count, library, return_type='all', verbose=False):
+    # get counts for given input
+    res = df_count.copy()
+    res = res.sort('count', descending=True)
+    res = res.with_columns(
+        pl.col("sequence").alias("sequence"),
+    )
+
+    res_map = pl.DataFrame(library).join(
+            res, on="sequence", how="left"
+        )
+    if verbose:
+        print("% mapped reads",
+            100 * \
+            res_map.to_pandas()['count'].fillna(0).sum() / \
+            int(res.select(pl.sum("count")).to_pandas()['count'])
+        )
+    
+    if return_type == 'all':
+        sample_count = {'full': res,'mapped': res_map}
+        return sample_count
+    elif return_type == 'mapped':
+        return res_map
+    else:
+        raise ValueError("return_type must be either 'all' or 'mapped'")
+
+
 def map_to_library_dual_guide(df_count, library, get_recombinant=False, return_type='all', verbose=False):
     # get counts for given input
     res = df_count.copy()
