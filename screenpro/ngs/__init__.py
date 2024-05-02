@@ -48,7 +48,7 @@ class Counter:
 
     def __init__(self, cas_type, library_type):
         self.cas_type = cas_type
-        self.library_type = library_type        
+        self.library_type = library_type
 
     def load_library(self, library_path, sep='\t', verbose=False):
         '''Load library file
@@ -68,11 +68,13 @@ class Counter:
         '''Get count matrix for given samples
         '''
         if self.cas_type == 'cas9':
+            counts = {}
+
             if self.library_type == "single_guide_design":
                 # TODO: Implement codes to build count matrix for given samples
                 pass
             elif self.library_type == "dual_guide_design":
-                counts = {}
+                if get_recombinant: recombinants = {}
                 for sample_id in samples:
                     if verbose: print(green(sample_id, ['bold']))
                     df_count = cas9.fastq_to_count_dual_guide(
@@ -93,7 +95,15 @@ class Counter:
                             verbose=verbose
                         )
                     elif get_recombinant:
-                        raise NotImplementedError("Recombinant count matrix are not yet implemented.")
+                        cnt = cas9.map_to_library_dual_guide(
+                            df_count=df_count,
+                            library=self.library,
+                            get_recombinant=False,
+                            return_type='all',
+                            verbose=verbose
+                        )
+                        counts[sample_id] = cnt['mapped']
+                        recombinants[sample_id] = cnt['recombinant']
             
             counts_mat = pd.concat([
                 counts[sample_id].to_pandas()['count'].rename(sample_id)
@@ -103,4 +113,7 @@ class Counter:
             # TODO: Implement codes to build count matrix for given samples
             raise NotImplementedError("Cas12 count matrix is not yet implemented.")
         
+        self.counts_dict = counts
         self.counts_mat = counts_mat
+        if get_recombinant:
+            self.recombinants = recombinants
