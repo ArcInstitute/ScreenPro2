@@ -24,9 +24,7 @@ def load_cas9_sgRNA_library(library_path, library_type, sep='\t', protospacer_le
         library = library.rename(columns={'gene': 'target'})
     
     if library_type == "single_guide_design":
-        eval_columns = [
-            'target', 'sgID', 'protospacer'
-        ]
+        eval_columns = ['target', 'sgID', 'protospacer']
 
         # Upper case protospacer sequences
         library['protospacer'] = library['protospacer'].str.upper()
@@ -35,12 +33,11 @@ def load_cas9_sgRNA_library(library_path, library_type, sep='\t', protospacer_le
             if col not in library.columns:
                 raise ValueError(f"Column '{col}' not found in library table.")
         
-        library = library.set_index('sgID')
         library = library[eval_columns]
 
     elif library_type == "dual_guide_design":
         eval_columns = [
-            'target', 
+            'target', 'sgID_AB',
             'sgID_A', 'protospacer_A', 
             'sgID_B', 'protospacer_B', 
             'sequence'
@@ -75,7 +72,6 @@ def load_cas9_sgRNA_library(library_path, library_type, sep='\t', protospacer_le
             if col not in library.columns:
                 raise ValueError(f"Column '{col}' not found in library table.")
 
-        library = library.set_index('sgID_AB')
         library = library[eval_columns]
 
     if verbose: print("Library table successfully loaded.")
