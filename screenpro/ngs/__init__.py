@@ -34,11 +34,12 @@ protospacer A and B are not the same pairs as in the reference library. These ev
 '''
 
 import pandas as pd
-from simple_colors import green
+import polars as pl
 
 from . import cas9
 from . import cas12
 from ..load import load_cas9_sgRNA_library
+from simple_colors import green
 
 
 class Counter:
@@ -58,9 +59,12 @@ class Counter:
         elif self.cas_type == 'cas12':
             raise NotImplementedError("Cas12 library is not yet implemented.")
         
+        # covert to polar DataFrame
+        library = pl.from_pandas(library)
+
         self.library = library
         
-    def get_matrix(self, fastq_dir, samples,get_recombinant=False, cas_type='cas9',verbose=False):
+    def get_counts_matrix(self, fastq_dir, samples,get_recombinant=False, cas_type='cas9',verbose=False):
         '''Get count matrix for given samples
         '''
         if self.cas_type == 'cas9':
@@ -99,4 +103,4 @@ class Counter:
             # TODO: Implement codes to build count matrix for given samples
             raise NotImplementedError("Cas12 count matrix is not yet implemented.")
         
-        return counts_mat
+        self.counts_mat = counts_mat
