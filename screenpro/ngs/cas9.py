@@ -89,7 +89,7 @@ def fastq_to_count_dual_guide(
 
 def map_to_library_single_guide(df_count, library, return_type='all', verbose=False):
     # get counts for given input
-    res = df_count.copy()
+    res = df_count.clone() #cheap deepcopy/clone
     res = res.sort('count', descending=True)
     res = res.with_columns(
         pl.col("sequence").alias("sequence"),
@@ -116,7 +116,7 @@ def map_to_library_single_guide(df_count, library, return_type='all', verbose=Fa
 
 def map_to_library_dual_guide(df_count, library, get_recombinant=False, return_type='all', verbose=False):
     # get counts for given input
-    res = df_count.copy()
+    res = df_count.clone() #cheap deepcopy/clone
     res = res.sort('count', descending=True)
     res = res.with_columns(
         pl.concat_str(
