@@ -38,6 +38,8 @@ from simple_colors import green
 
 from . import cas9
 from . import cas12
+from ..load import load_cas9_sgRNA_library
+
 
 class Counter:
     '''Class to count sequences from FASTQ files
@@ -47,53 +49,18 @@ class Counter:
         self.cas_type = cas_type
         self.library_type = library_type        
 
-    def load_library(self, library_path):
+    def load_library(self, library_path, sep='\t'):
         '''Load library file
         '''
         if self.cas_type == 'cas9':
-            library = pd.read_csv(
-                library_path,
-                sep='\t',
-                index_col=0,
-            )
-
-            # I would like to name the target column 'target' if it is named 'gene'!
-            if 'gene' in library.columns:
-                # rename gene column to target
-                library = library.rename(columns={'gene': 'target'})
-
-            # Evaluate library table
-            if self.library_type == "single_guide_design":
-                pass
-
-            elif self.library_type == "dual_guide_design":
-                # reformat columns for downstream analysis
-                if 'sgID_AB' in library.columns:
-                    library = library.set_index('sgID_AB')
-                library = library.rename(
-                    columns={'protospacer_A':'protospacer_a','protospacer_B':'protospacer_b'}
-                )
-
-                if 'sequence' not in library.columns:
-                    # TODO: Enable trimming of protospacer sequences through command line arguments.
-                    library.protospacer_a = library.protospacer_a.str.upper()
-                    library.protospacer_b = library.protospacer_b.str[1:].str.upper()
-                    library['sequence'] = library.protospacer_a + ';' + library.protospacer_b
-
-                # check required columns are present:
-                eval_columns = ['target', 'sequence', 'protospacer_A', 'protospacer_B', 'sequence']
-                for col in eval_columns:
-                    if col not in library.columns:
-                        raise ValueError(f"Column '{col}' not found in library table.")
-
-                library = library[eval_columns]
+            library = load_cas9_sgRNA_library(library_path, library_type=self.library_type, sep=sep)
 
         elif self.cas_type == 'cas12':
             raise NotImplementedError("Cas12 library is not yet implemented.")
         
         self.library = library
         
-    def get_matrix(self, fastq_dir, samples,library,get_recombinant=False, cas_type='cas9',verbose=False):
+    def get_matrix(self, fastq_dir, samples,get_recombinant=False, cas_type='cas9',verbose=False):
         '''Get count matrix for given samples
         '''
         if self.cas_type == 'cas9':
@@ -116,7 +83,7 @@ class Counter:
                     if not get_recombinant:
                         counts[sample_id] = cas9.map_to_library_dual_guide(
                             df_count=df_count,
-                            library=library,
+                            library=self.library,
                             get_recombinant=False,
                             return_type='mapped',
                             verbose=verbose
