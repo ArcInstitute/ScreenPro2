@@ -57,7 +57,7 @@ def load_cas9_sgRNA_library(library_path, library_type, sep='\t', protospacer_le
                 pass
             elif in_length > protospacer_length:
                 if verbose: print(f"Trimming protospacer sequences in '{protospacer_col}' column.")
-                trim_protospacer(
+                library = trim_protospacer(
                     library, protospacer_col, 
                     '5prime', 
                     in_length - protospacer_length
