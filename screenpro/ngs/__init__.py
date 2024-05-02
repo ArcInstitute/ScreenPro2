@@ -106,9 +106,10 @@ class Counter:
                         recombinants[sample_id] = cnt['recombinant']
             
             counts_mat = pd.concat([
-                counts[sample_id].to_pandas()['count'].rename(sample_id)
+                counts[sample_id].to_pandas().set_index('sgID_AB')['count'].rename(sample_id) 
                 for sample_id in counts.keys()
             ],axis=1).fillna(0)
+
         if cas_type == 'cas12':
             # TODO: Implement codes to build count matrix for given samples
             raise NotImplementedError("Cas12 count matrix is not yet implemented.")
