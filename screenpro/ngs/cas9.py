@@ -117,12 +117,15 @@ def map_to_library_single_guide(df_count, library, return_type='all', verbose=Fa
 def map_to_library_dual_guide(df_count, library, get_recombinant=False, return_type='all', verbose=False):
     # get counts for given input
     res = df_count.clone() #cheap deepcopy/clone
+    res = res.rename(
+        columns={'protospacer_a':'protospacer_A','protospacer_b':'protospacer_B'}
+    )
     res = res.sort('count', descending=True)
     res = res.with_columns(
         pl.concat_str(
             [
-                pl.col("protospacer_a"),
-                pl.col("protospacer_b")
+                pl.col("protospacer_A"),
+                pl.col("protospacer_B")
             ],
             separator=";",
         ).alias("sequence"),
@@ -151,12 +154,12 @@ def map_to_library_dual_guide(df_count, library, get_recombinant=False, return_t
             )
         
         res_unmap_remapped_a = res_unmap.join(
-            pl.DataFrame(library[['sgID_A','protospacer_a']]), on=["protospacer_a"], how="left"
+            pl.DataFrame(library[['sgID_A','protospacer_A']]), on=["protospacer_A"], how="left"
         )
 
         res_recomb_events = res_unmap_remapped_a.join(
-            pl.DataFrame(library[['sgID_B','protospacer_b']]), 
-            on=["protospacer_b"], how="left"
+            pl.DataFrame(library[['sgID_B','protospacer_B']]), 
+            on=["protospacer_B"], how="left"
         )
         if verbose:            
             print("% fully remapped recombination events",
