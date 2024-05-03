@@ -118,7 +118,7 @@ def map_to_library_dual_guide(df_count, library, get_recombinant=False, return_t
     # get counts for given input
     res = df_count.clone() #cheap deepcopy/clone
     res = res.rename(
-        columns={'protospacer_a':'protospacer_A','protospacer_b':'protospacer_B'}
+        {'protospacer_a':'protospacer_A','protospacer_b':'protospacer_B'}
     )
     res = res.sort('count', descending=True)
     res = res.with_columns(
