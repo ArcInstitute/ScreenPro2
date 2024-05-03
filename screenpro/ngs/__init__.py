@@ -98,7 +98,7 @@ class Counter:
                         cnt = cas9.map_to_library_dual_guide(
                             df_count=df_count,
                             library=self.library,
-                            get_recombinant=False,
+                            get_recombinant=True,
                             return_type='all',
                             verbose=verbose
                         )
