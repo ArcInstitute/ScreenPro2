@@ -8,13 +8,13 @@ import pandas as pd
 from .utils import check_protospacer_length, trim_protospacer
 
 
-def load_cas9_sgRNA_library(library_path, library_type, sep='\t', protospacer_length=19, verbose=True):
+def load_cas9_sgRNA_library(library_path, library_type, sep='\t', index_col=0, protospacer_length=19, verbose=True):
     '''Load Cas9 sgRNA library table for single or dual guide design.
     '''
     library = pd.read_csv(
         library_path,
         sep=sep,
-        index_col=0,
+        index_col=index_col,
     )
 
     ## Evaluate library table and reformat columns for downstream analysis
