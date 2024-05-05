@@ -65,8 +65,8 @@ def load_cas9_sgRNA_library(library_path, library_type, sep='\t', index_col=0, p
                     f"Input protospacer length for '{protospacer_col}'is less than {protospacer_length}"
                 )
     
-        if 'sequence' not in library.columns:
-            library['sequence'] = library['protospacer_A'] + ';' + library['protospacer_B']
+        # if 'sequence' not in library.columns:
+        library['sequence'] = library['protospacer_A'] + ';' + library['protospacer_B']
 
         for col in eval_columns:
             if col not in library.columns:
