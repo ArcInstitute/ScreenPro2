@@ -109,7 +109,7 @@ class Counter:
                 
                 if parallel:
                     pool = multiprocessing.Pool(len(samples))
-                    pool.map(process_sample, fileTups)
+                    pool.map(process_sample, samples)
 
                 else:
                     for sample_id in samples:
