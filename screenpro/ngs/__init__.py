@@ -35,7 +35,7 @@ protospacer A and B are not the same pairs as in the reference library. These ev
 
 import pandas as pd
 import polars as pl
-import concurrent.futures
+import multiprocessing
 
 from . import cas9
 from . import cas12
@@ -108,8 +108,9 @@ class Counter:
                         recombinants[sample_id] = cnt['recombinant']
                 
                 if parallel:
-                    with concurrent.futures.ThreadPoolExecutor(max_workers = len(samples)) as executor:
-                        executor.map(process_sample, samples)
+                    pool = multiprocessing.Pool(len(samples))
+                    pool.map(process_sample, fileTups)
+
                 else:
                     for sample_id in samples:
                         process_sample(sample_id)
