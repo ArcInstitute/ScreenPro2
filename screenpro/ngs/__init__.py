@@ -35,6 +35,7 @@ protospacer A and B are not the same pairs as in the reference library. These ev
 
 import pandas as pd
 import polars as pl
+import concurrent.futures
 
 from . import cas9
 from . import cas12
@@ -64,7 +65,7 @@ class Counter:
 
         self.library = library
         
-    def get_counts_matrix(self, fastq_dir, samples,get_recombinant=False, cas_type='cas9',verbose=False):
+    def get_counts_matrix(self, fastq_dir, samples,get_recombinant=False, cas_type='cas9', parallel=False, verbose=False):
         '''Get count matrix for given samples
         '''
         if self.cas_type == 'cas9':
@@ -75,7 +76,8 @@ class Counter:
                 pass
             elif self.library_type == "dual_guide_design":
                 if get_recombinant: recombinants = {}
-                for sample_id in samples:
+                
+                def process_sample(sample_id):
                     if verbose: print(green(sample_id, ['bold']))
                     df_count = cas9.fastq_to_count_dual_guide(
                         R1_fastq_file_path=f'{fastq_dir}/{sample_id}_R1.fastq.gz',
@@ -104,7 +106,14 @@ class Counter:
                         )
                         counts[sample_id] = cnt['mapped']
                         recombinants[sample_id] = cnt['recombinant']
-            
+                
+                if parallel:
+                    with concurrent.futures.ThreadPoolExecutor() as executor:
+                        executor.map(process_sample, samples, max_workers = len(samples))
+                else:
+                    for sample_id in samples:
+                        process_sample(sample_id)
+                
             counts_mat = pd.concat([
                 counts[sample_id].to_pandas().set_index('sgID_AB')['count'].rename(sample_id) 
                 for sample_id in counts.keys()
