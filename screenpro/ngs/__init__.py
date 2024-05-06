@@ -108,8 +108,8 @@ class Counter:
                         recombinants[sample_id] = cnt['recombinant']
                 
                 if parallel:
-                    with concurrent.futures.ThreadPoolExecutor() as executor:
-                        executor.map(process_sample, samples, max_workers = len(samples))
+                    with concurrent.futures.ThreadPoolExecutor(max_workers = len(samples)) as executor:
+                        executor.map(process_sample, samples)
                 else:
                     for sample_id in samples:
                         process_sample(sample_id)
