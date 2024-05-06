@@ -112,6 +112,7 @@ class Counter:
                     pool.map(process_sample, samples)
                     pool.close()
                     pool.join()
+                
                 else:
                     for sample_id in samples:
                         process_sample(sample_id)
