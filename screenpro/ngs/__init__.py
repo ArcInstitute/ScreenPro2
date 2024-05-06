@@ -35,7 +35,7 @@ protospacer A and B are not the same pairs as in the reference library. These ev
 
 import pandas as pd
 import polars as pl
-import multiprocess as mp
+# import multiprocess as mp
 
 from . import cas9
 from . import cas12
@@ -132,3 +132,4 @@ class Counter:
         self.counts_mat = counts_mat
         if get_recombinant:
             self.recombinants = recombinants
+    
