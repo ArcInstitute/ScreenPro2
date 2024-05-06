@@ -77,6 +77,7 @@ class Counter:
             elif self.library_type == "dual_guide_design":
                 if get_recombinant: recombinants = {}
                 
+                # TODO: Fix the function for parallel processing
                 def process_sample(sample_id):
                     if verbose: print(green(sample_id, ['bold']))
                     df_count = cas9.fastq_to_count_dual_guide(
