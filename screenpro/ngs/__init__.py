@@ -35,7 +35,7 @@ protospacer A and B are not the same pairs as in the reference library. These ev
 
 import pandas as pd
 import polars as pl
-import multiprocessing
+import multiprocess as mp
 
 from . import cas9
 from . import cas12
@@ -109,7 +109,7 @@ class Counter:
                         recombinants[sample_id] = cnt['recombinant']
                 
                 if parallel:
-                    pool = multiprocessing.Pool(len(samples))
+                    pool = mp.Pool(len(samples))
                     pool.map(process_sample, samples)
                     pool.close()
                     pool.join()
