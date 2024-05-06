@@ -109,10 +109,11 @@ class Counter:
                         recombinants[sample_id] = cnt['recombinant']
                 
                 if parallel:
-                    pool = mp.Pool(len(samples))
-                    pool.map(process_sample, samples)
-                    pool.close()
-                    pool.join()
+                    raise NotImplementedError("Parallel processing is not yet implemented.")
+                    # pool = mp.Pool(len(samples))
+                    # pool.map(process_sample, samples)
+                    # pool.close()
+                    # pool.join()
                 
                 else:
                     for sample_id in samples:
