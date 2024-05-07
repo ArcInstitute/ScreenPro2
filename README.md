@@ -1,30 +1,16 @@
 [![website](https://img.shields.io/badge/website-live-brightgreen)](https://arcinstitute.org/tools/screenpro2)
-![image](https://img.shields.io/pypi/v/screenpro2.svg) [![Documentation Status](https://readthedocs.org/projects/screenpro2/badge/?version=latest)](https://screenpro2.readthedocs.io/en/latest/?version=latest) ![Downloads](https://static.pepy.tech/badge/screenpro2)
+![image](https://img.shields.io/pypi/v/screenpro2.svg)
+[![Documentation Status](https://readthedocs.org/projects/screenpro2/badge/?version=latest)](https://screenpro2.readthedocs.io/en/latest/?version=latest)
+[![Downloads](https://static.pepy.tech/badge/screenpro2)](https://pepy.tech/project/screenpro2)
 [![Downloads](https://static.pepy.tech/badge/screenpro2/month)](https://pepy.tech/project/screenpro2)
 [![CodeQL](https://github.com/ArcInstitute/ScreenPro2/actions/workflows/github-code-scanning/codeql/badge.svg)](https://github.com/ArcInstitute/ScreenPro2/actions/workflows/github-code-scanning/codeql)
 # ScreenPro2
 
+## TL;DR
 
-The complete docs are available at [screenpro2.rtfd.io](https://screenpro2.readthedocs.io).
+The complete docs are available at [screenpro2.rtfd.io](https://screenpro2.readthedocs.io) and [PyPI](https://pypi.org/project/ScreenPro2) installation is available with `pip install ScreenPro2`.
 
-## Table of Contents
-- [Installation](#installation)
-- [Usage](#usage)
-  * [Step 1: FASTQ to counts](#step-1-fastq-to-counts)
-  * [Step 2: Phenotype calculation](#step-2-phenotype-calculation)
-    + [Load Data](#load-data)
-    + [Perform Screen Processing Analysis](#perform-screen-processing-analysis)
-      - [Drug Screen Workflow: calculate `gamma`, `rho`, and `tau` scores](#drug-screen-workflow-calculate-gamma-rho-and-tau-scores)
-      - [Flow cytometry based screen workflow: calculate phenotype score to compare high and low bins](#flow-cytometry-based-screen-workflow-calculate-phenotype-score-to-compare-high-and-low-bins)
-  * [Step 3: Explore results and QC reports](#step-3-explore-results-and-qc-reports)
-
-- [Supported CRISPR Screen Platforms](#supported-crispr-screen-platforms)
-  * [dCas9 CRISPRa/i single-sgRNA screens](#dcas9-crispra/i-single-sgrna-screens)
-  * [dCas9 CRISPRa/i dual-sgRNA screens](#dcas9-crispra/i-dual-sgrna-screens)
-  <!-- * [multiCas12a CRISPRi screens](#multicas12a-crispri-screens) -->
-- [License](#license)
-- [Citation](#citation)
-
+___
 ## Introduction
 Functional genomics field is evolving rapidly and many more CRISPR screen platforms are now developed. Therefore, 
 it's important to have a standardized workflow to analyze the data from these screens. ScreenPro2 is provided to 
