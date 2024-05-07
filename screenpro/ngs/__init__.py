@@ -35,11 +35,13 @@ protospacer A and B are not the same pairs as in the reference library. These ev
 
 import pandas as pd
 import polars as pl
+import anndata as ad
 # import multiprocess as mp
 
 from . import cas9
 from . import cas12
 from ..load import load_cas9_sgRNA_library
+from ..utils import find_low_counts
 from simple_colors import green
 
 
@@ -50,6 +52,9 @@ class Counter:
     def __init__(self, cas_type, library_type):
         self.cas_type = cas_type
         self.library_type = library_type
+        self.counts_dict = None
+        self.counts_mat = None
+        self.recombinants = None
 
     def load_library(self, library_path, sep='\t', index_col=0, verbose=False):
         '''Load library file
@@ -65,6 +70,20 @@ class Counter:
 
         self.library = library
         
+    def _get_sgRNA_table(self):
+
+        if self.cas_type == 'cas9':
+            if self.library_type == "single_guide_design":
+                sgRNA_table = self.library.to_pandas()[['target','sgID','protospacer']].set_index('sgID')
+
+            elif self.library_type == "dual_guide_design":
+                sgRNA_table = pd.concat([
+                    self.library.to_pandas()[['target','sgID_A','protospacer_A']].rename(columns={'sgID_A':'sgID','protospacer_A':'protospacer'}),
+                    self.library.to_pandas()[['target','sgID_B', 'protospacer_B']].rename(columns={'sgID_B':'sgID','protospacer_B':'protospacer'})
+                ]).set_index('sgID')
+
+        return sgRNA_table
+
     def get_counts_matrix(self, fastq_dir, samples,get_recombinant=False, cas_type='cas9', parallel=False, verbose=False):
         '''Get count matrix for given samples
         '''
@@ -133,3 +152,101 @@ class Counter:
         if get_recombinant:
             self.recombinants = recombinants
     
+    def load_counts_matrix(self, counts_mat_path, **kwargs):
+        '''Load count matrix
+        '''
+        self.counts_mat = pd.read_csv(counts_mat_path, **kwargs)
+    
+    def build_counts_anndata(self, source='library'):
+        '''Build AnnData object from count matrix
+        '''
+        if source == 'recombinant' and self.library_type == "single_guide_design":
+            raise ValueError("Recombinants are not applicable for single guide design!")
+        if source == 'recombinant' and self.recombinants is None:
+            raise ValueError("Recombinants are not available. If applicable, please set get_recombinant=True in get_counts_matrix method.")
+
+        if self.library_type == "single_guide_design":
+            adata = ad.AnnData(
+                X = self.counts_mat.T, 
+                var = self.library.to_pandas().set_index('sgID')
+            )
+        
+        elif self.library_type == "dual_guide_design":
+            adata = ad.AnnData(
+                X = self.counts_mat.T, 
+                var = self.library.to_pandas().set_index('sgID_AB')
+            )
+            
+            if source == 'recombinant':
+                counts_recombinants = {}
+
+                for sample in self.recombinants.keys():
+                    d = self.recombinants[sample].drop_nulls()
+                    d = d.to_pandas()
+                    counts_recombinants[sample] = d.set_index(['sgID_A','sgID_B'])['count']
+
+                counts_recombinants = pd.concat(counts_recombinants,axis=1).fillna(0)
+                # counts_recombinants = counts_recombinants[counts_recombinants.eq(0).sum(axis=1)<=6]
+
+                counts_recombinants = pd.concat([
+                    counts_recombinants,
+                    pd.concat([
+                        # add non-targeting counts from the main count matrix
+                        self.counts_mat[self.counts_mat.index.str.contains('non-targeting')],
+                        # add non-targeting counts from the main count matrix
+                        self.library.to_pandas().set_index('sgID_AB')[['sgID_A','sgID_B']][self.counts_mat.index.str.contains('non-targeting')]
+                    ],axis=1).set_index(['sgID_A','sgID_B'])
+                ])
+
+                var_table = pd.DataFrame(
+                    counts_recombinants.index.to_list(),
+                    index = ['|'.join(i) for i in counts_recombinants.index.to_list()],
+                    columns=['sgID_A','sgID_B'])
+
+                var_table.index.name = 'sgID_AB'
+
+                sgRNA_table = self._get_sgRNA_table()
+                
+                var_table = pd.concat([
+                    var_table.reset_index().reset_index(drop=True),
+                    sgRNA_table.loc[var_table['sgID_A']].rename(columns={'target':'target_A', 'protospacer':'protospacer_A'}).reset_index(drop=True),
+                    sgRNA_table.loc[var_table['sgID_B']].rename(columns={'target':'target_B', 'protospacer':'protospacer_B'}).reset_index(drop=True),
+                ], axis=1).set_index('sgID_AB')
+
+                var_table['targetType'] = ''
+
+                var_table.loc[
+                    (var_table.target_A.eq('negative_control')) & 
+                    (var_table.target_B.eq('negative_control')),'targetType']  = 'negCtrl'
+
+                var_table.loc[
+                    ~(var_table.target_A.eq('negative_control')) & 
+                    (var_table.target_B.eq('negative_control')),'targetType']  = 'gene-ctrl'
+
+                var_table.loc[
+                    (var_table.target_A.eq('negative_control')) & 
+                    ~(var_table.target_B.eq('negative_control')),'targetType']  = 'ctrl-gene'
+
+                var_table.loc[
+                    ~(var_table.target_A.eq('negative_control')) & 
+                    ~(var_table.target_B.eq('negative_control')),'targetType']  = 'gene-gene'
+
+                var_table.index.name = None
+
+                var_table['target'] = var_table['target_A'] + '|' + var_table['target_B']
+                var_table['sequence'] = var_table['protospacer_A'] + ';' + var_table['protospacer_B']
+
+                rdata = ad.AnnData(
+                    X = counts_recombinants.T.to_numpy(),
+                    var = var_table,
+                    obs = adata.obs
+                )
+
+                find_low_counts(rdata, minimum_reads=0)
+
+                rdata = rdata[:,~rdata.var.low_count]
+
+        if source == 'mapped' or source == 'library':
+            return adata
+        elif source == 'recombinant':
+            return rdata
