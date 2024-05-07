@@ -3,16 +3,16 @@ History
 =======
 
 0.3.0 (coming soon)
-~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~
 * add command line interface
 
 0.2.11 (May 2024)
-~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~
 * introduce `counter` module
 * improve core functionalities for CLI
 
 0.2.7 - 0.2.10 (Mar 2024 - Apr 2024)
-~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 * major reformatting and introduce alpha version of CLI
 * introduce `ngs` module – process fastq files from single, dual, or multiplexed Cas9 and Cas12 screens
 
@@ -25,7 +25,7 @@ History
   * add missing features to support single-guide-design screens (i.e. V2 CRISPRi/a screens)
 
 0.2.5 – 0.2.6 (Dec 2023 - Feb 2024)
-~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 * public release on Arc's website https://arcinstitute.org/tools/screenpro2
 * improve the conda environment and docker config files
 * improve documentation
