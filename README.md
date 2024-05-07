@@ -8,7 +8,7 @@
 
 ## TL;DR
 
-The complete docs are available at [screenpro2.rtfd.io](https://screenpro2.readthedocs.io) and [PyPI](https://pypi.org/project/ScreenPro2) installation is available with `pip install ScreenPro2`.
+ScreenPro2 is tool for flexible analysis of high-content CRISPR screening | [ReadTheDocs](https://screenpro2.readthedocs.io) |[PyPI](https://pypi.org/project/ScreenPro2)
 
 ___
 ## Introduction
