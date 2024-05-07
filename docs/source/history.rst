@@ -16,9 +16,10 @@ History
 * major reformatting and introduce alpha version of CLI
 * introduce `ngs` module – process fastq files from single, dual, or multiplexed Cas9 and Cas12 screens
 
-  * Support both single-guide and dual-guide Cas9 library design #37
-  (i.e. V2 and V3 genome-scale dCas9 screen platforms)
-  * Support higher-order Cas12 screens #39
+  * Support both single-guide and dual-guide Cas9 library design `#37`_
+    (i.e. V2 and V3 genome-scale dCas9 screen platforms)
+
+  * Support higher-order Cas12 screens `#39`_
 
 * phenoScore and phenoStats modules
 
@@ -47,3 +48,5 @@ History
 
 .. _ScreenProcessing: https://github.com/mhorlbeck/ScreenProcessing
 .. _screenpro2.rtfd.io: https://screenpro2.rtfd.io
+.. _#37: https://github.com/ArcInstitute/ScreenPro2/issues/37
+.. _#39: https://github.com/ArcInstitute/ScreenPro2/issues/39
