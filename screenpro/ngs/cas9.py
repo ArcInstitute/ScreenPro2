@@ -98,6 +98,12 @@ def map_to_library_single_guide(df_count, library, return_type='all', verbose=Fa
     res_map = pl.DataFrame(library).join(
             res, on="sequence", how="left"
         )
+
+    if return_type == 'unmapped' or return_type == 'all':
+        res_unmap = res.join(
+            pl.DataFrame(library), on="sequence", how="anti"
+        )
+
     if verbose:
         print("% mapped reads",
             100 * \
@@ -105,13 +111,14 @@ def map_to_library_single_guide(df_count, library, return_type='all', verbose=Fa
             int(res.select(pl.sum("count")).to_pandas()['count'])
         )
     
-    if return_type == 'all':
-        sample_count = {'full': res,'mapped': res_map}
-        return sample_count
+    if return_type == 'unmapped':
+        return res_unmap
     elif return_type == 'mapped':
         return res_map
+    elif return_type == 'all':
+        return {'full': res, 'mapped': res_map, 'unmapped': res_unmap}
     else:
-        raise ValueError("return_type must be either 'all' or 'mapped'")
+        raise ValueError("return_type must be either 'unmapped', 'mapped', or 'all'")
 
 
 def map_to_library_dual_guide(df_count, library, get_recombinant=False, return_type='all', verbose=False):
@@ -134,6 +141,12 @@ def map_to_library_dual_guide(df_count, library, get_recombinant=False, return_t
     res_map = pl.DataFrame(library).join(
             res, on="sequence", how="left"
         )
+
+    if get_recombinant or return_type == 'unmapped' or return_type == 'all':
+        res_unmap = res.join(
+            pl.DataFrame(library), on="sequence", how="anti"
+        )
+
     if verbose:
         print("% mapped reads",
             100 * \
@@ -142,9 +155,6 @@ def map_to_library_dual_guide(df_count, library, get_recombinant=False, return_t
         )
     
     if get_recombinant:
-        res_unmap = res.join(
-            pl.DataFrame(library), on="sequence", how="anti"
-        )
 
         if verbose:
             print("% unmapped reads",
@@ -168,15 +178,19 @@ def map_to_library_dual_guide(df_count, library, get_recombinant=False, return_t
                 int(res.select(pl.sum("count")).to_pandas()['count'])
             )
     
-    if get_recombinant and return_type == 'all':
-        sample_count = {'full': res,'mapped': res_map,'recombinant': res_recomb_events}
-        return sample_count
-    elif get_recombinant and return_type == 'recombinant':
-        return res_recomb_events
-    elif not get_recombinant and return_type == 'all':
-        sample_count = {'full': res,'mapped': res_map}
-        return sample_count
-    elif not get_recombinant and return_type == 'mapped':
+    if return_type == 'unmapped':
+        return res_unmap
+    elif return_type == 'mapped':
         return res_map
+    elif return_type == 'recombinant':
+        if get_recombinant:
+            return res_recomb_events
+        else:
+            raise ValueError("get_recombinant must be set to True to calculate recombinant events")
+    elif return_type == 'all':
+        if get_recombinant:
+            return {'full': res,'mapped': res_map,'recombinant': res_recomb_events, 'unmapped': res_unmap}
+        else:
+            return {'full': res,'mapped': res_map, 'unmapped': res_unmap}
     else:
-        raise ValueError("return_type must be either 'all' or 'mapped' or 'recombinant'")
+        raise ValueError("return_type must be either 'unmapped', 'mapped', 'recombinant', or 'all'")
