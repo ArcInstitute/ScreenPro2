@@ -122,7 +122,7 @@ class Counter:
         '''
         self.counts_mat = pd.read_csv(counts_mat_path, **kwargs)
     
-    def build_counts_anndata(self, source='library'):
+    def build_counts_anndata(self, source='library', verbose=False):
         '''Build AnnData object from count matrix
         '''
         if source == 'recombinant' and self.library_type == "single_guide_design":
@@ -146,9 +146,11 @@ class Counter:
                 counts_recombinants = {}
 
                 for sample in self.recombinants.keys():
+                    if verbose: print(green(sample, ['bold']))
                     d = self.recombinants[sample].drop_nulls()
                     d = d.to_pandas()
                     counts_recombinants[sample] = d.set_index(['sgID_A','sgID_B'])['count']
+                    if verbose: print('recombinant count added ...')
 
                 counts_recombinants = pd.concat(counts_recombinants,axis=1).fillna(0)
 
@@ -162,6 +164,7 @@ class Counter:
                     ],axis=1).set_index(['sgID_A','sgID_B'])
                 ])
 
+                if verbose: print('recombinant count matrix built ...')
                 var_table = pd.DataFrame(
                     counts_recombinants.index.to_list(),
                     index = ['|'.join(i) for i in counts_recombinants.index.to_list()],
@@ -206,7 +209,7 @@ class Counter:
                     obs = adata.obs
                 )
 
-                rdata = rdata[:,~rdata.var.low_count]
+                if verbose: print('recombinant AnnData created.')
 
         if source == 'mapped' or source == 'library':
             return adata
