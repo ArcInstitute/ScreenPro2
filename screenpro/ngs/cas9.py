@@ -87,15 +87,52 @@ def fastq_to_count_dual_guide(
     return df_count
 
 
+def map_to_library_single_guide(df_count, library, return_type='all', verbose=False):
+    # get counts for given input
+    res = df_count.clone() #cheap deepcopy/clone
+    res = res.sort('count', descending=True)
+    res = res.with_columns(
+        pl.col("sequence").alias("sequence"),
+    )
+
+    res_map = pl.DataFrame(library).join(
+            res, on="sequence", how="left"
+        )
+
+    if return_type == 'unmapped' or return_type == 'all':
+        res_unmap = res.join(
+            pl.DataFrame(library), on="sequence", how="anti"
+        )
+
+    if verbose:
+        print("% mapped reads",
+            100 * \
+            res_map.to_pandas()['count'].fillna(0).sum() / \
+            int(res.select(pl.sum("count")).to_pandas()['count'])
+        )
+    
+    if return_type == 'unmapped':
+        return res_unmap
+    elif return_type == 'mapped':
+        return res_map
+    elif return_type == 'all':
+        return {'full': res, 'mapped': res_map, 'unmapped': res_unmap}
+    else:
+        raise ValueError("return_type must be either 'unmapped', 'mapped', or 'all'")
+
+
 def map_to_library_dual_guide(df_count, library, get_recombinant=False, return_type='all', verbose=False):
     # get counts for given input
-    res = df_count.copy()
+    res = df_count.clone() #cheap deepcopy/clone
+    res = res.rename(
+        {'protospacer_a':'protospacer_A','protospacer_b':'protospacer_B'}
+    )
     res = res.sort('count', descending=True)
     res = res.with_columns(
         pl.concat_str(
             [
-                pl.col("protospacer_a"),
-                pl.col("protospacer_b")
+                pl.col("protospacer_A"),
+                pl.col("protospacer_B")
             ],
             separator=";",
         ).alias("sequence"),
@@ -104,6 +141,12 @@ def map_to_library_dual_guide(df_count, library, get_recombinant=False, return_t
     res_map = pl.DataFrame(library).join(
             res, on="sequence", how="left"
         )
+
+    if get_recombinant or return_type == 'unmapped' or return_type == 'all':
+        res_unmap = res.join(
+            pl.DataFrame(library), on="sequence", how="anti"
+        )
+
     if verbose:
         print("% mapped reads",
             100 * \
@@ -112,9 +155,6 @@ def map_to_library_dual_guide(df_count, library, get_recombinant=False, return_t
         )
     
     if get_recombinant:
-        res_unmap = res.join(
-            pl.DataFrame(library), on="sequence", how="anti"
-        )
 
         if verbose:
             print("% unmapped reads",
@@ -124,12 +164,12 @@ def map_to_library_dual_guide(df_count, library, get_recombinant=False, return_t
             )
         
         res_unmap_remapped_a = res_unmap.join(
-            pl.DataFrame(library[['sgID_A','protospacer_a']]), on=["protospacer_a"], how="left"
+            pl.DataFrame(library[['sgID_A','protospacer_A']]), on=["protospacer_A"], how="left"
         )
 
         res_recomb_events = res_unmap_remapped_a.join(
-            pl.DataFrame(library[['sgID_B','protospacer_b']]), 
-            on=["protospacer_b"], how="left"
+            pl.DataFrame(library[['sgID_B','protospacer_B']]), 
+            on=["protospacer_B"], how="left"
         )
         if verbose:            
             print("% fully remapped recombination events",
@@ -138,15 +178,19 @@ def map_to_library_dual_guide(df_count, library, get_recombinant=False, return_t
                 int(res.select(pl.sum("count")).to_pandas()['count'])
             )
     
-    if get_recombinant and return_type == 'all':
-        sample_count = {'full': res,'mapped': res_map,'recomb': res_recomb_events}
-        return sample_count
-    elif get_recombinant and return_type == 'recomb':
-        return res_recomb_events
-    elif not get_recombinant and return_type == 'all':
-        sample_count = {'full': res,'mapped': res_map}
-        return sample_count
-    elif not get_recombinant and return_type == 'mapped':
+    if return_type == 'unmapped':
+        return res_unmap
+    elif return_type == 'mapped':
         return res_map
+    elif return_type == 'recombinant':
+        if get_recombinant:
+            return res_recomb_events
+        else:
+            raise ValueError("get_recombinant must be set to True to calculate recombinant events")
+    elif return_type == 'all':
+        if get_recombinant:
+            return {'full': res,'mapped': res_map,'recombinant': res_recomb_events, 'unmapped': res_unmap}
+        else:
+            return {'full': res,'mapped': res_map, 'unmapped': res_unmap}
     else:
-        raise ValueError("return_type must be either 'all' or 'mapped' or 'recomb'")
+        raise ValueError("return_type must be either 'unmapped', 'mapped', 'recombinant', or 'all'")

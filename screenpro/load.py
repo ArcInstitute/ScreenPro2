@@ -2,12 +2,83 @@
 Module for loading screen datasets
 """
 
-# import
 import pickle
 import pandas as pd
 
+from .utils import check_protospacer_length, trim_protospacer
 
-# functions
+
+def load_cas9_sgRNA_library(library_path, library_type, sep='\t', index_col=0, protospacer_length=19, verbose=True):
+    '''Load Cas9 sgRNA library table for single or dual guide design.
+    '''
+    library = pd.read_csv(
+        library_path,
+        sep=sep,
+        index_col=index_col,
+    )
+
+    ## Evaluate library table and reformat columns for downstream analysis
+    # I would like to name the target column 'target' if it is named 'gene'!
+    if 'gene' in library.columns:
+        # rename gene column to target
+        library = library.rename(columns={'gene': 'target'})
+    
+    if library_type == "single_guide_design":
+        eval_columns = ['target', 'sgID', 'protospacer']
+
+        # Upper case protospacer sequences
+        library['protospacer'] = library['protospacer'].str.upper()
+
+        for col in eval_columns:
+            if col not in library.columns:
+                raise ValueError(f"Column '{col}' not found in library table.")
+        
+        library = library[eval_columns]
+
+    elif library_type == "dual_guide_design":
+        eval_columns = [
+            'target', 'sgID_AB',
+            'sgID_A', 'protospacer_A', 
+            'sgID_B', 'protospacer_B', 
+            'sequence'
+        ]
+        
+        # Upper case protospacer sequences
+        library['protospacer_A'] = library['protospacer_A'].str.upper()
+        library['protospacer_B'] = library['protospacer_B'].str.upper()
+
+        # # TODO: Enable trimming of protospacer sequences through command line arguments.
+        for protospacer_col in ['protospacer_A', 'protospacer_B']:
+            in_length = check_protospacer_length(library, protospacer_col) 
+            if in_length == protospacer_length:
+                pass
+            elif in_length > protospacer_length:
+                if verbose: print(f"Trimming protospacer sequences in '{protospacer_col}' column.")
+                library = trim_protospacer(
+                    library, protospacer_col, 
+                    '5prime', 
+                    in_length - protospacer_length
+                )
+
+            elif in_length < protospacer_length:
+                raise ValueError(
+                    f"Input protospacer length for '{protospacer_col}'is less than {protospacer_length}"
+                )
+    
+        # if 'sequence' not in library.columns:
+        library['sequence'] = library['protospacer_A'] + ';' + library['protospacer_B']
+
+        for col in eval_columns:
+            if col not in library.columns:
+                raise ValueError(f"Column '{col}' not found in library table.")
+
+        library = library[eval_columns]
+
+    if verbose: print("Library table successfully loaded.")
+
+    return library
+
+
 def loadScreenProcessingData(experimentName, collapsedToTranscripts=True, premergedCounts=False):
     """
     Load ScreenProcessing outputs

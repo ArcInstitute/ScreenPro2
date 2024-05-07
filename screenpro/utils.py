@@ -2,6 +2,25 @@ import pandas as pd
 import numpy as np
 
 
+def check_protospacer_length(library, protospacer_col):
+    lengths = list(set(library[protospacer_col].str.len()))
+    if len(lengths) > 1:
+        raise ValueError(f"Protospacer lengths are not uniform: {lengths}")
+    else:
+        length = lengths[0]
+        return length
+
+
+def trim_protospacer(library, protospacer_col, trim_side, trim_len):
+    if trim_side == '5prime':
+        library[protospacer_col] = library[protospacer_col].str[trim_len:].str.upper()
+    
+    elif trim_side == '3prime':
+        library[protospacer_col] = library[protospacer_col].str[:-trim_len].str.upper()
+    
+    return library
+
+
 def find_low_counts(adata, filter_type='either', minimum_reads=50):
     """
     Label variables with low counts in either or all samples.
