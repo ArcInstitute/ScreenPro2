@@ -151,7 +151,6 @@ class Counter:
                     counts_recombinants[sample] = d.set_index(['sgID_A','sgID_B'])['count']
 
                 counts_recombinants = pd.concat(counts_recombinants,axis=1).fillna(0)
-                # counts_recombinants = counts_recombinants[counts_recombinants.eq(0).sum(axis=1)<=6]
 
                 counts_recombinants = pd.concat([
                     counts_recombinants,
@@ -207,11 +206,11 @@ class Counter:
                     obs = adata.obs
                 )
 
-                find_low_counts(rdata, minimum_reads=0)
-
                 rdata = rdata[:,~rdata.var.low_count]
 
         if source == 'mapped' or source == 'library':
             return adata
         elif source == 'recombinant':
             return rdata
+        else:
+            raise ValueError("Invalid source argument. Please choose from 'mapped', 'recombinant' or 'library'. Note: 'mapped' and 'library' act the same way.")
