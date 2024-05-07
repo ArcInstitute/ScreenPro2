@@ -16,6 +16,7 @@ Welcome to ScreenPro2's documentation!
    assays
    ngs
    phenotype
+   plotting
    load
 
 .. toctree::
