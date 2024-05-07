@@ -54,7 +54,7 @@ def fastq_to_count_dual_guide(
                 SELECT REPLACE(name, '_R2', '') trimmed_name, *
                 FROM fastq_scan('{R2_fastq_file_path}')
             )
-            SELECT substr(pos1.sequence, {trim5p_pos1_start}, {trim5p_pos1_length}) protospacer_A, substr(reverse_complement(pos2.sequence), {trim5p_pos2_start}, {trim5p_pos2_length}) protospacer_B, COUNT(*) count
+            SELECT substr(pos1.sequence, {trim5p_pos1_start}, {trim5p_pos1_length}) protospacer_A, reverse_complement(substr(pos2.sequence, {trim5p_pos2_start}, {trim5p_pos2_length})) protospacer_B, COUNT(*) count
             FROM pos1
             JOIN pos2
                 ON pos1.name = pos2.name
