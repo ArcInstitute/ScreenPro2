@@ -8,7 +8,10 @@
 
 ## TL;DR
 
-ScreenPro2 is tool for flexible analysis of high-content CRISPR screening | [ReadTheDocs](https://screenpro2.readthedocs.io) |[PyPI](https://pypi.org/project/ScreenPro2)
+[ReadTheDocs](https://screenpro2.readthedocs.io) |
+[PyPI](https://pypi.org/project/ScreenPro2)
+
+ScreenPro2 is tool to perform flexible analysis on high-content CRISPR screening datasets. It has functionalities to process data from diverse CRISPR screen platforms and is designed to be modular to enable easy extension to custom CRISPR screen platforms or other commonly used platforms in addition to the ones currently implemented.
 
 ___
 ## Introduction
