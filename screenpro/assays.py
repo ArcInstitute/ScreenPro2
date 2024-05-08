@@ -40,6 +40,11 @@ class PooledScreens(object):
     def copy(self):
         return copy(self)
 
+    def _add_phenotype_results(self, phenotype_name):
+        if phenotype_name in self.phenotype_names:
+            raise ValueError(f"Phenotype '{phenotype_name}' already exists in self.phenotype_names!")
+        self.phenotype_names.append(phenotype_name)
+
     def calculateDrugScreen(self, t0, untreated, treated, db_untreated, db_treated, score_level, run_name=None):
         """
         Calculate `gamma`, `rho`, and `tau` phenotype scores for a drug screen dataset in a given `score_level`.
@@ -79,9 +84,9 @@ class PooledScreens(object):
         }, axis=1)
 
         # save phenotype name for reference
-        self.phenotype_names.append(f'gamma:{gamma_name}')
-        self.phenotype_names.append(f'tau:{tau_name}')
-        self.phenotype_names.append(f'rho:{rho_name}')
+        self._add_phenotype_results(f'gamma:{gamma_name}')
+        self._add_phenotype_results(f'tau:{tau_name}')
+        self._add_phenotype_results(f'rho:{rho_name}')
         
     def calculateFlowBasedScreen(self, low_bin, high_bin, score_level, run_name=None):
         """
@@ -106,7 +111,7 @@ class PooledScreens(object):
         }, axis=1)
 
         # save phenotype name for reference
-        self.phenotype_names.append(f'delta:{delta_name}')
+        self._add_phenotype_results(f'delta:{delta_name}')
 
     def getPhenotypeScores(self, run_name, score_name, threshold=5, ctrl_label='negCtrl', target_col='target',pvalue_column='ttest pvalue', score_column='score'):
         """
