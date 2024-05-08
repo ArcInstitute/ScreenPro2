@@ -101,7 +101,7 @@ class PooledScreens(object):
             n_reps=self.n_reps,
             transformation=self.transformation, test=self.test, score_level=score_level
         )
-        # TODO: warning / error if db_untreated and db_treated are too close, i.e. growth_rate ~= 0.
+        # TO-DO: warning / error if db_untreated and db_treated are too close, i.e. growth_rate ~= 0.
         rho_name, rho = runPhenoScore(
             self.adata, cond1=untreated, cond2=treated, growth_rate=np.abs(db_untreated - db_treated),
             n_reps=self.n_reps,
@@ -120,7 +120,7 @@ class PooledScreens(object):
         self._add_phenotype_results(f'rho:{rho_name}')
 
         growth_factor_table = self._calculateGrowthFactor(
-            untreated = untreated, treated = treated, db_rate_col = db_rate_col
+            self, untreated = untreated, treated = treated, db_rate_col = db_rate_col
         )
 
         # add .pdata
@@ -130,8 +130,8 @@ class PooledScreens(object):
                 runPhenoScoreForReplicate(self,'T0', treated,'tau',growth_factor_table).add_prefix('tau_'),
                 runPhenoScoreForReplicate(self ,untreated,treated,'rho',growth_factor_table).add_prefix('rho_')
             ],axis=1).T,
-            obs = growth_factor_table.loc[self.pdata.obs.index, ],
-            var=self.adata.var,
+            obs = growth_factor_table,
+            var=self.adata.var
         )
         
     def calculateFlowBasedScreen(self, low_bin, high_bin, score_level, run_name=None):
