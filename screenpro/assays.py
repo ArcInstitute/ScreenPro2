@@ -6,7 +6,7 @@ import numpy as np
 import pandas as pd
 
 from .phenoscore import runPhenoScore
-
+from .utils import ann_score_df
 from copy import copy
 
 
@@ -72,17 +72,17 @@ class PooledScreens(object):
             transformation=self.transformation, test=self.test, score_level=score_level
         )
 
-        # save phenotype name for reference
-        self.phenotype_names.append(gamma_name)
-        self.phenotype_names.append(tau_name)
-        self.phenotype_names.append(rho_name)
-        
         if not run_name: run_name = score_level
         # save all results into a multi-index dataframe
         self.phenotypes[run_name] = pd.concat({
             f'gamma:{gamma_name}': gamma, f'tau:{tau_name}': tau, f'rho:{rho_name}': rho
         }, axis=1)
 
+        # save phenotype name for reference
+        self.phenotype_names.append(f'gamma:{gamma_name}')
+        self.phenotype_names.append(f'tau:{tau_name}')
+        self.phenotype_names.append(f'rho:{rho_name}')
+        
     def calculateFlowBasedScreen(self, low_bin, high_bin, score_level, run_name=None):
         """
         Calculate phenotype scores for a flow-based screen dataset.
@@ -99,31 +99,40 @@ class PooledScreens(object):
             transformation=self.transformation, test=self.test, score_level=score_level
         )
 
-        # save phenotype name for reference
-        self.phenotype_names.append(delta_name)
-
         if not run_name: run_name = score_level
         # save all results into a multi-index dataframe
         self.phenotypes[run_name] = pd.concat({
-            f'phenotype:{delta_name}': delta
+            f'delta:{delta_name}': delta
         }, axis=1)
 
-    def getPhenotypeScores(self, run_name, score_name, pvalue_column='ttest pvalue', score_column='score'):
+        # save phenotype name for reference
+        self.phenotype_names.append(f'delta:{delta_name}')
+
+    def getPhenotypeScores(self, run_name, score_name, threshold=5, ctrl_label='negCtrl', target_col='target',pvalue_column='ttest pvalue', score_column='score'):
         """
         Get phenotype scores for a given score level
 
         Args:
             run_name (str): name of the phenotype calculation run to retrieve
             score_name (str): name of the score to retrieve, e.g. 'gamma', 'tau', 'rho', 'delta'
+            threshold (float): threshold for filtering significant hits, default is 5
+            ctrl_label (str): label for the negative control, default is 'negCtrl'
+            target_col (str): column name for the target gene, default is 'target'
+            pvalue_column (str): column name for the p-value, default is 'ttest pvalue'
+            score_column (str): column name for the score, default is 'score'
         """
         if score_name not in self.phenotype_names:
             raise ValueError(f"Phenotype '{score_name}' not found in self.phenotype_names")
         
-        keep_col = ['target', pvalue_column, score_column]
+        keep_col = [target_col, pvalue_column, score_column]
 
-        res = self.phenotypes[run_name][score_name].loc[:,keep_col].set_index('target').rename(columns={pvalue_column:'pvalue'})
+        out = ann_score_df(
+            self.phenotypes[run_name][score_name].loc[:,keep_col].set_index('target').rename(columns={pvalue_column:'pvalue'}),
+            ctrl_label=ctrl_label, 
+            threshold=threshold
+        )
 
-        return res
+        return out
 
 
 class GImaps(object):
