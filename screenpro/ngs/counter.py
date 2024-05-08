@@ -1,6 +1,7 @@
 import pandas as pd
 import polars as pl
 import anndata as ad
+import os
 # import multiprocess as mp
 
 from . import cas9
@@ -49,6 +50,39 @@ class Counter:
 
         return sgRNA_table
 
+    def _process_cas9_sample(self, fastq_dir, sample_id, get_recombinant, write, verbose=False):
+        if verbose: print(green(sample_id, ['bold']))
+
+        # check if df_count is already available
+        if os.path.exists(f'{fastq_dir}/{sample_id}_count.arrow'):
+            df_count = pl.read_ipc_stream(f'{fastq_dir}/{sample_id}_count.arrow')
+            if verbose: print('count file exists ...')
+        
+        else:
+            df_count = cas9.fastq_to_count_dual_guide(
+                R1_fastq_file_path=f'{fastq_dir}/{sample_id}_R1.fastq.gz',
+                R2_fastq_file_path=f'{fastq_dir}/{sample_id}_R2.fastq.gz',
+                trim5p_pos1_start=1,
+                trim5p_pos1_length=19,
+                trim5p_pos2_start=1,
+                trim5p_pos2_length=19,
+                verbose=verbose
+            )
+            if write:
+                # write df_count to file
+                df_count.write_ipc_stream(f'{fastq_dir}/{sample_id}_count.arrow', compression='lz4')
+                if verbose: print('count file written ...')
+
+        out = cas9.map_to_library_dual_guide(
+            df_count=df_count,
+            library=self.library,
+            get_recombinant=get_recombinant,
+            return_type='all',
+            verbose=verbose
+        )
+        
+        return out
+
     def get_counts_matrix(self, fastq_dir, samples,get_recombinant=False, cas_type='cas9', parallel=False, verbose=False):
         '''Get count matrix for given samples
         '''
@@ -60,38 +94,7 @@ class Counter:
                 pass
             elif self.library_type == "dual_guide_design":
                 if get_recombinant: recombinants = {}
-                
-                # TODO: Fix the function for parallel processing
-                def process_sample(sample_id):
-                    if verbose: print(green(sample_id, ['bold']))
-                    df_count = cas9.fastq_to_count_dual_guide(
-                        R1_fastq_file_path=f'{fastq_dir}/{sample_id}_R1.fastq.gz',
-                        R2_fastq_file_path=f'{fastq_dir}/{sample_id}_R2.fastq.gz',
-                        trim5p_pos1_start=1,
-                        trim5p_pos1_length=19,
-                        trim5p_pos2_start=1,
-                        trim5p_pos2_length=19,
-                        verbose=verbose
-                    )
-                    if not get_recombinant:
-                        counts[sample_id] = cas9.map_to_library_dual_guide(
-                            df_count=df_count,
-                            library=self.library,
-                            get_recombinant=False,
-                            return_type='mapped',
-                            verbose=verbose
-                        )
-                    elif get_recombinant:
-                        cnt = cas9.map_to_library_dual_guide(
-                            df_count=df_count,
-                            library=self.library,
-                            get_recombinant=True,
-                            return_type='all',
-                            verbose=verbose
-                        )
-                        counts[sample_id] = cnt['mapped']
-                        recombinants[sample_id] = cnt['recombinant']
-                
+
                 if parallel:
                     raise NotImplementedError("Parallel processing is not yet implemented.")
                     # pool = mp.Pool(len(samples))
@@ -101,7 +104,10 @@ class Counter:
                 
                 else:
                     for sample_id in samples:
-                        process_sample(sample_id)
+                        cnt = self._process_cas9_sample(fastq_dir, sample_id, get_recombinant, verbose=verbose)
+                        counts[sample_id] = cnt['mapped']
+                        if get_recombinant:
+                            recombinants[sample_id] = cnt['recombinant']
                 
             counts_mat = pd.concat([
                 counts[sample_id].to_pandas().set_index('sgID_AB')['count'].rename(sample_id) 
