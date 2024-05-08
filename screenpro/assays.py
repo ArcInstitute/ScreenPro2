@@ -132,7 +132,7 @@ class PooledScreens(object):
         keep_col = [target_col, pvalue_column, score_column]
 
         out = ann_score_df(
-            self.phenotypes[run_name][score_name].loc[:,keep_col].set_index('target').rename(columns={pvalue_column:'pvalue'}),
+            self.phenotypes[run_name][score_name].loc[:,keep_col],
             ctrl_label=ctrl_label, 
             threshold=threshold
         )
