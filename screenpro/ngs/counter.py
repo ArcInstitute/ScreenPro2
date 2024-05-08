@@ -82,7 +82,7 @@ class Counter:
         
         return out
 
-    def get_counts_matrix(self, fastq_dir, samples,get_recombinant=False, cas_type='cas9', parallel=False, verbose=False):
+    def get_counts_matrix(self, fastq_dir, samples,get_recombinant=False, cas_type='cas9', write=True, parallel=False, verbose=False):
         '''Get count matrix for given samples
         '''
         if self.cas_type == 'cas9':
@@ -103,7 +103,8 @@ class Counter:
                 
                 else:
                     for sample_id in samples:
-                        cnt = self._process_cas9_sample(fastq_dir, sample_id, get_recombinant, verbose=verbose)
+                        cnt = self._process_cas9_sample(
+                            fastq_dir=fastq_dir, sample_id=sample_id, get_recombinant=get_recombinant, write=write, verbose=verbose)
                         counts[sample_id] = cnt['mapped']
                         if get_recombinant:
                             recombinants[sample_id] = cnt['recombinant']
