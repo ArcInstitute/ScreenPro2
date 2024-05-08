@@ -132,7 +132,7 @@ class PooledScreens(object):
         # add .pdata
         self.pdata = ad.AnnData(
             X = pdata_df,
-            obs = growth_factor_table.loc[pdata_df.columns,:],
+            obs = growth_factor_table.loc[pdata_df.index,:],
             var=self.adata.var
         )
         
