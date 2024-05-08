@@ -4,8 +4,9 @@ Assays module
 
 import numpy as np
 import pandas as pd
+import anndata as ad
 
-from .phenoscore import runPhenoScore
+from .phenoscore import runPhenoScore, runPhenoScoreForReplicate
 from .utils import ann_score_df
 from copy import copy
 
@@ -45,7 +46,37 @@ class PooledScreens(object):
             raise ValueError(f"Phenotype '{phenotype_name}' already exists in self.phenotype_names!")
         self.phenotype_names.append(phenotype_name)
 
-    def calculateDrugScreen(self, t0, untreated, treated, db_untreated, db_treated, score_level, run_name=None):
+    def _calculateGrowthFactor(self, untreated, treated, db_rate_col):
+        """
+        Calculate growth factor for gamma, tau, or rho score per replicates.
+
+        Parameters:
+            untreated (str): untreated condition
+            treated (str): treated condition
+            db_rate_col (str): column name for doubling rate
+        
+        Returns:
+            pd.DataFrame: growth factor dataframe
+        """
+
+        adat = self.adata.copy()
+
+        growth_factors = []
+
+        # calculate growth factor for gamma, tau, or rho score per replicates
+        for replicate in adat.obs.replicate.unique():
+            db_untreated = adat.obs.query(f'condition == "{untreated}" & replicate == {str(replicate)}')[db_rate_col][0]
+            db_treated = adat.obs.query(f'condition == "{treated}" & replicate == {str(replicate)}')[db_rate_col][0]
+
+            growth_factors.append(('gamma', db_untreated, replicate))
+            growth_factors.append(('tau', db_treated, replicate))
+            growth_factors.append(('rho', np.abs(db_untreated - db_treated), replicate))
+
+        out = pd.DataFrame(growth_factors, columns=['score', 'growth_factor', 'replicate'])
+
+        return out
+
+    def calculateDrugScreen(self, t0, untreated, treated, db_untreated, db_treated, score_level, db_rate_col='pop_doublings', run_name=None):
         """
         Calculate `gamma`, `rho`, and `tau` phenotype scores for a drug screen dataset in a given `score_level`.
         To normalize by growth rate, the doubling rate of the untreated and treated conditions are required.
@@ -57,6 +88,7 @@ class PooledScreens(object):
             db_untreated (float): doubling rate of the untreated condition
             db_treated (float): doubling rate of the treated condition
             score_level (str): name of the score level
+            db_rate_col (str): column name for the doubling rate, default is 'pop_doublings'
             run_name (str): name for the phenotype calculation run
         """
         # calculate phenotype scores: gamma, tau, rho
@@ -87,6 +119,23 @@ class PooledScreens(object):
         self._add_phenotype_results(f'gamma:{gamma_name}')
         self._add_phenotype_results(f'tau:{tau_name}')
         self._add_phenotype_results(f'rho:{rho_name}')
+
+        growth_factor_table = self._calculateGrowthFactor(
+            self, untreated = untreated, treated = treated, db_rate_col = db_rate_col
+        )
+
+        # add .pdata
+        self.pdata = ad.AnnData(
+            X=pd.concat([
+                runPhenoScoreForReplicate(self,'T0', untreated,'gamma',growth_factor_table).add_prefix('gamma_'),
+                runPhenoScoreForReplicate(self,'T0', treated,'tau',growth_factor_table).add_prefix('tau_'),
+                runPhenoScoreForReplicate(self ,untreated,treated,'rho',growth_factor_table).add_prefix('rho_')
+            ],axis=1).T,
+            var=self.adata.var
+        )
+
+        self.pdata.obs['score'] = self.pdata.obs.index.str.split('_').str[0]
+        self.pdata.obs['replicate'] = self.pdata.obs.index.str.split('_').str[2]
         
     def calculateFlowBasedScreen(self, low_bin, high_bin, score_level, run_name=None):
         """
