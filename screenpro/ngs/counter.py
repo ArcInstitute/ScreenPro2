@@ -7,7 +7,6 @@ import os
 from . import cas9
 from . import cas12
 from ..load import load_cas9_sgRNA_library
-from ..utils import find_low_counts
 from simple_colors import green
 
 
