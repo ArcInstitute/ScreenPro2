@@ -53,7 +53,7 @@ class Counter:
         if verbose: print(green(sample_id, ['bold']))
 
         # check if df_count is already available
-        if os.path.exists(f'{fastq_dir}/{sample_id}_count.arrow') or write != "force":
+        if os.path.exists(f'{fastq_dir}/{sample_id}_count.arrow'):
             if verbose: print('count file exists ...')
             if write != "force":
                 df_count = pl.read_ipc_stream(f'{fastq_dir}/{sample_id}_count.arrow')
