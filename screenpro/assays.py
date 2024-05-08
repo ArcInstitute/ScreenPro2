@@ -27,6 +27,7 @@ class PooledScreens(object):
         self.test = test
         self.n_reps = n_reps
         self.phenotypes = {}
+        self.phenotype_names = []
 
     # def __repr__(self):
     #     descriptions = ''
@@ -39,7 +40,7 @@ class PooledScreens(object):
     def copy(self):
         return copy(self)
 
-    def calculateDrugScreen(self, t0, untreated, treated, db_untreated, db_treated, score_level):
+    def calculateDrugScreen(self, t0, untreated, treated, db_untreated, db_treated, score_level, run_name=None):
         """
         Calculate `gamma`, `rho`, and `tau` phenotype scores for a drug screen dataset in a given `score_level`.
         To normalize by growth rate, the doubling rate of the untreated and treated conditions are required.
@@ -51,6 +52,7 @@ class PooledScreens(object):
             db_untreated (float): doubling rate of the untreated condition
             db_treated (float): doubling rate of the treated condition
             score_level (str): name of the score level
+            run_name (str): name for the phenotype calculation run
         """
         # calculate phenotype scores: gamma, tau, rho
         gamma_name, gamma = runPhenoScore(
@@ -70,12 +72,18 @@ class PooledScreens(object):
             transformation=self.transformation, test=self.test, score_level=score_level
         )
 
+        # save phenotype name for reference
+        self.phenotype_names.append(gamma_name)
+        self.phenotype_names.append(tau_name)
+        self.phenotype_names.append(rho_name)
+        
+        if not run_name: run_name = score_level
         # save all results into a multi-index dataframe
-        self.phenotypes[score_level] = pd.concat({
+        self.phenotypes[run_name] = pd.concat({
             f'gamma:{gamma_name}': gamma, f'tau:{tau_name}': tau, f'rho:{rho_name}': rho
         }, axis=1)
 
-    def calculateFlowBasedScreen(self, low_bin, high_bin, score_level):
+    def calculateFlowBasedScreen(self, low_bin, high_bin, score_level, run_name=None):
         """
         Calculate phenotype scores for a flow-based screen dataset.
 
@@ -83,17 +91,39 @@ class PooledScreens(object):
             low_bin (str): name of the low bin condition
             high_bin (str): name of the high bin condition
             score_level (str): name of the score level
+            run_name (str): name for the phenotype calculation run
         """
         # calculate phenotype scores
-        phenotype_name, phenotype = runPhenoScore(
+        delta_name, delta = runPhenoScore(
             self.adata, cond1=low_bin, cond2=high_bin, n_reps=self.n_reps,
             transformation=self.transformation, test=self.test, score_level=score_level
         )
 
+        # save phenotype name for reference
+        self.phenotype_names.append(delta_name)
+
+        if not run_name: run_name = score_level
         # save all results into a multi-index dataframe
-        self.phenotypes[score_level] = pd.concat({
-            f'phenotype:{phenotype_name}': phenotype
+        self.phenotypes[run_name] = pd.concat({
+            f'phenotype:{delta_name}': delta
         }, axis=1)
+
+    def getPhenotypeScores(self, run_name, score_name, pvalue_column='ttest pvalue', score_column='score'):
+        """
+        Get phenotype scores for a given score level
+
+        Args:
+            run_name (str): name of the phenotype calculation run to retrieve
+            score_name (str): name of the score to retrieve, e.g. 'gamma', 'tau', 'rho', 'delta'
+        """
+        if score_name not in self.phenotype_names:
+            raise ValueError(f"Phenotype '{score_name}' not found in self.phenotype_names")
+        
+        keep_col = ['target', pvalue_column, score_column]
+
+        res = self.phenotypes[run_name][score_name].loc[:,keep_col].set_index('target').rename(columns={pvalue_column:'pvalue'})
+
+        return res
 
 
 class GImaps(object):
