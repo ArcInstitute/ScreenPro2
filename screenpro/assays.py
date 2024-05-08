@@ -123,14 +123,16 @@ class PooledScreens(object):
             untreated = untreated, treated = treated, db_rate_col = db_rate_col
         )
 
+        # get replicate level phenotype scores
+        pdata_df = pd.concat([
+            runPhenoScoreForReplicate(self,'T0', untreated,'gamma',growth_factor_table).add_prefix('gamma_'),
+            runPhenoScoreForReplicate(self,'T0', treated,'tau',growth_factor_table).add_prefix('tau_'),
+            runPhenoScoreForReplicate(self ,untreated,treated,'rho',growth_factor_table).add_prefix('rho_')
+        ],axis=1).T
         # add .pdata
         self.pdata = ad.AnnData(
-            X=pd.concat([
-                runPhenoScoreForReplicate(self,'T0', untreated,'gamma',growth_factor_table).add_prefix('gamma_'),
-                runPhenoScoreForReplicate(self,'T0', treated,'tau',growth_factor_table).add_prefix('tau_'),
-                runPhenoScoreForReplicate(self ,untreated,treated,'rho',growth_factor_table).add_prefix('rho_')
-            ],axis=1).T,
-            obs = growth_factor_table,
+            X = pdata_df,
+            obs = growth_factor_table.loc[pdata_df.columns,:],
             var=self.adata.var
         )
         
