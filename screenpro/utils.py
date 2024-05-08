@@ -48,38 +48,6 @@ def find_low_counts(adata, filter_type='either', minimum_reads=50):
     adata.var['low_count'] = ~adata.var.index.isin(out.var.index.to_list())
 
 
-def calculateGrowthFactor(screen, untreated, treated, db_rate_col):
-    """
-    Calculate growth factor for gamma, tau, or rho score per replicates.
-
-    Parameters:
-        screen (ScreenPro): ScreenPro object
-        untreated (str): untreated condition
-        treated (str): treated condition
-        db_rate_col (str): column name for doubling rate
-    
-    Returns:
-        pd.DataFrame: growth factor dataframe
-    """
-
-    adat = screen.adata.copy()
-
-    growth_factors = []
-
-    # calculate growth factor for gamma, tau, or rho score per replicates
-    for replicate in adat.obs.replicate.unique():
-        db_untreated = adat.obs.query(f'condition == "{untreated}" & replicate == {str(replicate)}')[db_rate_col][0]
-        db_treated = adat.obs.query(f'condition == "{treated}" & replicate == {str(replicate)}')[db_rate_col][0]
-
-        growth_factors.append(('gamma', db_untreated, replicate))
-        growth_factors.append(('tau', db_treated, replicate))
-        growth_factors.append(('rho', np.abs(db_untreated - db_treated), replicate))
-
-    out = pd.DataFrame(growth_factors, columns=['score', 'growth_factor', 'replicate'])
-
-    return out
-
-
 def ann_score_df(df_in, up_hit='resistance_hit', down_hit='sensitivity_hit', ctrl_label='non-targeting', threshold=10):
     """
     Annotate score dataframe with hit labels using given `threshold`
