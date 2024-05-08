@@ -24,6 +24,7 @@ class PooledScreens(object):
             test (str): statistical test to use for calculating phenotype scores
         """
         self.adata = adata
+        self.pdata = None
         self.transformation = transformation
         self.test = test
         self.n_reps = n_reps
@@ -58,21 +59,19 @@ class PooledScreens(object):
         Returns:
             pd.DataFrame: growth factor dataframe
         """
-
         adat = self.adata.copy()
-
         growth_factors = []
-
         # calculate growth factor for gamma, tau, or rho score per replicates
         for replicate in adat.obs.replicate.unique():
             db_untreated = adat.obs.query(f'condition == "{untreated}" & replicate == {str(replicate)}')[db_rate_col][0]
             db_treated = adat.obs.query(f'condition == "{treated}" & replicate == {str(replicate)}')[db_rate_col][0]
 
-            growth_factors.append(('gamma', db_untreated, replicate))
-            growth_factors.append(('tau', db_treated, replicate))
-            growth_factors.append(('rho', np.abs(db_untreated - db_treated), replicate))
+            growth_factors.append(('gamma', db_untreated, replicate, f'gamma_replicate_{replicate}'))
+            growth_factors.append(('tau', db_treated, replicate, f'tau_replicate_{replicate}'))
+            growth_factors.append(('rho', np.abs(db_untreated - db_treated), replicate, f'rho_replicate_{replicate}'))
 
-        out = pd.DataFrame(growth_factors, columns=['score', 'growth_factor', 'replicate'])
+        out = pd.DataFrame(growth_factors, columns=['score', 'growth_factor', 'replicate', 'index']).set_index('index')
+        out.index.name = None
 
         return out
 
@@ -131,11 +130,9 @@ class PooledScreens(object):
                 runPhenoScoreForReplicate(self,'T0', treated,'tau',growth_factor_table).add_prefix('tau_'),
                 runPhenoScoreForReplicate(self ,untreated,treated,'rho',growth_factor_table).add_prefix('rho_')
             ],axis=1).T,
-            var=self.adata.var
+            obs = growth_factor_table.loc[self.pdata.obs.index, ]
+            var=self.adata.var,
         )
-
-        self.pdata.obs['score'] = self.pdata.obs.index.str.split('_').str[0]
-        self.pdata.obs['replicate'] = self.pdata.obs.index.str.split('_').str[2]
         
     def calculateFlowBasedScreen(self, low_bin, high_bin, score_level, run_name=None):
         """
