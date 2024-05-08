@@ -129,7 +129,7 @@ class PooledScreens(object):
         if score_name not in self.phenotype_names:
             raise ValueError(f"Phenotype '{score_name}' not found in self.phenotype_names")
         
-        keep_col = [target_col, pvalue_column, score_column]
+        keep_col = [target_col, score_column, pvalue_column]
 
         out = ann_score_df(
             self.phenotypes[run_name][score_name].loc[:,keep_col],
