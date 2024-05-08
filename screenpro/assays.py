@@ -120,7 +120,7 @@ class PooledScreens(object):
         self._add_phenotype_results(f'rho:{rho_name}')
 
         growth_factor_table = self._calculateGrowthFactor(
-            self, untreated = untreated, treated = treated, db_rate_col = db_rate_col
+            untreated = untreated, treated = treated, db_rate_col = db_rate_col
         )
 
         # add .pdata
