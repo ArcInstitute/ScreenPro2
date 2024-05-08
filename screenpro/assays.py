@@ -130,7 +130,7 @@ class PooledScreens(object):
                 runPhenoScoreForReplicate(self,'T0', treated,'tau',growth_factor_table).add_prefix('tau_'),
                 runPhenoScoreForReplicate(self ,untreated,treated,'rho',growth_factor_table).add_prefix('rho_')
             ],axis=1).T,
-            obs = growth_factor_table.loc[self.pdata.obs.index, ]
+            obs = growth_factor_table.loc[self.pdata.obs.index, ],
             var=self.adata.var,
         )
         
