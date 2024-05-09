@@ -30,7 +30,7 @@ def load_cas9_sgRNA_library(library_path, library_type, sep='\t', index_col=0, p
         if 'sequence' in library.columns and 'protospacer' not in library.columns:
             library['protospacer'] = library['sequence']
         if 'sgId' in library.columns and 'sgID' not in library.columns:
-            library.rename(columns={'sgId': 'sgID'}, inplace=True)
+            library.rename(columns={'sgID': 'sgId'}, inplace=True)
 
         # Upper case protospacer sequences
         library['protospacer'] = library['protospacer'].str.upper()
