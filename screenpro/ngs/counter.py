@@ -1,12 +1,12 @@
 import pandas as pd
 import polars as pl
 import anndata as ad
+import os
 # import multiprocess as mp
 
 from . import cas9
 from . import cas12
 from ..load import load_cas9_sgRNA_library
-from ..utils import find_low_counts
 from simple_colors import green
 
 
@@ -49,7 +49,43 @@ class Counter:
 
         return sgRNA_table
 
-    def get_counts_matrix(self, fastq_dir, samples,get_recombinant=False, cas_type='cas9', parallel=False, verbose=False):
+    def _process_cas9_sample(self, fastq_dir, sample_id, get_recombinant, write, verbose=False):
+        if verbose: print(green(sample_id, ['bold']))
+
+        # check if df_count is already available
+        if os.path.exists(f'{fastq_dir}/{sample_id}_count.arrow'):
+            if verbose: print('count file exists ...')
+            if write != "force":
+                df_count = pl.read_ipc_stream(f'{fastq_dir}/{sample_id}_count.arrow')
+            else:
+                if verbose: print('skip loading count file, force write is set ...')
+        
+        else:
+            df_count = cas9.fastq_to_count_dual_guide(
+                R1_fastq_file_path=f'{fastq_dir}/{sample_id}_R1.fastq.gz',
+                R2_fastq_file_path=f'{fastq_dir}/{sample_id}_R2.fastq.gz',
+                trim5p_pos1_start=1,
+                trim5p_pos1_length=19,
+                trim5p_pos2_start=1,
+                trim5p_pos2_length=19,
+                verbose=verbose
+            )
+            if write == "force" or write == True:
+                # write df_count to file
+                df_count.write_ipc_stream(f'{fastq_dir}/{sample_id}_count.arrow', compression='lz4')
+                if verbose: print('count file written ...')
+
+        out = cas9.map_to_library_dual_guide(
+            df_count=df_count,
+            library=self.library,
+            get_recombinant=get_recombinant,
+            return_type='all',
+            verbose=verbose
+        )
+        
+        return out
+
+    def get_counts_matrix(self, fastq_dir, samples,get_recombinant=False, cas_type='cas9', write=True, parallel=False, verbose=False):
         '''Get count matrix for given samples
         '''
         if self.cas_type == 'cas9':
@@ -60,38 +96,7 @@ class Counter:
                 pass
             elif self.library_type == "dual_guide_design":
                 if get_recombinant: recombinants = {}
-                
-                # TODO: Fix the function for parallel processing
-                def process_sample(sample_id):
-                    if verbose: print(green(sample_id, ['bold']))
-                    df_count = cas9.fastq_to_count_dual_guide(
-                        R1_fastq_file_path=f'{fastq_dir}/{sample_id}_R1.fastq.gz',
-                        R2_fastq_file_path=f'{fastq_dir}/{sample_id}_R2.fastq.gz',
-                        trim5p_pos1_start=1,
-                        trim5p_pos1_length=19,
-                        trim5p_pos2_start=1,
-                        trim5p_pos2_length=19,
-                        verbose=verbose
-                    )
-                    if not get_recombinant:
-                        counts[sample_id] = cas9.map_to_library_dual_guide(
-                            df_count=df_count,
-                            library=self.library,
-                            get_recombinant=False,
-                            return_type='mapped',
-                            verbose=verbose
-                        )
-                    elif get_recombinant:
-                        cnt = cas9.map_to_library_dual_guide(
-                            df_count=df_count,
-                            library=self.library,
-                            get_recombinant=True,
-                            return_type='all',
-                            verbose=verbose
-                        )
-                        counts[sample_id] = cnt['mapped']
-                        recombinants[sample_id] = cnt['recombinant']
-                
+
                 if parallel:
                     raise NotImplementedError("Parallel processing is not yet implemented.")
                     # pool = mp.Pool(len(samples))
@@ -101,7 +106,11 @@ class Counter:
                 
                 else:
                     for sample_id in samples:
-                        process_sample(sample_id)
+                        cnt = self._process_cas9_sample(
+                            fastq_dir=fastq_dir, sample_id=sample_id, get_recombinant=get_recombinant, write=write, verbose=verbose)
+                        counts[sample_id] = cnt['mapped']
+                        if get_recombinant:
+                            recombinants[sample_id] = cnt['recombinant']
                 
             counts_mat = pd.concat([
                 counts[sample_id].to_pandas().set_index('sgID_AB')['count'].rename(sample_id) 
@@ -122,7 +131,7 @@ class Counter:
         '''
         self.counts_mat = pd.read_csv(counts_mat_path, **kwargs)
     
-    def build_counts_anndata(self, source='library'):
+    def build_counts_anndata(self, source='library', verbose=False):
         '''Build AnnData object from count matrix
         '''
         if source == 'recombinant' and self.library_type == "single_guide_design":
@@ -146,9 +155,11 @@ class Counter:
                 counts_recombinants = {}
 
                 for sample in self.recombinants.keys():
+                    if verbose: print(green(sample, ['bold']))
                     d = self.recombinants[sample].drop_nulls()
                     d = d.to_pandas()
                     counts_recombinants[sample] = d.set_index(['sgID_A','sgID_B'])['count']
+                    if verbose: print('recombinant count added ...')
 
                 counts_recombinants = pd.concat(counts_recombinants,axis=1).fillna(0)
 
@@ -162,6 +173,7 @@ class Counter:
                     ],axis=1).set_index(['sgID_A','sgID_B'])
                 ])
 
+                if verbose: print('recombinant count matrix built ...')
                 var_table = pd.DataFrame(
                     counts_recombinants.index.to_list(),
                     index = ['|'.join(i) for i in counts_recombinants.index.to_list()],
@@ -206,7 +218,7 @@ class Counter:
                     obs = adata.obs
                 )
 
-                rdata = rdata[:,~rdata.var.low_count]
+                if verbose: print('recombinant AnnData created.')
 
         if source == 'mapped' or source == 'library':
             return adata
