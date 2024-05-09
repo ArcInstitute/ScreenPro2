@@ -39,7 +39,7 @@ class Counter:
 
         if self.cas_type == 'cas9':
             if self.library_type == "single_guide_design":
-                sgRNA_table = self.library.to_pandas()[['target','sgID','protospacer']].set_index('sgID')
+                sgRNA_table = self.library.to_pandas()[['target','sgID','sequence']].set_index('sgID')
 
             elif self.library_type == "dual_guide_design":
                 sgRNA_table = pd.concat([
