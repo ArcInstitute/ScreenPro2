@@ -51,24 +51,28 @@ class Counter:
 
     def _process_cas9_single_guide_sample(self, fastq_dir, sample_id, write, verbose=False):
         if verbose: print(green(sample_id, ['bold']))
+        get_counts = True
 
         # check if df_count is already available
         if os.path.exists(f'{fastq_dir}/{sample_id}_count.arrow'):
             if verbose: print('count file exists ...')
             if write != "force":
                 df_count = pl.read_ipc_stream(f'{fastq_dir}/{sample_id}_count.arrow')
+                get_counts = False
             else:
                 if verbose: print('skip loading count file, force write is set ...')
-        else:
+
+        if get_counts:
             df_count = cas9.fastq_to_count_single_guide(
                 fastq_file_path=f'{fastq_dir}/{sample_id}.fastq.gz',
                 trim5p_start=1,
                 trim5p_length=19,
                 verbose=verbose
             )
-            # write df_count to file
-            df_count.write_ipc_stream(f'{fastq_dir}/{sample_id}_count.arrow', compression='lz4')
-            if verbose: print('count file written ...')
+            if write == "force" or write == True:
+                # write df_count to file
+                df_count.write_ipc_stream(f'{fastq_dir}/{sample_id}_count.arrow', compression='lz4')
+                if verbose: print('count file written ...')
 
         out = cas9.map_to_library_single_guide(
             df_count=df_count,
@@ -81,16 +85,18 @@ class Counter:
     
     def _process_cas9_dual_guide_sample(self, fastq_dir, sample_id, get_recombinant, write, verbose=False):
         if verbose: print(green(sample_id, ['bold']))
+        get_counts = True
 
         # check if df_count is already available
         if os.path.exists(f'{fastq_dir}/{sample_id}_count.arrow'):
             if verbose: print('count file exists ...')
             if write != "force":
                 df_count = pl.read_ipc_stream(f'{fastq_dir}/{sample_id}_count.arrow')
+                get_counts = False
             else:
                 if verbose: print('skip loading count file, force write is set ...')
         
-        else:
+        if get_counts:
             df_count = cas9.fastq_to_count_dual_guide(
                 R1_fastq_file_path=f'{fastq_dir}/{sample_id}_R1.fastq.gz',
                 R2_fastq_file_path=f'{fastq_dir}/{sample_id}_R2.fastq.gz',
