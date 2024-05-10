@@ -58,7 +58,7 @@ class Counter:
             df_count = pl.read_ipc_stream(f'{fastq_dir}/{sample_id}_count.arrow')
         else:
             df_count = cas9.fastq_to_count_single_guide(
-                R1_fastq_file_path=f'{fastq_dir}/{sample_id}.fastq.gz',
+                fastq_file_path=f'{fastq_dir}/{sample_id}.fastq.gz',
                 trim5p_pos1_start=1,
                 trim5p_pos1_length=19,
                 verbose=verbose
