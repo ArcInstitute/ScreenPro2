@@ -22,7 +22,7 @@ def load_cas9_sgRNA_library(library_path, library_type, sep='\t', index_col=0, p
     # I would like to name the target column 'target' if it is named 'gene'!
     
     if library_type == "single_guide_design":
-        eval_columns = ['target', 'sgID', 'protospacer']
+        eval_columns = ['target', 'sgID', 'protospacer', 'sequence']
 
         # reformating columns as needed
         if 'gene' in library.columns:
