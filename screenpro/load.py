@@ -8,29 +8,30 @@ import pandas as pd
 from .utils import check_protospacer_length, trim_protospacer
 
 
-def load_cas9_sgRNA_library(library_path, library_type, sep='\t', index_col=0, protospacer_length=19, verbose=True):
+def load_cas9_sgRNA_library(library_path, library_type, sep='\t', index_col=0, protospacer_length=19, verbose=True, **args):
     '''Load Cas9 sgRNA library table for single or dual guide design.
     '''
     library = pd.read_csv(
         library_path,
         sep=sep,
         index_col=index_col,
+        **args
     )
 
     ## Evaluate library table and reformat columns for downstream analysis
     # I would like to name the target column 'target' if it is named 'gene'!
-    if 'gene' in library.columns:
-        # rename gene column to target
-        library = library.rename(columns={'gene': 'target'})
     
     if library_type == "single_guide_design":
         eval_columns = ['target', 'sgID', 'protospacer']
 
         # reformating columns as needed
+        if 'gene' in library.columns:
+            # rename gene column to target
+            library = library.rename(columns={'gene': 'target'})
         if 'sequence' in library.columns and 'protospacer' not in library.columns:
             library['protospacer'] = library['sequence']
-        if 'sgId' in library.columns and 'sgID' not in library.columns:
-            library.rename(columns={'sgID': 'sgId'}, inplace=True)
+        if 'sgId' in library.columns:
+            library.rename(columns={'sgId': 'sgID'}, inplace=True)
 
         # Upper case protospacer sequences
         library['protospacer'] = library['protospacer'].str.upper()
@@ -49,6 +50,11 @@ def load_cas9_sgRNA_library(library_path, library_type, sep='\t', index_col=0, p
             'sequence'
         ]
         
+        # reformating columns as needed
+        if 'gene' in library.columns:
+            # rename gene column to target
+            library = library.rename(columns={'gene': 'target'})
+
         # Upper case protospacer sequences
         library['protospacer_A'] = library['protospacer_A'].str.upper()
         library['protospacer_B'] = library['protospacer_B'].str.upper()
@@ -80,6 +86,9 @@ def load_cas9_sgRNA_library(library_path, library_type, sep='\t', index_col=0, p
 
         library = library[eval_columns]
 
+    else:
+        raise ValueError(f"Invalid library type: {library_type}. Please choose 'single_guide_design' or 'dual_guide_design'.")
+    
     if verbose: print("Library table successfully loaded.")
 
     return library
