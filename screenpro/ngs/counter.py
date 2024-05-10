@@ -138,6 +138,11 @@ class Counter:
                         
                         counts[sample_id] = cnt['mapped']
             
+                counts_mat = pd.concat([
+                    counts[sample_id].to_pandas().set_index('sgID')['count'].rename(sample_id)
+                    for sample_id in counts.keys()
+                ],axis=1).fillna(0)
+
             elif self.library_type == "dual_guide_design":
                 if get_recombinant: recombinants = {}
 
@@ -160,14 +165,14 @@ class Counter:
                         counts[sample_id] = cnt['mapped']
                         if get_recombinant:
                             recombinants[sample_id] = cnt['recombinant']
+                
+                counts_mat = pd.concat([
+                    counts[sample_id].to_pandas().set_index('sgID_AB')['count'].rename(sample_id) 
+                    for sample_id in counts.keys()
+                ],axis=1).fillna(0)
             
             else:
                 raise ValueError("Invalid library type. Please choose from 'single_guide_design' or 'dual_guide_design'.")
-
-            counts_mat = pd.concat([
-                counts[sample_id].to_pandas().set_index('sgID_AB')['count'].rename(sample_id) 
-                for sample_id in counts.keys()
-            ],axis=1).fillna(0)
 
         if cas_type == 'cas12':
             # TODO: Implement codes to build count matrix for given samples
