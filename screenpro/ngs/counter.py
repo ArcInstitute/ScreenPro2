@@ -130,7 +130,11 @@ class Counter:
                 else:
                     for sample_id in samples:
                         cnt = self._process_cas9_single_guide_sample(
-                            fastq_dir=fastq_dir, sample_id=sample_id, verbose=verbose)
+                            fastq_dir=fastq_dir, 
+                            sample_id=sample_id, 
+                            write=write, 
+                            verbose=verbose
+                        )
                         
                         counts[sample_id] = cnt['mapped']
             
@@ -147,7 +151,12 @@ class Counter:
                 else:
                     for sample_id in samples:
                         cnt = self._process_cas9_dual_guide_sample(
-                            fastq_dir=fastq_dir, sample_id=sample_id, get_recombinant=get_recombinant, write=write, verbose=verbose)
+                            fastq_dir=fastq_dir, 
+                            sample_id=sample_id, 
+                            get_recombinant=get_recombinant, 
+                            write=write, 
+                            verbose=verbose
+                        )
                         counts[sample_id] = cnt['mapped']
                         if get_recombinant:
                             recombinants[sample_id] = cnt['recombinant']
