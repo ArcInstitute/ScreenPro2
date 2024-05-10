@@ -121,7 +121,7 @@ class Counter:
         
         return out
 
-    def get_counts_matrix(self, fastq_dir, samples,get_recombinant=False, cas_type='cas9', write=True, parallel=False, verbose=False):
+    def get_counts_matrix(self, fastq_dir, samples, get_recombinant=False, cas_type='cas9', protospacer_length=19, write=True, parallel=False, verbose=False):
         '''Get count matrix for given samples
         '''
         if self.cas_type == 'cas9':
@@ -139,6 +139,7 @@ class Counter:
                             fastq_dir=fastq_dir, 
                             sample_id=sample_id, 
                             write=write, 
+                            protospacer_length=protospacer_length,
                             verbose=verbose
                         )
                         
@@ -166,6 +167,8 @@ class Counter:
                             sample_id=sample_id, 
                             get_recombinant=get_recombinant, 
                             write=write, 
+                            protospacer_A_length=protospacer_length,
+                            protospacer_B_length=protospacer_length,
                             verbose=verbose
                         )
                         counts[sample_id] = cnt['mapped']
