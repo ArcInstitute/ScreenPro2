@@ -36,6 +36,23 @@ def load_cas9_sgRNA_library(library_path, library_type, sep='\t', index_col=0, p
         # Upper case protospacer sequences
         library['protospacer'] = library['protospacer'].str.upper()
 
+        protospacer_col = 'protospacer'
+        in_length = check_protospacer_length(library, 'protospacer')
+        if in_length == protospacer_length:
+            pass
+        elif in_length > protospacer_length:
+            if verbose: print(f"Trimming protospacer sequences in '{protospacer_col}' column.")
+            library = trim_protospacer(
+                library, protospacer_col, 
+                '5prime', 
+                in_length - protospacer_length
+            )
+
+        elif in_length < protospacer_length:
+            raise ValueError(
+                f"Input protospacer length for '{protospacer_col}' is less than {protospacer_length}"
+            )
+        
         for col in eval_columns:
             if col not in library.columns:
                 raise ValueError(f"Column '{col}' not found in library table.")
@@ -74,7 +91,7 @@ def load_cas9_sgRNA_library(library_path, library_type, sep='\t', index_col=0, p
 
             elif in_length < protospacer_length:
                 raise ValueError(
-                    f"Input protospacer length for '{protospacer_col}'is less than {protospacer_length}"
+                    f"Input protospacer length for '{protospacer_col}' is less than {protospacer_length}"
                 )
     
         # if 'sequence' not in library.columns:
