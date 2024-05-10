@@ -92,6 +92,10 @@ def map_to_library_single_guide(df_count, library, return_type='all', verbose=Fa
     res = df_count.clone() #cheap deepcopy/clone
     res = res.sort('count', descending=True)
 
+    res = res.with_columns(
+        pl.col("protospacer").alias("sequence"),
+    )
+
     res_map = pl.DataFrame(library).join(
         res, on="sequence", how="left"
     )
