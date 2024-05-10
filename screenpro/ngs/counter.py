@@ -148,10 +148,10 @@ class Counter:
                         
                         counts[sample_id] = cnt['mapped']
             
-                counts_mat = pd.concat([
-                    counts[sample_id].to_pandas().set_index('sgID')['count'].rename(sample_id)
-                    for sample_id in counts.keys()
-                ],axis=1).fillna(0)
+                # counts_mat = pd.concat([
+                #     counts[sample_id].to_pandas().set_index('sgID')['count'].rename(sample_id)
+                #     for sample_id in counts.keys()
+                # ],axis=1).fillna(0)
 
             elif self.library_type == "dual_guide_design":
                 if get_recombinant: recombinants = {}
