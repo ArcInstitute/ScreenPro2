@@ -203,7 +203,7 @@ class Counter:
             raise NotImplementedError("Cas12 count matrix is not yet implemented.")
         
         self.counts_dict = counts
-        self.counts_mat = counts_mat
+        # self.counts_mat = counts_mat
         if get_recombinant:
             self.recombinants = recombinants
     
