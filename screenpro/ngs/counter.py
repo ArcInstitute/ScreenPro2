@@ -59,8 +59,8 @@ class Counter:
         else:
             df_count = cas9.fastq_to_count_single_guide(
                 fastq_file_path=f'{fastq_dir}/{sample_id}.fastq.gz',
-                trim5p_pos1_start=1,
-                trim5p_pos1_length=19,
+                trim5p_start=1,
+                trim5p_length=19,
                 verbose=verbose
             )
             # write df_count to file
