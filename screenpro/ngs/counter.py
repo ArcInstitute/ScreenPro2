@@ -49,7 +49,7 @@ class Counter:
 
         return sgRNA_table
 
-    def _process_cas9_single_guide_sample(self, fastq_dir, sample_id, write, verbose=False):
+    def _process_cas9_single_guide_sample(self, fastq_dir, sample_id, write, protospacer_length=19, verbose=False):
         if verbose: print(green(sample_id, ['bold']))
         get_counts = True
 
@@ -66,7 +66,7 @@ class Counter:
             df_count = cas9.fastq_to_count_single_guide(
                 fastq_file_path=f'{fastq_dir}/{sample_id}.fastq.gz',
                 trim5p_start=1,
-                trim5p_length=19,
+                trim5p_length=protospacer_length,
                 verbose=verbose
             )
             if write == "force" or write == True:
@@ -83,7 +83,7 @@ class Counter:
         
         return out
     
-    def _process_cas9_dual_guide_sample(self, fastq_dir, sample_id, get_recombinant, write, verbose=False):
+    def _process_cas9_dual_guide_sample(self, fastq_dir, sample_id, get_recombinant, write, protospacer_A_length=19, protospacer_B_length=19, verbose=False):
         if verbose: print(green(sample_id, ['bold']))
         get_counts = True
 
@@ -101,9 +101,9 @@ class Counter:
                 R1_fastq_file_path=f'{fastq_dir}/{sample_id}_R1.fastq.gz',
                 R2_fastq_file_path=f'{fastq_dir}/{sample_id}_R2.fastq.gz',
                 trim5p_pos1_start=1,
-                trim5p_pos1_length=19,
+                trim5p_pos1_length=protospacer_A_length,
                 trim5p_pos2_start=1,
-                trim5p_pos2_length=19,
+                trim5p_pos2_length=protospacer_B_length,
                 verbose=verbose
             )
             if write == "force" or write == True:
