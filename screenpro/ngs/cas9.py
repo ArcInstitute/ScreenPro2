@@ -16,15 +16,15 @@ def fastq_to_count_single_guide(
     
     if trim5p_start and trim5p_length:
         sql_cmd = f"""
-        SELECT substr(f.sequence, {trim5p_start}, {trim5p_length}) AS sequence, COUNT(*) as count
+        SELECT substr(f.sequence, {trim5p_start}, {trim5p_length}) AS protospacer, COUNT(*) as count
         FROM fastq_scan('{fastq_file_path}') f
-        GROUP BY sequence
+        GROUP BY protospacer
         """
     else:
         sql_cmd = f"""
-        SELECT f.sequence AS sequence, COUNT(*) as count
+        SELECT f.sequence AS protospacer, COUNT(*) as count
         FROM fastq_scan('{fastq_file_path}') f
-        GROUP BY sequence
+        GROUP BY protospacer
         """
     
     df_count = session.sql(sql_cmd).to_polars()
@@ -91,13 +91,10 @@ def map_to_library_single_guide(df_count, library, return_type='all', verbose=Fa
     # get counts for given input
     res = df_count.clone() #cheap deepcopy/clone
     res = res.sort('count', descending=True)
-    res = res.with_columns(
-        pl.col("sequence").alias("sequence"),
-    )
 
     res_map = pl.DataFrame(library).join(
-            res, on="sequence", how="left"
-        )
+        res, on="sequence", how="left"
+    )
 
     if return_type == 'unmapped' or return_type == 'all':
         res_unmap = res.join(
