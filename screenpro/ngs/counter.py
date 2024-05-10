@@ -49,7 +49,7 @@ class Counter:
 
         return sgRNA_table
 
-    def _process_cas9_single_guide_sample(self, fastq_dir, sample_id, write, protospacer_length=19, verbose=False):
+    def _process_cas9_single_guide_sample(self, fastq_dir, sample_id, write, protospacer_length, verbose=False):
         if verbose: print(green(sample_id, ['bold']))
         get_counts = True
 
@@ -83,7 +83,7 @@ class Counter:
         
         return out
     
-    def _process_cas9_dual_guide_sample(self, fastq_dir, sample_id, get_recombinant, write, protospacer_A_length=19, protospacer_B_length=19, verbose=False):
+    def _process_cas9_dual_guide_sample(self, fastq_dir, sample_id, get_recombinant, write, protospacer_A_length, protospacer_B_length, verbose=False):
         if verbose: print(green(sample_id, ['bold']))
         get_counts = True
 
@@ -121,7 +121,7 @@ class Counter:
         
         return out
 
-    def get_counts_matrix(self, fastq_dir, samples, get_recombinant=False, cas_type='cas9', protospacer_length=19, write=True, parallel=False, verbose=False):
+    def get_counts_matrix(self, fastq_dir, samples, get_recombinant=False, cas_type='cas9', protospacer_length='auto', write=True, parallel=False, verbose=False):
         '''Get count matrix for given samples
         '''
         if self.cas_type == 'cas9':
@@ -130,6 +130,9 @@ class Counter:
             if self.library_type == "single_guide_design":
                 if get_recombinant:
                     raise ValueError("Recombinants are not applicable for single guide design!")
+                if protospacer_length == 'auto':
+                    protospacer_length = self.library['protospacer'].str.lengths().unique().to_list()[0]
+
                 if parallel:
                     raise NotImplementedError("Parallel processing is not yet implemented.")
 
@@ -153,6 +156,18 @@ class Counter:
             elif self.library_type == "dual_guide_design":
                 if get_recombinant: recombinants = {}
 
+                if protospacer_length == 'auto':
+                    protospacer_A_length = self.library['protospacer_A'].str.lengths().unique().to_list()[0]
+                    protospacer_B_length = self.library['protospacer_B'].str.lengths().unique().to_list()[0]
+                elif isinstance(protospacer_length, dict):
+                    protospacer_A_length = protospacer_length['protospacer_A']
+                    protospacer_B_length = protospacer_length['protospacer_B']
+                elif isinstance(protospacer_length, int):
+                    protospacer_A_length = protospacer_length
+                    protospacer_B_length = protospacer_length
+                else:
+                    raise ValueError("Invalid protospacer_length argument. If not 'auto', please provide an integer or a dictionary with 'protospacer_A' and 'protospacer_B' keys.")
+
                 if parallel:
                     raise NotImplementedError("Parallel processing is not yet implemented.")
                     # pool = mp.Pool(len(samples))
@@ -167,8 +182,8 @@ class Counter:
                             sample_id=sample_id, 
                             get_recombinant=get_recombinant, 
                             write=write, 
-                            protospacer_A_length=protospacer_length,
-                            protospacer_B_length=protospacer_length,
+                            protospacer_A_length=protospacer_A_length,
+                            protospacer_B_length=protospacer_B_length,
                             verbose=verbose
                         )
                         counts[sample_id] = cnt['mapped']
