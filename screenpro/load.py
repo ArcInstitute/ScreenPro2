@@ -29,7 +29,7 @@ def load_cas9_sgRNA_library(library_path, library_type, sep='\t', index_col=0, p
             # rename gene column to target
             library = library.rename(columns={'gene': 'target'})
         if 'sequence' in library.columns and 'protospacer' not in library.columns:
-            library['protospacer'] = library['sequence']
+            library.rename(columns={'sequence': 'protospacer'}, inplace=True)
         if 'sgId' in library.columns:
             library.rename(columns={'sgId': 'sgID'}, inplace=True)
 
@@ -53,6 +53,9 @@ def load_cas9_sgRNA_library(library_path, library_type, sep='\t', index_col=0, p
                 f"Input protospacer length for '{protospacer_col}' is less than {protospacer_length}"
             )
         
+        # write `sequence` column as `protospacer` (after trimming)
+        library['sequence'] = library['protospacer']
+
         for col in eval_columns:
             if col not in library.columns:
                 raise ValueError(f"Column '{col}' not found in library table.")
@@ -94,7 +97,7 @@ def load_cas9_sgRNA_library(library_path, library_type, sep='\t', index_col=0, p
                     f"Input protospacer length for '{protospacer_col}' is less than {protospacer_length}"
                 )
     
-        # if 'sequence' not in library.columns:
+        # write `sequence` column as `protospacer_A;protospacer_B` (after trimming)
         library['sequence'] = library['protospacer_A'] + ';' + library['protospacer_B']
 
         for col in eval_columns:
