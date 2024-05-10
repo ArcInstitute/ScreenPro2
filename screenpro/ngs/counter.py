@@ -49,13 +49,16 @@ class Counter:
 
         return sgRNA_table
 
-    def _process_cas9_single_guide_sample(self, fastq_dir, sample_id, verbose=False):
+    def _process_cas9_single_guide_sample(self, fastq_dir, sample_id, write, verbose=False):
         if verbose: print(green(sample_id, ['bold']))
 
         # check if df_count is already available
         if os.path.exists(f'{fastq_dir}/{sample_id}_count.arrow'):
             if verbose: print('count file exists ...')
-            df_count = pl.read_ipc_stream(f'{fastq_dir}/{sample_id}_count.arrow')
+            if write != "force":
+                df_count = pl.read_ipc_stream(f'{fastq_dir}/{sample_id}_count.arrow')
+            else:
+                if verbose: print('skip loading count file, force write is set ...')
         else:
             df_count = cas9.fastq_to_count_single_guide(
                 fastq_file_path=f'{fastq_dir}/{sample_id}.fastq.gz',
