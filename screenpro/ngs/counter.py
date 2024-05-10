@@ -49,7 +49,34 @@ class Counter:
 
         return sgRNA_table
 
-    def _process_cas9_sample(self, fastq_dir, sample_id, get_recombinant, write, verbose=False):
+    def _process_cas9_single_guide_sample(self, fastq_dir, sample_id, verbose=False):
+        if verbose: print(green(sample_id, ['bold']))
+
+        # check if df_count is already available
+        if os.path.exists(f'{fastq_dir}/{sample_id}_count.arrow'):
+            if verbose: print('count file exists ...')
+            df_count = pl.read_ipc_stream(f'{fastq_dir}/{sample_id}_count.arrow')
+        else:
+            df_count = cas9.fastq_to_count_single_guide(
+                R1_fastq_file_path=f'{fastq_dir}/{sample_id}.fastq.gz',
+                trim5p_pos1_start=1,
+                trim5p_pos1_length=19,
+                verbose=verbose
+            )
+            # write df_count to file
+            df_count.write_ipc_stream(f'{fastq_dir}/{sample_id}_count.arrow', compression='lz4')
+            if verbose: print('count file written ...')
+
+        out = cas9.map_to_library_single_guide(
+            df_count=df_count,
+            library=self.library,
+            return_type='all',
+            verbose=verbose
+        )
+        
+        return out
+    
+    def _process_cas9_dual_guide_sample(self, fastq_dir, sample_id, get_recombinant, write, verbose=False):
         if verbose: print(green(sample_id, ['bold']))
 
         # check if df_count is already available
@@ -92,8 +119,18 @@ class Counter:
             counts = {}
 
             if self.library_type == "single_guide_design":
-                # TODO: Implement codes to build count matrix for given samples
-                pass
+                if get_recombinant:
+                    raise ValueError("Recombinants are not applicable for single guide design!")
+                if parallel:
+                    raise NotImplementedError("Parallel processing is not yet implemented.")
+
+                else:
+                    for sample_id in samples:
+                        cnt = self._process_cas9_single_guide_sample(
+                            fastq_dir=fastq_dir, sample_id=sample_id, verbose=verbose)
+                        
+                        counts[sample_id] = cnt['mapped']
+            
             elif self.library_type == "dual_guide_design":
                 if get_recombinant: recombinants = {}
 
@@ -106,12 +143,15 @@ class Counter:
                 
                 else:
                     for sample_id in samples:
-                        cnt = self._process_cas9_sample(
+                        cnt = self._process_cas9_dual_guide_sample(
                             fastq_dir=fastq_dir, sample_id=sample_id, get_recombinant=get_recombinant, write=write, verbose=verbose)
                         counts[sample_id] = cnt['mapped']
                         if get_recombinant:
                             recombinants[sample_id] = cnt['recombinant']
-                
+            
+            else:
+                raise ValueError("Invalid library type. Please choose from 'single_guide_design' or 'dual_guide_design'.")
+
             counts_mat = pd.concat([
                 counts[sample_id].to_pandas().set_index('sgID_AB')['count'].rename(sample_id) 
                 for sample_id in counts.keys()
