@@ -148,11 +148,11 @@ class Counter:
                         
                         counts[sample_id] = cnt['mapped']
             
-                # counts_mat = pd.concat([
-                #     counts[sample_id].to_pandas().set_index('sgID')['count'].rename(sample_id)
-                #     for sample_id in counts.keys()
-                # ],axis=1).fillna(0)
-
+                counts_mat = pd.concat([
+                    counts[sample_id].to_pandas().set_index('sgID')[['count']].rename(columns={'count':sample_id})
+                    for sample_id in counts.keys()
+                ],axis=0).fillna(0)
+            
             elif self.library_type == "dual_guide_design":
                 if get_recombinant: recombinants = {}
 
@@ -203,7 +203,7 @@ class Counter:
             raise NotImplementedError("Cas12 count matrix is not yet implemented.")
         
         self.counts_dict = counts
-        # self.counts_mat = counts_mat
+        self.counts_mat = counts_mat
         if get_recombinant:
             self.recombinants = recombinants
     
