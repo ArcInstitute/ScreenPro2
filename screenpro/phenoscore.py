@@ -277,27 +277,6 @@ def seqDepthNormalization(adata):
     adata.layers['seq_depth_norm'] = norm_counts
 
 
-def addPseudoCount():
-    pass
-    # # pseudocount
-    # if pseudocountBehavior == 'default' or pseudocountBehavior == 'zeros only':
-    #     def defaultBehavior(row):
-    #         return row if min(
-    #             row) != 0 else row + pseudocountValue
-    #
-    #     combinedCountsPseudo = combinedCounts.apply(defaultBehavior, axis=1)
-    # elif pseudocountBehavior == 'all values':
-    #     combinedCountsPseudo = combinedCounts.apply(
-    #         lambda row: row + pseudocountValue, axis=1)
-    # elif pseudocountBehavior == 'filter out':
-    #     combinedCountsPseudo = combinedCounts.copy()
-    #     zeroRows = combinedCounts.apply(lambda row: min(row) <= 0, axis=1)
-    #     combinedCountsPseudo.loc[zeroRows, :] = np.nan
-    # else:
-    #     raise ValueError(
-    #         'Pseudocount behavior not recognized or not implemented')
-
-
 def calculateZScorePhenotypeScore(score_df,ctrl_label='negCtrl'):
     """Calculate z-score normalized phenotype score.
     
@@ -405,4 +384,23 @@ def generatePseudoGeneLabels(adata, num_pseudogenes=None, ctrl_label='negCtrl'):
         # label remaining non-targeting elements as pseudogenes
         adata.var.loc[adata.var.targetType.eq('gene'), 'pseudoLabel'] = 'gene'
         adata.var.loc[adata.var.pseudoLabel.eq(''), 'pseudoLabel'] = np.nan
+
+# def addPseudoCount():
+    # # pseudocount
+    # if pseudocountBehavior == 'default' or pseudocountBehavior == 'zeros only':
+    #     def defaultBehavior(row):
+    #         return row if min(
+    #             row) != 0 else row + pseudocountValue
+    #
+    #     combinedCountsPseudo = combinedCounts.apply(defaultBehavior, axis=1)
+    # elif pseudocountBehavior == 'all values':
+    #     combinedCountsPseudo = combinedCounts.apply(
+    #         lambda row: row + pseudocountValue, axis=1)
+    # elif pseudocountBehavior == 'filter out':
+    #     combinedCountsPseudo = combinedCounts.copy()
+    #     zeroRows = combinedCounts.apply(lambda row: min(row) <= 0, axis=1)
+    #     combinedCountsPseudo.loc[zeroRows, :] = np.nan
+    # else:
+    #     raise ValueError(
+    #         'Pseudocount behavior not recognized or not implemented')
 

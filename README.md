@@ -8,8 +8,8 @@
 
 ## TL;DR
 
-[ReadTheDocs](https://screenpro2.readthedocs.io) |
-[PyPI](https://pypi.org/project/ScreenPro2)
+[**ReadTheDocs**](https://screenpro2.readthedocs.io) |
+[**PyPI**](https://pypi.org/project/ScreenPro2)
 
 ScreenPro2 enables perform flexible analysis on high-content CRISPR screening datasets. It has functionalities to process data from diverse CRISPR screen platforms and is designed to be modular to enable easy extension to custom CRISPR screen platforms or other commonly used platforms in addition to the ones currently implemented.
 
@@ -39,6 +39,12 @@ pip install git+https://github.com/ArcInstitute/ScreenPro2.git
 ```
 
 ## Usage
+First, import the ScreenPro2 package:
+
+```python
+import screenpro as scp
+```
+
 Data analysis for CRISPR screens with NGS readouts can be broken down into three main steps:
 
 - [Step 1: FASTQ to counts](#step-1-fastq-to-counts)
@@ -47,11 +53,70 @@ Data analysis for CRISPR screens with NGS readouts can be broken down into three
 
 ### Step 1: FASTQ to counts
 
-Since version 0.2.7, ScreenPro2 has a built-in method to process FASTQ files and generate counts. This method is implemented in the `ngs` module 
-and relvent submodules. A minor novelty here has enabled processing single, dual, or multiple sgRNA CRISPR screens. Also, this approach can retain 
-recombination events which can occur in dual or higher order sgRNA CRISPR screens.
+ScreenPro2 has a built-in method to process FASTQ files and generate counts. 
+This method is implemented in the `ngs` module and relvent submodules. 
+A minor novelty here has enabled processing single, dual, or multiple sgRNA 
+CRISPR screens. Also, this approach can retain recombination events which can
+occur in dual or higher order sgRNA CRISPR screens.
 
-There is no example code for this step yet, but a command line interface (CLI) will be available soon. 
+Currently, `Counter` class from the `ngs` module can process FASTQ files and generate counts for standard 
+CRISPR screens with [single](#dcas9-crisprai-single-sgrna-screens) or [dual](#crispri-dual-sgrna-screens) 
+guide design. 
+
+Here is a draft code to process FASTQ files and generate counts for an experiment with [CRISPRi-dual-sgRNA-screens](#crispri-dual-sgrna-screens):
+
+```python
+# Initialize the Counter object
+counter = scp.Counter(cas_type = 'cas9', library_type = 'single_guide_design')
+
+# Load the reference library
+counter.load_library("<path-to-CRISPR-library-table>", sep = '\t', verbose = True, index_col=None)
+
+# Define the samples
+samples = [] 
+## `samples` is a list of sample ids in the experiment. 
+## Each sample id should match the sample name in the FASTQ files, i.e. <sample_id>.fastq.gz
+
+# Process the FASTQ files and generate counts
+counter.get_counts_matrix(
+    fastq_dir = '<path-to-fastq-directory>',
+    samples = samples,
+    verbose = True
+)
+```
+
+Here is a draft code to process FASTQ files and generate counts for an experiment with [CRISPRi-dual-sgRNA-screens](#crispri-dual-sgrna-screens):
+
+
+```python
+# Initialize the Counter object
+counter = scp.Counter(cas_type = 'dCas9', library_type = 'dual_guide_design')
+
+# Load the reference library
+counter.load_library("<path-to-CRISPR-library-table>", sep = '\t', verbose = True, index_col=None)
+
+# Define the samples
+samples = []
+## `samples` is a list of sample ids in the experiment.
+## Each sample id should match the sample name in the FASTQ files, i.e. <sample_id>_R[1,2].fastq.gz
+
+# Process the FASTQ files and generate counts
+counter.get_counts_matrix(
+    fastq_dir = '<path-to-fastq-directory>',
+    samples = samples,
+    verbose = True
+)
+```
+
+After this, you have `.counts_mat` calculated in the `Counter` object.
+
+___
+
+To proceed, you need to create an `AnnData` object from the counts matrix and metadata. You can use the following code to create an `AnnData` object:
+
+```python
+adata = counter.build_counts_anndata()
+```
 
 ### Step 2: Phenotype calculation
 

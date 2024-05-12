@@ -21,11 +21,11 @@ class Counter:
         self.counts_mat = None
         self.recombinants = None
 
-    def load_library(self, library_path, sep='\t', index_col=0, verbose=False):
+    def load_library(self, library_path, sep='\t', index_col=0, protospacer_length=19, verbose=False):
         '''Load library file
         '''
         if self.cas_type == 'cas9':
-            library = load_cas9_sgRNA_library(library_path, library_type=self.library_type, sep=sep, index_col=index_col, verbose=verbose)
+            library = load_cas9_sgRNA_library(library_path, library_type=self.library_type, sep=sep, index_col=index_col, protospacer_length=protospacer_length, verbose=verbose)
 
         elif self.cas_type == 'cas12':
             raise NotImplementedError("Cas12 library is not yet implemented.")
@@ -49,25 +49,61 @@ class Counter:
 
         return sgRNA_table
 
-    def _process_cas9_sample(self, fastq_dir, sample_id, get_recombinant, write, verbose=False):
+    def _process_cas9_single_guide_sample(self, fastq_dir, sample_id, write, protospacer_length, verbose=False):
         if verbose: print(green(sample_id, ['bold']))
+        get_counts = True
 
         # check if df_count is already available
         if os.path.exists(f'{fastq_dir}/{sample_id}_count.arrow'):
             if verbose: print('count file exists ...')
             if write != "force":
                 df_count = pl.read_ipc_stream(f'{fastq_dir}/{sample_id}_count.arrow')
+                get_counts = False
+            else:
+                if verbose: print('skip loading count file, force write is set ...')
+
+        if get_counts:
+            df_count = cas9.fastq_to_count_single_guide(
+                fastq_file_path=f'{fastq_dir}/{sample_id}.fastq.gz',
+                trim5p_start=1,
+                trim5p_length=protospacer_length,
+                verbose=verbose
+            )
+            if write == "force" or write == True:
+                # write df_count to file
+                df_count.write_ipc_stream(f'{fastq_dir}/{sample_id}_count.arrow', compression='lz4')
+                if verbose: print('count file written ...')
+
+        out = cas9.map_to_library_single_guide(
+            df_count=df_count,
+            library=self.library,
+            return_type='all',
+            verbose=verbose
+        )
+        
+        return out
+    
+    def _process_cas9_dual_guide_sample(self, fastq_dir, sample_id, get_recombinant, write, protospacer_A_length, protospacer_B_length, verbose=False):
+        if verbose: print(green(sample_id, ['bold']))
+        get_counts = True
+
+        # check if df_count is already available
+        if os.path.exists(f'{fastq_dir}/{sample_id}_count.arrow'):
+            if verbose: print('count file exists ...')
+            if write != "force":
+                df_count = pl.read_ipc_stream(f'{fastq_dir}/{sample_id}_count.arrow')
+                get_counts = False
             else:
                 if verbose: print('skip loading count file, force write is set ...')
         
-        else:
+        if get_counts:
             df_count = cas9.fastq_to_count_dual_guide(
                 R1_fastq_file_path=f'{fastq_dir}/{sample_id}_R1.fastq.gz',
                 R2_fastq_file_path=f'{fastq_dir}/{sample_id}_R2.fastq.gz',
                 trim5p_pos1_start=1,
-                trim5p_pos1_length=19,
+                trim5p_pos1_length=protospacer_A_length,
                 trim5p_pos2_start=1,
-                trim5p_pos2_length=19,
+                trim5p_pos2_length=protospacer_B_length,
                 verbose=verbose
             )
             if write == "force" or write == True:
@@ -85,17 +121,52 @@ class Counter:
         
         return out
 
-    def get_counts_matrix(self, fastq_dir, samples,get_recombinant=False, cas_type='cas9', write=True, parallel=False, verbose=False):
+    def get_counts_matrix(self, fastq_dir, samples, get_recombinant=False, cas_type='cas9', protospacer_length='auto', write=True, parallel=False, verbose=False):
         '''Get count matrix for given samples
         '''
         if self.cas_type == 'cas9':
             counts = {}
 
             if self.library_type == "single_guide_design":
-                # TODO: Implement codes to build count matrix for given samples
-                pass
+                if get_recombinant:
+                    raise ValueError("Recombinants are not applicable for single guide design!")
+                if protospacer_length == 'auto':
+                    protospacer_length = self.library['protospacer'].str.lengths().unique().to_list()[0]
+
+                if parallel:
+                    raise NotImplementedError("Parallel processing is not yet implemented.")
+
+                else:
+                    for sample_id in samples:
+                        cnt = self._process_cas9_single_guide_sample(
+                            fastq_dir=fastq_dir, 
+                            sample_id=sample_id, 
+                            write=write, 
+                            protospacer_length=protospacer_length,
+                            verbose=verbose
+                        )
+                        
+                        counts[sample_id] = cnt['mapped']
+            
+                counts_mat = pd.concat([
+                    counts[sample_id].to_pandas().set_index('sgID')['count'].rename(sample_id)
+                    for sample_id in counts.keys()
+                ],axis=1).fillna(0)
+
             elif self.library_type == "dual_guide_design":
                 if get_recombinant: recombinants = {}
+
+                if protospacer_length == 'auto':
+                    protospacer_A_length = self.library['protospacer_A'].str.lengths().unique().to_list()[0]
+                    protospacer_B_length = self.library['protospacer_B'].str.lengths().unique().to_list()[0]
+                elif isinstance(protospacer_length, dict):
+                    protospacer_A_length = protospacer_length['protospacer_A']
+                    protospacer_B_length = protospacer_length['protospacer_B']
+                elif isinstance(protospacer_length, int):
+                    protospacer_A_length = protospacer_length
+                    protospacer_B_length = protospacer_length
+                else:
+                    raise ValueError("Invalid protospacer_length argument. If not 'auto', please provide an integer or a dictionary with 'protospacer_A' and 'protospacer_B' keys.")
 
                 if parallel:
                     raise NotImplementedError("Parallel processing is not yet implemented.")
@@ -106,16 +177,26 @@ class Counter:
                 
                 else:
                     for sample_id in samples:
-                        cnt = self._process_cas9_sample(
-                            fastq_dir=fastq_dir, sample_id=sample_id, get_recombinant=get_recombinant, write=write, verbose=verbose)
+                        cnt = self._process_cas9_dual_guide_sample(
+                            fastq_dir=fastq_dir, 
+                            sample_id=sample_id, 
+                            get_recombinant=get_recombinant, 
+                            write=write, 
+                            protospacer_A_length=protospacer_A_length,
+                            protospacer_B_length=protospacer_B_length,
+                            verbose=verbose
+                        )
                         counts[sample_id] = cnt['mapped']
                         if get_recombinant:
                             recombinants[sample_id] = cnt['recombinant']
                 
-            counts_mat = pd.concat([
-                counts[sample_id].to_pandas().set_index('sgID_AB')['count'].rename(sample_id) 
-                for sample_id in counts.keys()
-            ],axis=1).fillna(0)
+                counts_mat = pd.concat([
+                    counts[sample_id].to_pandas().set_index('sgID_AB')['count'].rename(sample_id) 
+                    for sample_id in counts.keys()
+                ],axis=1).fillna(0)
+            
+            else:
+                raise ValueError("Invalid library type. Please choose from 'single_guide_design' or 'dual_guide_design'.")
 
         if cas_type == 'cas12':
             # TODO: Implement codes to build count matrix for given samples

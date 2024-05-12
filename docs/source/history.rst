@@ -2,14 +2,15 @@
 History
 =======
 
-0.3.0 (coming soon)
+0.4.0 (coming soon)
 ~~~~~~~~~~~~~~~~~~~
 * add command line interface
 
-0.2.11 (May 2024)
+0.2.11 - 0.3.0 (Apr 2024 - May 2024)
 ~~~~~~~~~~~~~~~~~
-* introduce `counter` module
+* introduce `Counter` class as wrapper for `ngs` module
 * improve core functionalities for CLI
+* major bug fixes
 
 0.2.7 - 0.2.10 (Mar 2024 - Apr 2024)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
