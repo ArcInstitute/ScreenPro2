@@ -156,7 +156,8 @@ adata = ad.AnnData(
 
 screen = PooledScreens(adata)
 ```
-<img width="600" alt="image" src="https://github.com/abearab/ScreenPro2/assets/53412130/d1c8c3ad-3668-4390-8b1d-bf72b591a927">
+
+<img width="600" alt="image" src="https://github.com/ArcInstitute/ScreenPro2/assets/53412130/bb38d119-8f24-44fa-98ab-7ef4457ef8d2">
 
 #### Perform Screen Processing Analysis
 Once the screen object is created, you can use several available workflows to calculate the phenotype scores and statisitics by comparing each entry in reference sgRNA library between screen arms. Then, these scores and statistics are used to nominate hits.
