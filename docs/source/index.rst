@@ -12,7 +12,6 @@ Welcome to ScreenPro2's documentation!
    :maxdepth: 3
    :caption: Module Documentation
 
-   screenpro
    assays
    ngs
    phenotype
