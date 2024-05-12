@@ -49,7 +49,7 @@ class Counter:
 
         return sgRNA_table
 
-    def _process_cas9_single_guide_sample(self, fastq_dir, sample_id, write, protospacer_length, verbose=False):
+    def _process_cas9_single_guide_sample(self, fastq_dir, sample_id, trim_first_g, protospacer_length, write, verbose=False):
         if verbose: print(green(sample_id, ['bold']))
         get_counts = True
 
@@ -63,9 +63,13 @@ class Counter:
                 if verbose: print('skip loading count file, force write is set ...')
 
         if get_counts:
+            if trim_first_g:
+                trim5p_start = 2
+            else:
+                trim5p_start = 1
             df_count = cas9.fastq_to_count_single_guide(
                 fastq_file_path=f'{fastq_dir}/{sample_id}.fastq.gz',
-                trim5p_start=1,
+                trim5p_start=trim5p_start,
                 trim5p_length=protospacer_length,
                 verbose=verbose
             )
@@ -83,7 +87,7 @@ class Counter:
         
         return out
     
-    def _process_cas9_dual_guide_sample(self, fastq_dir, sample_id, get_recombinant, write, protospacer_A_length, protospacer_B_length, verbose=False):
+    def _process_cas9_dual_guide_sample(self, fastq_dir, sample_id, get_recombinant, trim_first_g, protospacer_A_length, protospacer_B_length, write, verbose=False):
         if verbose: print(green(sample_id, ['bold']))
         get_counts = True
 
@@ -97,12 +101,28 @@ class Counter:
                 if verbose: print('skip loading count file, force write is set ...')
         
         if get_counts:
+            if get_counts:
+                if trim_first_g == True or trim_first_g == {'A':True, 'B':True}:
+                    trim5p_pos1_start = 2
+                    trim5p_pos2_start = 2
+                elif trim_first_g == False or trim_first_g == {'A':False, 'B':False}:
+                    trim5p_pos1_start = 1
+                    trim5p_pos2_start = 1
+                elif trim_first_g == {'A':True, 'B':False}:
+                    trim5p_pos1_start = 2
+                    trim5p_pos2_start = 1
+                elif trim_first_g == {'A':False, 'B':True}:
+                    trim5p_pos1_start = 1
+                    trim5p_pos2_start = 2
+                else:
+                    raise ValueError("Invalid trim_first_g argument. Please provide a boolean or a dictionary with 'A' and 'B' keys.")
+
             df_count = cas9.fastq_to_count_dual_guide(
                 R1_fastq_file_path=f'{fastq_dir}/{sample_id}_R1.fastq.gz',
                 R2_fastq_file_path=f'{fastq_dir}/{sample_id}_R2.fastq.gz',
-                trim5p_pos1_start=1,
+                trim5p_pos1_start=trim5p_pos1_start,
                 trim5p_pos1_length=protospacer_A_length,
-                trim5p_pos2_start=1,
+                trim5p_pos2_start=trim5p_pos2_start,
                 trim5p_pos2_length=protospacer_B_length,
                 verbose=verbose
             )
@@ -121,7 +141,7 @@ class Counter:
         
         return out
 
-    def get_counts_matrix(self, fastq_dir, samples, get_recombinant=False, cas_type='cas9', protospacer_length='auto', write=True, parallel=False, verbose=False):
+    def get_counts_matrix(self, fastq_dir, samples, get_recombinant=False, cas_type='cas9', protospacer_length='auto', trim_first_g=False, write=True, parallel=False, verbose=False):
         '''Get count matrix for given samples
         '''
         if self.cas_type == 'cas9':
@@ -141,8 +161,9 @@ class Counter:
                         cnt = self._process_cas9_single_guide_sample(
                             fastq_dir=fastq_dir, 
                             sample_id=sample_id, 
-                            write=write, 
+                            trim_first_g=trim_first_g,
                             protospacer_length=protospacer_length,
+                            write=write,
                             verbose=verbose
                         )
                         
@@ -181,9 +202,10 @@ class Counter:
                             fastq_dir=fastq_dir, 
                             sample_id=sample_id, 
                             get_recombinant=get_recombinant, 
-                            write=write, 
+                            trim_first_g=trim_first_g,
                             protospacer_A_length=protospacer_A_length,
                             protospacer_B_length=protospacer_B_length,
+                            write=write, 
                             verbose=verbose
                         )
                         counts[sample_id] = cnt['mapped']
