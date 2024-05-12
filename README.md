@@ -156,7 +156,8 @@ adata = ad.AnnData(
 
 screen = PooledScreens(adata)
 ```
-<img width="600" alt="image" src="https://github.com/abearab/ScreenPro2/assets/53412130/d1c8c3ad-3668-4390-8b1d-bf72b591a927">
+
+<img width="600" alt="image" src="https://github.com/ArcInstitute/ScreenPro2/assets/53412130/bb38d119-8f24-44fa-98ab-7ef4457ef8d2">
 
 #### Perform Screen Processing Analysis
 Once the screen object is created, you can use several available workflows to calculate the phenotype scores and statisitics by comparing each entry in reference sgRNA library between screen arms. Then, these scores and statistics are used to nominate hits.
@@ -212,12 +213,16 @@ Currently, ScreenPro2 has easy-to-use workflows for the following CRISPR screen 
 ### dCas9 CRISPRa/i single-sgRNA screens
 [Horlbeck et al., _eLife_ (2016)](http://dx.doi.org/10.7554/eLife.19760)
 
-Horlbeck et al. developed a CRISPR interference (CRISPRi) and CRISPR activation (CRISPRa) screening platform that uses a single sgRNA within a single plasmid and then there are up to 10 sgRNAs per gene. The multiple sgRNAs per gene can be used to perfrom statistical comparisons in guide-level or gene-level between screen arms. [ScreenProcessing](https://github.com/mhorlbeck/ScreenProcessing) has been developed to process data from this type of screen. We reimplemented the same workflow in ScreenPro2 and it has all the necessary tools to process data from this type of screen. An automated workflow / pipeline will be available soon.
+Horlbeck et al. developed a CRISPR interference (CRISPRi) and CRISPR activation (CRISPRa) screening platform that uses a single sgRNA within a single plasmid and then there are up to 10 sgRNAs per gene. The multiple sgRNAs per gene can be used to perfrom statistical comparisons in guide-level or gene-level between screen arms. [ScreenProcessing](https://github.com/mhorlbeck/ScreenProcessing) has been developed to process data from this type of screen. We reimplemented the same workflow in ScreenPro2 and it has all the necessary tools to process data from this type of screen.
+
+<!-- TODO: Add link to example / tutorial -->
 
 ### dCas9 CRISPRa/i dual-sgRNA screens
 [Replogle et al., _eLife_ (2022)](https://elifesciences.org/articles/81856)
 
-Replogle et al. developed a CRISPR interference (CRISPRi) and CRISPR activation (CRISPRa) screening platform that uses two sgRNAs per gene within a single plasmid, and it has been used to perform genome-scale CRISPRi screens. ScreenPro2 has all the necessary tools to process data from this type of screen. An automated workflow / pipeline will be available soon.
+Replogle et al. developed a CRISPR interference (CRISPRi) and CRISPR activation (CRISPRa) screening platform that uses two sgRNAs per gene within a single plasmid, and it has been used to perform genome-scale CRISPRi screens. ScreenPro2 has all the necessary tools to process data from this type of screen.
+
+<!-- TODO: Add link to example / tutorial -->
 
 <!-- ### multiCas12a CRISPRi screens -->
 
