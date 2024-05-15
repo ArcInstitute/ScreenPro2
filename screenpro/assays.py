@@ -75,7 +75,7 @@ class PooledScreens(object):
 
         return out
 
-    def calculateDrugScreen(self, t0, untreated, treated, db_untreated, db_treated, score_level, db_rate_col='pop_doublings', run_name=None):
+    def calculateDrugScreen(self, t0, untreated, treated, db_untreated, db_treated, score_level, db_rate_col='pop_doublings', run_name=None, **kwargs):
         """
         Calculate `gamma`, `rho`, and `tau` phenotype scores for a drug screen dataset in a given `score_level`.
         To normalize by growth rate, the doubling rate of the untreated and treated conditions are required.
@@ -89,23 +89,27 @@ class PooledScreens(object):
             score_level (str): name of the score level
             db_rate_col (str): column name for the doubling rate, default is 'pop_doublings'
             run_name (str): name for the phenotype calculation run
+            **kwargs: additional arguments to pass to runPhenoScore
         """
         # calculate phenotype scores: gamma, tau, rho
         gamma_name, gamma = runPhenoScore(
             self.adata, cond1=t0, cond2=untreated, growth_rate=db_untreated,
             n_reps=self.n_reps,
-            transformation=self.transformation, test=self.test, score_level=score_level
+            transformation=self.transformation, test=self.test, score_level=score_level,
+            **kwargs
         )
         tau_name, tau = runPhenoScore(
             self.adata, cond1=t0, cond2=treated, growth_rate=db_treated,
             n_reps=self.n_reps,
-            transformation=self.transformation, test=self.test, score_level=score_level
+            transformation=self.transformation, test=self.test, score_level=score_level,
+            **kwargs
         )
         # TO-DO: warning / error if db_untreated and db_treated are too close, i.e. growth_rate ~= 0.
         rho_name, rho = runPhenoScore(
             self.adata, cond1=untreated, cond2=treated, growth_rate=np.abs(db_untreated - db_treated),
             n_reps=self.n_reps,
-            transformation=self.transformation, test=self.test, score_level=score_level
+            transformation=self.transformation, test=self.test, score_level=score_level,
+            **kwargs
         )
 
         if not run_name: run_name = score_level

@@ -122,6 +122,8 @@ def runPhenoScore(adata, cond1, cond2, transformation, score_level, test,
         score_level (str): score level
         growth_rate (int): growth rate
         n_reps (int): number of replicates
+        keep_top_n (int): number of top guides to keep per target
+        num_pseudogenes (int): number of pseudogenes
         get_z_score (bool): boolean to calculate z-score normalized phenotype score and add as a new column (default is False)
         ctrl_label (str): control label
     
@@ -258,7 +260,7 @@ def runPhenoScore(adata, cond1, cond2, transformation, score_level, test,
         },axis=1)
     
     else:
-        raise ValueError(f'score_level "{score_level}" not recognized')
+        raise ValueError(f'score_level "{score_level}" not recognized. Currently, "compare_reps" and "compare_guides" are supported.')
     
     
     return result_name, result
