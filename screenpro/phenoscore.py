@@ -361,17 +361,32 @@ def generatePseudoGeneLabels(adata, num_pseudogenes=None, ctrl_label='negCtrl'):
     # check if num_pseudogenes is defined. 
     ## If not, set to half of the number of non-targeting elements 
     if num_pseudogenes is None:
-        num_pseudogenes = len(adata.var[adata.var.targetType.eq(ctrl_label)]) // 2
+        num_pseudogenes = len(ctrl_elements) // 2
+    elif num_pseudogenes == 'halftotal':
+        num_pseudogenes = adata.var.shape[0] // 2
+    
+    if num_pseudogenes > adata.var.shape[0] / 2:
+        # raise error if `num_pseudogenes` is greater than half of the total number elements in the library
+        raise TypeError(
+            "`num_pseudogenes` is greater than half of the total number of elements in the library. Please provide a smaller value for `num_pseudogenes`."
+        )
+
     # Get non-targeting elements
     ctrl_elements = adata.var[adata.var.targetType.eq(ctrl_label)].index
     adata.var['pseudoLabel'] = ''
-    # Check if there are more than 1 non-targeting elements to label as pseudogenes
-    if len(ctrl_elements) / 2 <= num_pseudogenes:
-        # raise error if `num_pseudogenes` is greater than (total number of non-targeting elements) / 2
-        raise TypeError(
-            "Define `num_pseudogenes` to be less than (total number of non-targeting elements) / 2"
-        )
-    else:
+
+    if num_pseudogenes > len(ctrl_elements):
+        while len(ctrl_elements) > num_pseudogenes:
+            # randomly select `num` non-targeting elements
+            pseudo_elements = np.random.choice(ctrl_elements, num_pseudogenes, replace=False)
+            # generate new labels
+            pseudo_labels = [f'pseudo_{i}' for i in range(num_pseudogenes)]
+            # update adata.var
+            adata.var.loc[pseudo_elements, 'pseudoLabel'] = pseudo_labels
+            # remove selected elements from ctrl_elements
+            ctrl_elements = ctrl_elements.drop(pseudo_elements)
+
+    elif num_pseudogenes < len(ctrl_elements):
         # randomly select `num` non-targeting elements
         while len(ctrl_elements) > num_pseudogenes:
             # randomly select `num` non-targeting elements
@@ -383,9 +398,9 @@ def generatePseudoGeneLabels(adata, num_pseudogenes=None, ctrl_label='negCtrl'):
             # remove selected elements from ctrl_elements
             ctrl_elements = ctrl_elements.drop(pseudo_elements)
 
-        # label remaining non-targeting elements as pseudogenes
-        adata.var.loc[adata.var.targetType.eq('gene'), 'pseudoLabel'] = 'gene'
-        adata.var.loc[adata.var.pseudoLabel.eq(''), 'pseudoLabel'] = np.nan
+    # label remaining non-targeting elements as pseudogenes
+    adata.var.loc[adata.var.targetType.eq('gene'), 'pseudoLabel'] = 'gene'
+    adata.var.loc[adata.var.pseudoLabel.eq(''), 'pseudoLabel'] = np.nan
 
 # def addPseudoCount():
     # # pseudocount
