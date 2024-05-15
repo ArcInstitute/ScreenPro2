@@ -375,10 +375,10 @@ def generatePseudoGeneLabels(adata, num_pseudogenes=None, ctrl_label='negCtrl'):
     ctrl_elements = adata.var[adata.var.targetType.eq(ctrl_label)].index
     adata.var['pseudoLabel'] = ''
 
-    if num_pseudogenes > len(ctrl_elements):
+    if num_pseudogenes >= len(ctrl_elements):
         while len(ctrl_elements) > num_pseudogenes:
             # randomly select `num` non-targeting elements
-            pseudo_elements = np.random.choice(ctrl_elements, num_pseudogenes, replace=False)
+            pseudo_elements = np.random.choice(ctrl_elements, num_pseudogenes, replace=True)
             # generate new labels
             pseudo_labels = [f'pseudo_{i}' for i in range(num_pseudogenes)]
             # update adata.var
