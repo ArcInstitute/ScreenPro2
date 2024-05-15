@@ -110,7 +110,7 @@ def matrixTest(x, y, x_ctrl, y_ctrl, transformation, level, test = 'ttest', grow
 
 def runPhenoScore(adata, cond1, cond2, transformation, score_level, test,
                   growth_rate=1, n_reps=2, keep_top_n = None,num_pseudogenes=None,
-                  get_z_score=False,ctrl_label='negCtrl'):
+                  get_z_score=False, filter_low_count=False, ctrl_label='negCtrl'):
     """Calculate phenotype score and p-values when comparing `cond2` vs `cond1`.
 
     Args:
@@ -125,6 +125,7 @@ def runPhenoScore(adata, cond1, cond2, transformation, score_level, test,
         keep_top_n (int): number of top guides to keep per target
         num_pseudogenes (int): number of pseudogenes
         get_z_score (bool): boolean to calculate z-score normalized phenotype score and add as a new column (default is False)
+        filter_low_count (bool): boolean to filter out low count elements (default is False)
         ctrl_label (str): control label
     
     Returns:
@@ -189,12 +190,12 @@ def runPhenoScore(adata, cond1, cond2, transformation, score_level, test,
         if n_reps == 2:
             pass
         else:
-            raise ValueError(f'n_reps "{n_reps}" not recognized')
+            raise ValueError(f'n_reps "{n_reps}" not recognized. Currently, only 2 replicates are supported!')
 
-        find_low_counts(adata)
-        adata = adata[:,~adata.var.low_count].copy()
-
-        adata.var.drop(columns='low_count',inplace=True)
+        if filter_low_count:
+            find_low_counts(adata)
+            adata = adata[:,~adata.var.low_count].copy()
+            adata.var.drop(columns='low_count',inplace=True)
 
         # generate pseudo gene labels
         generatePseudoGeneLabels(adata, num_pseudogenes=num_pseudogenes, ctrl_label=ctrl_label)
@@ -359,14 +360,13 @@ def generatePseudoGeneLabels(adata, num_pseudogenes=None, ctrl_label='negCtrl'):
         None
     """
     # check if num_pseudogenes is defined. 
-    ## If not, set to half of the number of non-targeting elements 
-    if num_pseudogenes is None:
+    if num_pseudogenes is None or num_pseudogenes == 'halfctrl':
         num_pseudogenes = len(ctrl_elements) // 2
     elif num_pseudogenes == 'halftotal':
         num_pseudogenes = adata.var.shape[0] // 2
     
+    # raise error if `num_pseudogenes` is greater than half of the total number elements in the library
     if num_pseudogenes > adata.var.shape[0] / 2:
-        # raise error if `num_pseudogenes` is greater than half of the total number elements in the library
         raise TypeError(
             "`num_pseudogenes` is greater than half of the total number of elements in the library. Please provide a smaller value for `num_pseudogenes`."
         )
@@ -399,7 +399,7 @@ def generatePseudoGeneLabels(adata, num_pseudogenes=None, ctrl_label='negCtrl'):
             ctrl_elements = ctrl_elements.drop(pseudo_elements)
 
     # label remaining non-targeting elements as pseudogenes
-    adata.var.loc[adata.var.targetType.eq('gene'), 'pseudoLabel'] = 'gene'
+    adata.var.loc[~adata.var.targetType.eq(ctrl_label), 'pseudoLabel'] = 'gene'
     adata.var.loc[adata.var.pseudoLabel.eq(''), 'pseudoLabel'] = np.nan
 
 # def addPseudoCount():
