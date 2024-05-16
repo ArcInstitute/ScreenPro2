@@ -271,18 +271,21 @@ def runPhenoScore(adata, cond1, cond2, transformation, score_level, test,
         # keep original adata for later use
         adata0 = adata.copy()
 
+        # prep counts for phenoScore calculation
+        df_cond1 = adata0[adata0.obs.query(f'condition=="{cond1}"').index].to_df().T
+        df_cond2 = adata0[adata0.obs.query(f'condition=="{cond2}"').index].to_df().T
         # get control values
         x_ctrl = df_cond1[adata0.var.targetType.eq(ctrl_label)].to_numpy()
         y_ctrl = df_cond2[adata0.var.targetType.eq(ctrl_label)].to_numpy()
+        del df_cond1, df_cond2
 
-        adata_pseudo = generatePseudoGeneAnnData(adata, num_pseudogenes=num_pseudogenes, pseudogene_size=pseudogene_size, ctrl_label=ctrl_label)
-
-        adata = ad.concat([adata[:,~adata.var.targetType.eq(ctrl_label)], adata_pseudo], axis=1)
+        adata_pseudo = generatePseudoGeneAnnData(adata0, num_pseudogenes=num_pseudogenes, pseudogene_size=pseudogene_size, ctrl_label=ctrl_label)
+        adata = ad.concat([adata0[:,~adata0.var.targetType.eq(ctrl_label)], adata_pseudo], axis=1)
         adata.obs = adata0.obs.copy()
 
         # prep counts for phenoScore calculation
         df_cond1 = adata[adata.obs.query(f'condition=="{cond1}"').index].to_df().T
-        df_cond2 = adata[adata.obs.query(f'condition=="{cond2}"').index].to_df().T        # get control values
+        df_cond2 = adata[adata.obs.query(f'condition=="{cond2}"').index].to_df().T
 
         targets = []
         scores = []
