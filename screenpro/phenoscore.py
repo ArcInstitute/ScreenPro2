@@ -196,15 +196,13 @@ def runPhenoScore(adata, cond1, cond2, transformation, score_level, test,
         result['BH adj_pvalue'] = adj_p_values
     
     elif score_level in ['compare_guides']:
-        #TODO: remove this block after sanity checks
-        if n_reps == 2:
-            pass
-        else:
-            raise ValueError(f'n_reps "{n_reps}" not recognized. Currently, only 2 replicates are supported!')
+        # keep original adata for later use
+        adata0 = adata.copy()
 
         adata_pseudo = generatePseudoGeneAnnData(adata, num_pseudogenes=num_pseudogenes, pseudogene_size=pseudogene_size, ctrl_label=ctrl_label)
 
-        adata = ad.concat([adata[~adata.var.targetType.eq(ctrl_label)], adata_pseudo], axis=1)
+        adata = ad.concat([adata[:,~adata.var.targetType.eq(ctrl_label)], adata_pseudo], axis=1)
+        adata.obs = adata0.obs.copy()
 
         # prep counts for phenoScore calculation
         df_cond1 = adata[adata.obs.query(f'condition=="{cond1}"').index].to_df().T
