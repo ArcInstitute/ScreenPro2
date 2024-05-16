@@ -24,12 +24,14 @@ def calculateDelta(x, y, transformation, level):
         np.array: array of log ratio values
     """
     # check if transformation is implemented
-    if transformation not in ['log2(x+1)', 'log10', 'log1p']:
+    if transformation not in ['log2', 'log2(x+1)', 'log10', 'log1p']:
         raise ValueError(f'transformation "{transformation}" not recognized')
     
     if level == 'all':
         # average across all values
-        if transformation == 'log2(x+1)':
+        if transformation == 'log2':
+            return np.log2(y) - np.log2(x)
+        elif transformation == 'log2(x+1)':
             return np.mean(np.log2(y+1) - np.log2(x+1))
         elif transformation == 'log10':
             return np.mean(np.log10(y) - np.log10(x))
@@ -37,7 +39,9 @@ def calculateDelta(x, y, transformation, level):
             return np.mean(np.log1p(y) - np.log1p(x))
     elif level == 'row':
         # average across rows
-        if transformation == 'log2(x+1)':
+        if transformation == 'log2':
+            return np.log2(y) - np.log2(x)
+        elif transformation == 'log2(x+1)':
             return np.mean(np.log2(y+1) - np.log2(x+1), axis=0)
         elif transformation == 'log10':
             return np.mean(np.log10(y) - np.log10(x), axis=0)
@@ -46,6 +50,8 @@ def calculateDelta(x, y, transformation, level):
     elif level == 'col':
         # average across columns
         if transformation == 'log2(x+1)':
+            return np.mean(np.log2(y+1) - np.log2(x+1), axis=1)
+        elif transformation == 'log2(x+1)':
             return np.mean(np.log2(y+1) - np.log2(x+1), axis=1)
         elif transformation == 'log10':
             return np.mean(np.log10(y) - np.log10(x), axis=1)
