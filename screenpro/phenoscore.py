@@ -113,6 +113,78 @@ def matrixTest(x, y, x_ctrl, y_ctrl, transformation, level, test = 'ttest', grow
     return scores, p_values
 
 
+def generatePseudoGeneAnnData(adata, num_pseudogenes='auto', pseudogene_size='auto', ctrl_label='negCtrl'):
+    """Generate pseudogenes from negative control elements in the library.
+
+    Args:
+        adata (AnnData): AnnData object
+        num_pseudogenes (int): number of pseudogenes to generate
+        pseudogene_size (int): number of sgRNA elements in each pseudogene
+        ctrl_label (str): control label, default is 'negCtrl'
+    
+    Returns:
+        AnnData: AnnData object with pseudogenes
+    """
+    if num_pseudogenes == 'auto':
+        # approx number of target in the library
+        num_pseudogenes = len(adata.var.loc[~adata.var.targetType.eq(ctrl_label),'target'].unique())
+    if pseudogene_size == 'auto':
+        # sgRNA elements / target in the library
+        pseudogene_size = int(adata.var[~adata.var.targetType.eq(ctrl_label)].groupby('target').size().mean())
+
+    # raise error if `num_pseudogenes` is greater than half of the total number elements in the library
+    if num_pseudogenes > adata.var.shape[0] / 2:
+        raise TypeError(
+            "`num_pseudogenes` is greater than half of the total number of elements in the library!"
+        )
+    
+    adata_ctrl = adata[:,adata.var.targetType.eq(ctrl_label)].copy()
+    ctrl_elements = adata_ctrl.var.index.to_list()
+    
+    adata_pseudo_list = []
+    pseudo_source_sgrna = []
+
+    for pseudo_num in range(0, num_pseudogenes, pseudogene_size):
+        pseudo_elements = np.random.choice(ctrl_elements, pseudogene_size, replace=False)
+        pseudo_labels = [f'pseudo_{pseudo_num}_{i}' for i in range(1,pseudogene_size+1)]
+        
+        adata_pseudo = ad.AnnData(
+            X = adata_ctrl.X[:,adata_ctrl.var.index.isin(pseudo_elements)],
+            obs = adata_ctrl.obs   
+        )
+        adata_pseudo.var_names = pseudo_labels
+        adata_pseudo_list.append(adata_pseudo)
+        
+        for element in pseudo_elements: 
+            pseudo_source_sgrna.append(element)
+        
+    out = ad.concat(adata_pseudo_list, axis=1)
+    out.var['target'] = out.var.index.str.split('_').str[:-1].str.join('_')
+    out.var['targetType'] = ctrl_label
+    out.var['source'] = pseudo_source_sgrna
+    out.obs = adata_ctrl.obs.copy()
+    
+    return out
+
+
+def calculateZScorePhenotypeScore(score_df,ctrl_label='negCtrl'):
+    """Calculate z-score normalized phenotype score.
+    
+    Args:
+        score_df (pd.DataFrame): dataframe of scores that includes `score` and `targetType` columns
+        ctrl_label (str): control label, default is 'negCtrl'
+    
+    Returns:
+        pd.Series: z-score normalized phenotype score
+    """
+    # calculate control median and std
+    ctrl_std = score_df[score_df.targetType.eq(ctrl_label)].score.std()
+    # z-score normalization
+    out = score_df.score / ctrl_std
+
+    return out
+
+
 def runPhenoScore(adata, cond1, cond2, transformation, score_level, test,
                   growth_rate=1, n_reps=2, keep_top_n = None,num_pseudogenes='auto', pseudogene_size='auto',
                   count_layer=None, get_z_score=False, ctrl_label='negCtrl'):
@@ -263,24 +335,6 @@ def runPhenoScore(adata, cond1, cond2, transformation, score_level, test,
     return result_name, result
 
 
-def calculateZScorePhenotypeScore(score_df,ctrl_label='negCtrl'):
-    """Calculate z-score normalized phenotype score.
-    
-    Args:
-        score_df (pd.DataFrame): dataframe of scores that includes `score` and `targetType` columns
-        ctrl_label (str): control label, default is 'negCtrl'
-    
-    Returns:
-        pd.Series: z-score normalized phenotype score
-    """
-    # calculate control median and std
-    ctrl_std = score_df[score_df.targetType.eq(ctrl_label)].score.std()
-    # z-score normalization
-    out = score_df.score / ctrl_std
-
-    return out
-
-
 def runPhenoScoreForReplicate(adata, x_label, y_label, score, growth_factor_table, transformation, get_z_score=False, ctrl_label='negCtrl'):
     """Calculate phenotype score for each pair of replicates.
 
@@ -329,58 +383,4 @@ def runPhenoScoreForReplicate(adata, x_label, y_label, score, growth_factor_tabl
         index=adat.var.index
     )
 
-    return out
-
-
-def generatePseudoGeneAnnData(adata, num_pseudogenes='auto', pseudogene_size='auto', ctrl_label='negCtrl'):
-    """Generate pseudogenes from negative control elements in the library.
-
-    Args:
-        adata (AnnData): AnnData object
-        num_pseudogenes (int): number of pseudogenes to generate
-        pseudogene_size (int): number of sgRNA elements in each pseudogene
-        ctrl_label (str): control label, default is 'negCtrl'
-    
-    Returns:
-        AnnData: AnnData object with pseudogenes
-    """
-    if num_pseudogenes == 'auto':
-        # approx number of target in the library
-        num_pseudogenes = len(adata.var.loc[~adata.var.targetType.eq(ctrl_label),'target'].unique())
-    if pseudogene_size == 'auto':
-        # sgRNA elements / target in the library
-        pseudogene_size = int(adata.var[~adata.var.targetType.eq(ctrl_label)].groupby('target').size().mean())
-
-    # raise error if `num_pseudogenes` is greater than half of the total number elements in the library
-    if num_pseudogenes > adata.var.shape[0] / 2:
-        raise TypeError(
-            "`num_pseudogenes` is greater than half of the total number of elements in the library!"
-        )
-    
-    adata_ctrl = adata[:,adata.var.targetType.eq(ctrl_label)].copy()
-    ctrl_elements = adata_ctrl.var.index.to_list()
-    
-    adata_pseudo_list = []
-    pseudo_source_sgrna = []
-
-    for pseudo_num in range(0, num_pseudogenes, pseudogene_size):
-        pseudo_elements = np.random.choice(ctrl_elements, pseudogene_size, replace=False)
-        pseudo_labels = [f'pseudo_{pseudo_num}_{i}' for i in range(1,pseudogene_size+1)]
-        
-        adata_pseudo = ad.AnnData(
-            X = adata_ctrl.X[:,adata_ctrl.var.index.isin(pseudo_elements)],
-            obs = adata_ctrl.obs   
-        )
-        adata_pseudo.var_names = pseudo_labels
-        adata_pseudo_list.append(adata_pseudo)
-        
-        for element in pseudo_elements: 
-            pseudo_source_sgrna.append(element)
-        
-    out = ad.concat(adata_pseudo_list, axis=1)
-    out.var['target'] = out.var.index.str.split('_').str[:-1].str.join('_')
-    out.var['targetType'] = ctrl_label
-    out.var['source'] = pseudo_source_sgrna
-    out.obs = adata_ctrl.obs.copy()
-    
     return out
