@@ -48,8 +48,8 @@ def calculateDelta(x, y, transformation, level):
             return np.mean(np.log1p(y) - np.log1p(x), axis=0)
     elif level == 'col':
         # average across columns
-        if transformation == 'log2(x+1)':
-            return np.mean(np.log2(y+1) - np.log2(x+1), axis=1)
+        if transformation == 'log2':
+            return np.mean(np.log2(y) - np.log2(x), axis=1)
         elif transformation == 'log2(x+1)':
             return np.mean(np.log2(y+1) - np.log2(x+1), axis=1)
         elif transformation == 'log10':
@@ -271,6 +271,10 @@ def runPhenoScore(adata, cond1, cond2, transformation, score_level, test,
         # keep original adata for later use
         adata0 = adata.copy()
 
+        # get control values
+        x_ctrl = df_cond1[adata0.var.targetType.eq(ctrl_label)].to_numpy()
+        y_ctrl = df_cond2[adata0.var.targetType.eq(ctrl_label)].to_numpy()
+
         adata_pseudo = generatePseudoGeneAnnData(adata, num_pseudogenes=num_pseudogenes, pseudogene_size=pseudogene_size, ctrl_label=ctrl_label)
 
         adata = ad.concat([adata[:,~adata.var.targetType.eq(ctrl_label)], adata_pseudo], axis=1)
@@ -279,10 +283,6 @@ def runPhenoScore(adata, cond1, cond2, transformation, score_level, test,
         # prep counts for phenoScore calculation
         df_cond1 = adata[adata.obs.query(f'condition=="{cond1}"').index].to_df().T
         df_cond2 = adata[adata.obs.query(f'condition=="{cond2}"').index].to_df().T        # get control values
-
-        # get control values
-        x_ctrl = df_cond1[adata.var.targetType.eq(ctrl_label)].to_numpy()
-        y_ctrl = df_cond2[adata.var.targetType.eq(ctrl_label)].to_numpy()
 
         targets = []
         scores = []
