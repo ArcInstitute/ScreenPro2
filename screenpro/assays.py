@@ -153,9 +153,17 @@ class PooledScreens(object):
 
         # get replicate level phenotype scores
         pdata_df = pd.concat([
-            runPhenoScoreForReplicate(self,'T0', untreated,'gamma',growth_factor_table).add_prefix('gamma_'),
-            runPhenoScoreForReplicate(self,'T0', treated,'tau',growth_factor_table).add_prefix('tau_'),
-            runPhenoScoreForReplicate(self ,untreated,treated,'rho',growth_factor_table).add_prefix('rho_')
+            runPhenoScoreForReplicate(
+                self.adata, x_label = x_label, y_name = y_label, score = score_label,
+                transformation=self.fc_transformation, 
+                growth_factor_table=growth_factor_table
+            ).add_prefix(f'{score_label}_')
+
+            for x_label, y_label, score_label in zip([
+                ('T0', untreated, 'gamma'),
+                ('T0', treated, 'tau'),
+                (untreated, treated, 'rho')
+            ])
         ],axis=1).T
         # add .pdata
         self.pdata = ad.AnnData(

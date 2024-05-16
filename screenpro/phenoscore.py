@@ -287,22 +287,23 @@ def calculateZScorePhenotypeScore(score_df,ctrl_label='negCtrl'):
     return out
 
 
-def runPhenoScoreForReplicate(screen, x_label, y_label, score, growth_factor_table, get_z_score=False, ctrl_label='negCtrl'):
+def runPhenoScoreForReplicate(adata, x_label, y_label, score, growth_factor_table, transformation, get_z_score=False, ctrl_label='negCtrl'):
     """Calculate phenotype score for each pair of replicates.
 
     Args:
-        screen: ScreenPro object
+        adata (AnnData): AnnData object
         x_label: name of the first condition in column `condition` of `screen.adata.obs`
         y_label: name of the second condition in column `condition` of `screen.adata.obs`
         score: score to use for calculating phenotype score, i.e. 'gamma', 'tau', or 'rho'
         growth_factor_table: dataframe of growth factors, i.e. output from `getGrowthFactors` function
+        transformation (str): transformation to use for calculating score
         get_z_score: boolean to calculate z-score normalized phenotype score instead of regular score (default is False)
         ctrl_label: string to identify labels of negative control elements in sgRNA library (default is 'negCtrl')
 
     Returns:
         pd.DataFrame: dataframe of phenotype scores
     """
-    adat = screen.adata.copy()
+    adat = adata.copy()
 
     adat_ctrl = adat[:, adat.var.targetType.eq(ctrl_label)].copy()
 
@@ -317,7 +318,7 @@ def runPhenoScoreForReplicate(screen, x_label, y_label, score, growth_factor_tab
             y_ctrl=adat_ctrl[adat_ctrl.obs.query(f'condition == "{y_label}" & replicate == {str(replicate)}').index].X,
 
             growth_rate=growth_factor_table.query(f'score=="{score}" & replicate=={replicate}')['growth_factor'].values[0],
-            transformation=screen.transformation,
+            transformation=transformation,
             level='row'  # there is only one column so `row` option here is equivalent to the value before averaging.
         )
 
