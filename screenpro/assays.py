@@ -154,7 +154,7 @@ class PooledScreens(object):
         # get replicate level phenotype scores
         pdata_df = pd.concat([
             runPhenoScoreForReplicate(
-                self.adata, x_label = x_label, y_name = y_label, score = score_label,
+                self.adata, x_label = x_label, y_label = y_label, score = score_label,
                 transformation=self.fc_transformation, 
                 growth_factor_table=growth_factor_table
             ).add_prefix(f'{score_label}_')
