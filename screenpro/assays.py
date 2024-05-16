@@ -5,6 +5,7 @@ Assays module
 import numpy as np
 import pandas as pd
 import anndata as ad
+import scanpy as sc
 
 from pydeseq2 import preprocessing
 from .phenoscore import runPhenoScore, runPhenoScoreForReplicate
@@ -17,17 +18,15 @@ class PooledScreens(object):
     pooledScreens class for processing CRISPR screen datasets
     """
 
-    def __init__(self, adata, norm_transformation='log1p', fc_transformation='log2', test='ttest', n_reps=3):
+    def __init__(self, adata, fc_transformation='log2(x+1)', test='ttest', n_reps=3):
         """
         Args:
             adata (AnnData): AnnData object with adata.X as a matrix of sgRNA counts
-            norm_transformation (str): transformation to apply to the raw sgRNA counts
             fc_transformation (str): fold change transformation to apply for calculating phenotype scores
             test (str): statistical test to use for calculating phenotype scores
         """
         self.adata = adata
         self.pdata = None
-        self.norm_transformation = norm_transformation
         self.fc_transformation = fc_transformation
         self.test = test
         self.n_reps = n_reps
@@ -44,23 +43,6 @@ class PooledScreens(object):
 
     def copy(self):
         return copy(self)
-
-    def _count_normalization(self):
-        """
-        Normalize the counts data in adata.X
-        """
-        if self.norm_transformation == 'log1p':
-            self.adata.layers[f'{self.norm_transformation}_norm'] = np.log1p(self.adata.X)
-        else:
-            raise ValueError(f"Normalization transformation '{self.norm_transformation}' not implemented!")
-
-        self.adata.layers['raw_counts'] = self.adata.X.copy()
-        # normalize counts by sequencing depth
-        norm_counts, size_factors = preprocessing.deseq2_norm(self.adata.X)
-        # update adata object
-        self.adata.obs['size_factors'] = size_factors
-        self.adata.layers['seq_depth_norm'] = norm_counts
-        self.adata.X = self.adata.layers['seq_depth_norm']
     
     def _add_phenotype_results(self, phenotype_name):
         if phenotype_name in self.phenotype_names:
@@ -95,7 +77,25 @@ class PooledScreens(object):
 
         return out
 
-    def calculateDrugScreen(self, t0, untreated, treated, db_untreated, db_treated, score_level, db_rate_col='pop_doublings', count_normalization=True, run_name=None, **kwargs):
+    def countNormalization(self):
+        """
+        Normalize the counts data in adata.X
+        """
+        self.adata.layers['raw_counts'] = self.adata.X.copy()
+        
+        # normalize counts by sequencing depth
+        norm_counts, size_factors = preprocessing.deseq2_norm(self.adata.X)
+        # update adata object
+        self.adata.obs['size_factors'] = size_factors
+        self.adata.layers['seq_depth_norm'] = norm_counts
+        self.adata.X = self.adata.layers['seq_depth_norm']
+        
+        # , target_sum=1e6, log_scale=True
+        # counts = sc.pp.normalize_total(self.adata, target_sum=target_sum, inplace=False)
+        # # log1p transform
+        # adata.layers["log1p_norm"] = sc.pp.log1p(counts["X"], copy=True)
+
+    def calculateDrugScreen(self, t0, untreated, treated, db_untreated, db_treated, score_level, db_rate_col='pop_doublings', run_name=None, **kwargs):
         """
         Calculate `gamma`, `rho`, and `tau` phenotype scores for a drug screen dataset in a given `score_level`.
         To normalize by growth rate, the doubling rate of the untreated and treated conditions are required.
@@ -108,13 +108,9 @@ class PooledScreens(object):
             db_treated (float): doubling rate of the treated condition
             score_level (str): name of the score level
             db_rate_col (str): column name for the doubling rate, default is 'pop_doublings'
-            count_normalization (bool): whether to normalize the counts data, default is True
             run_name (str): name for the phenotype calculation run
             **kwargs: additional arguments to pass to runPhenoScore
         """
-        if count_normalization:
-            self._count_normalization()
-
         # calculate phenotype scores: gamma, tau, rho
         gamma_name, gamma = runPhenoScore(
             self.adata, cond1=t0, cond2=untreated, growth_rate=db_untreated,
@@ -172,7 +168,7 @@ class PooledScreens(object):
             var=self.adata.var
         )
         
-    def calculateFlowBasedScreen(self, low_bin, high_bin, score_level, count_normalization=True, run_name=None, **kwargs):
+    def calculateFlowBasedScreen(self, low_bin, high_bin, score_level, run_name=None, **kwargs):
         """
         Calculate phenotype scores for a flow-based screen dataset.
 
@@ -180,13 +176,9 @@ class PooledScreens(object):
             low_bin (str): name of the low bin condition
             high_bin (str): name of the high bin condition
             score_level (str): name of the score level
-            count_normalization (bool): whether to normalize the counts data, default is True
             run_name (str): name for the phenotype calculation run
             **kwargs: additional arguments to pass to runPhenoScore
         """
-        if count_normalization:
-            self._count_normalization()
-
         # calculate phenotype scores
         delta_name, delta = runPhenoScore(
             self.adata, cond1=low_bin, cond2=high_bin, n_reps=self.n_reps,
