@@ -89,12 +89,7 @@ class PooledScreens(object):
         self.adata.obs['size_factors'] = size_factors
         self.adata.layers['seq_depth_norm'] = norm_counts
         self.adata.X = self.adata.layers['seq_depth_norm']
-        
-        # , target_sum=1e6, log_scale=True
-        # counts = sc.pp.normalize_total(self.adata, target_sum=target_sum, inplace=False)
-        # # log1p transform
-        # adata.layers["log1p_norm"] = sc.pp.log1p(counts["X"], copy=True)
-
+    
     def calculateDrugScreen(self, t0, untreated, treated, db_untreated, db_treated, score_level, db_rate_col='pop_doublings', run_name=None, **kwargs):
         """
         Calculate `gamma`, `rho`, and `tau` phenotype scores for a drug screen dataset in a given `score_level`.
