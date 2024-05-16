@@ -229,7 +229,7 @@ def runPhenoScore(adata, cond1, cond2, transformation, score_level, test,
         raise ValueError(f"Missing required columns in library table: {missing_columns}")
 
     # calc phenotype score and p-value
-    if score_level == 'compare_reps':
+    if score_level in ['compare_reps']:
         # prep counts for phenoScore calculation
         df_cond1 = adata[adata.obs.query(f'condition=="{cond1}"').index[:n_reps],].to_df(count_layer).T
         df_cond2 = adata[adata.obs.query(f'condition=="{cond2}"').index[:n_reps],].to_df(count_layer).T
@@ -295,8 +295,8 @@ def runPhenoScore(adata, cond1, cond2, transformation, score_level, test,
             y = df_cond2.loc[target_group.index,:].to_numpy()
             # Sort and find top n guide per target, see #18
             if keep_top_n:
-                x.sort()
-                y.sort()
+                x = np.flip(np.sort(x)) 
+                y = np.flip(np.sort(y))
                 x = x[:keep_top_n]
                 y = y[:keep_top_n]
             
