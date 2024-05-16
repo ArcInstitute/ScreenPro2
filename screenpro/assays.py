@@ -159,11 +159,11 @@ class PooledScreens(object):
                 growth_factor_table=growth_factor_table
             ).add_prefix(f'{score_label}_')
 
-            for x_label, y_label, score_label in zip([
+            for x_label, y_label, score_label in [
                 ('T0', untreated, 'gamma'),
                 ('T0', treated, 'tau'),
                 (untreated, treated, 'rho')
-            ])
+            ]
         ],axis=1).T
         # add .pdata
         self.pdata = ad.AnnData(
