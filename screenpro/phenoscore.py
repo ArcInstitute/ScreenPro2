@@ -379,7 +379,7 @@ def generatePseudoGeneAnnData(adata, num_pseudogenes='auto', pseudogene_size='au
         
     out = ad.concat(adata_pseudo_list, axis=1)
     out.var['target'] = out.var.index.str.split('_').str[:-1].str.join('_')
-    out.var['targetType'] = 'pseudo'
+    out.var['targetType'] = ctrl_label
     out.var['source'] = pseudo_source_sgrna
     out.obs = adata_ctrl.obs.copy()
     
