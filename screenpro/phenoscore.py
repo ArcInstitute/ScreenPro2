@@ -4,9 +4,7 @@ phenoscore module
 
 import numpy as np
 import pandas as pd
-from pydeseq2 import preprocessing
 from .phenostat import matrixStat, getFDR
-from .utils import find_low_counts
 
 
 def calculateDelta(x, y, transformation, level):
@@ -116,7 +114,7 @@ def matrixTest(x, y, x_ctrl, y_ctrl, transformation, level, test = 'ttest', grow
 
 def runPhenoScore(adata, cond1, cond2, transformation, score_level, test,
                   growth_rate=1, n_reps=2, keep_top_n = None,num_pseudogenes=None,
-                  get_z_score=False, filter_low_count=False, ctrl_label='negCtrl'):
+                  count_layer=None, get_z_score=False, ctrl_label='negCtrl'):
     """Calculate phenotype score and p-values when comparing `cond2` vs `cond1`.
 
     Args:
@@ -130,8 +128,8 @@ def runPhenoScore(adata, cond1, cond2, transformation, score_level, test,
         n_reps (int): number of replicates
         keep_top_n (int): number of top guides to keep per target
         num_pseudogenes (int): number of pseudogenes
+        count_layer (str): count layer to use for calculating score, default is None (use default count layer in adata.X)
         get_z_score (bool): boolean to calculate z-score normalized phenotype score and add as a new column (default is False)
-        filter_low_count (bool): boolean to filter out low count elements (default is False)
         ctrl_label (str): control label
     
     Returns:
@@ -142,10 +140,13 @@ def runPhenoScore(adata, cond1, cond2, transformation, score_level, test,
     result_name = f'{cond2}_vs_{cond1}'
     print(f'\t{cond2} vs {cond1}')
 
-    count_layer = 'seq_depth_norm'
     # check if count_layer exists
-    if 'seq_depth_norm' not in adata.layers.keys():
-        seqDepthNormalization(adata)
+    if count_layer is None:
+        pass
+    elif count_layer not in adata.layers.keys():
+        raise ValueError(f"Layer '{count_layer}' not found in adata.layers.keys().")
+    elif count_layer in adata.layers.keys():
+        adata.X = adata.layers[count_layer].copy()
     
     # evaluate library table to get targets and riase error if not present
     required_columns = ['target', 'sequence']
@@ -197,11 +198,6 @@ def runPhenoScore(adata, cond1, cond2, transformation, score_level, test,
             pass
         else:
             raise ValueError(f'n_reps "{n_reps}" not recognized. Currently, only 2 replicates are supported!')
-
-        if filter_low_count:
-            find_low_counts(adata)
-            adata = adata[:,~adata.var.low_count].copy()
-            adata.var.drop(columns='low_count',inplace=True)
 
         # generate pseudo gene labels
         generatePseudoGeneLabels(adata, num_pseudogenes=num_pseudogenes, ctrl_label=ctrl_label)
@@ -271,19 +267,6 @@ def runPhenoScore(adata, cond1, cond2, transformation, score_level, test,
     
     
     return result_name, result
-
-
-def seqDepthNormalization(adata):
-    """Normalize counts by sequencing depth.
-    
-    Args:
-        adata (AnnData): AnnData object
-    """
-    # normalize counts by sequencing depth
-    norm_counts, size_factors = preprocessing.deseq2_norm(adata.X)
-    # update adata object
-    adata.obs['size_factors'] = size_factors
-    adata.layers['seq_depth_norm'] = norm_counts
 
 
 def calculateZScorePhenotypeScore(score_df,ctrl_label='negCtrl'):
