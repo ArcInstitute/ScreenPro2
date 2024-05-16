@@ -291,15 +291,18 @@ def runPhenoScore(adata, cond1, cond2, transformation, score_level, test,
         # group by target genes or pseudogenes to aggregate counts for score calculation
         for target_name, target_group in adata.var.groupby('target'):
             # convert to numpy arrays
-            x = df_cond1.loc[target_group.index,:].to_numpy()
-            y = df_cond2.loc[target_group.index,:].to_numpy()
+            x = df_cond1.loc[target_group.index,:]
+            y = df_cond2.loc[target_group.index,:]
             # Sort and find top n guide per target, see #18
             if keep_top_n:
-                x = np.flip(np.sort(x)) 
-                y = np.flip(np.sort(y))
-                x = x[:keep_top_n]
-                y = y[:keep_top_n]
-            
+                x = x.sort_values(x.columns.to_list(), ascending=False)
+                y = y.sort_values(y.columns.to_list(), ascending=False)
+                x = x.iloc[:keep_top_n, :]
+                y = y.iloc[:keep_top_n, :]
+            # convert to numpy arrays
+            x = x.to_numpy()
+            y = y.to_numpy()
+
             # calculate growth score and p_value
             target_scores, target_p_values = matrixTest(
                 x=x, y=y, x_ctrl=x_ctrl, y_ctrl=y_ctrl,
