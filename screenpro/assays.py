@@ -108,6 +108,7 @@ class PooledScreens(object):
             db_treated (float): doubling rate of the treated condition
             score_level (str): name of the score level
             db_rate_col (str): column name for the doubling rate, default is 'pop_doublings'
+            count_normalization (bool): whether to normalize the counts data, default is True
             run_name (str): name for the phenotype calculation run
             **kwargs: additional arguments to pass to runPhenoScore
         """
@@ -171,6 +172,7 @@ class PooledScreens(object):
             low_bin (str): name of the low bin condition
             high_bin (str): name of the high bin condition
             score_level (str): name of the score level
+            count_normalization (bool): whether to normalize the counts data, default is True
             run_name (str): name for the phenotype calculation run
             **kwargs: additional arguments to pass to runPhenoScore
         """
