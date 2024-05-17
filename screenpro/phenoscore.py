@@ -277,7 +277,7 @@ def runPhenoScore(adata, cond1, cond2, transformation, score_level, test,
         x_ctrl = df_cond1[adata0.var.targetType.eq(ctrl_label)].to_numpy()
         y_ctrl = df_cond2[adata0.var.targetType.eq(ctrl_label)].to_numpy()
         del df_cond1, df_cond2
-
+        
         adata_pseudo = generatePseudoGeneAnnData(adata0, num_pseudogenes=num_pseudogenes, pseudogene_size=pseudogene_size, ctrl_label=ctrl_label)
         adata = ad.concat([adata0[:,~adata0.var.targetType.eq(ctrl_label)], adata_pseudo], axis=1)
         adata.obs = adata0.obs.copy()
@@ -285,11 +285,11 @@ def runPhenoScore(adata, cond1, cond2, transformation, score_level, test,
         # prep counts for phenoScore calculation
         df_cond1 = adata[adata.obs.query(f'condition=="{cond1}"').index].to_df().T
         df_cond2 = adata[adata.obs.query(f'condition=="{cond2}"').index].to_df().T
-
+        
         targets = []
         scores = []
         p_values = []
-
+        
         # group by target genes or pseudogenes to aggregate counts for score calculation
         for target_name, target_group in adata.var.groupby('target'):
             # convert to numpy arrays
@@ -308,30 +308,38 @@ def runPhenoScore(adata, cond1, cond2, transformation, score_level, test,
             # calculate growth score and p_value
             target_scores, target_p_values = matrixTest(
                 x=x, y=y, x_ctrl=x_ctrl, y_ctrl=y_ctrl,
-                transformation=transformation, level='row', test=test,
+                transformation=transformation, 
+                level='all', # test across all guides and replicates per target
+                test=test,
                 growth_rate=growth_rate
             )
-
+            
             scores.append(target_scores)
             p_values.append(target_p_values)
             targets.append(target_name)
         
         # combine results into a dataframe
-        result = pd.concat({
-            'replicate_1':pd.concat([
-                pd.Series([s1 for s1,_ in scores], index=targets, name='score'),
-                pd.Series([p1 for p1,_ in p_values], index=targets, name=f'{test} pvalue'),
+        result = pd.concat([
+            pd.Series([np.mean(s) for s in scores], index=targets, name='score'),
+            pd.Series([np.mean(p) for p in p_values], index=targets, name=f'{test} pvalue'),
+        ], axis=1)
+
+        # # combine results into a dataframe
+        # result = pd.concat({
+        #     'replicate_1':pd.concat([
+        #         pd.Series([s1 for s1,_ in scores], index=targets, name='score'),
+        #         pd.Series([p1 for p1,_ in p_values], index=targets, name=f'{test} pvalue'),
                 
-            ],axis=1),
-            'replicate_2':pd.concat([
-                pd.Series([s2 for _,s2 in scores], index=targets, name='score'),
-                pd.Series([p2 for _,p2 in p_values], index=targets, name=f'{test} pvalue'),
-            ],axis=1),
-            'replicate_ave':pd.concat([
-                pd.Series([np.mean([s1,s2]) for s1,s2 in scores], index=targets, name='score'),
-                pd.Series([np.mean([p1,p2]) for p1,p2 in p_values], index=targets, name=f'{test} pvalue'),
-            ],axis=1)
-        },axis=1)
+        #     ],axis=1),
+        #     'replicate_2':pd.concat([
+        #         pd.Series([s2 for _,s2 in scores], index=targets, name='score'),
+        #         pd.Series([p2 for _,p2 in p_values], index=targets, name=f'{test} pvalue'),
+        #     ],axis=1),
+        #     'replicate_ave':pd.concat([
+        #         pd.Series([np.mean([s1,s2]) for s1,s2 in scores], index=targets, name='score'),
+        #         pd.Series([np.mean([p1,p2]) for p1,p2 in p_values], index=targets, name=f'{test} pvalue'),
+        #     ],axis=1)
+        # },axis=1)
     
     else:
         raise ValueError(f'score_level "{score_level}" not recognized. Currently, "compare_reps" and "compare_guides" are supported.')
