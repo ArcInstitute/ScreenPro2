@@ -131,12 +131,6 @@ def generatePseudoGeneAnnData(adata, num_pseudogenes='auto', pseudogene_size='au
     if pseudogene_size == 'auto':
         # sgRNA elements / target in the library
         pseudogene_size = int(adata.var[~adata.var.targetType.eq(ctrl_label)].groupby('target').size().mean())
-
-    # raise error if `num_pseudogenes` is greater than half of the total number elements in the library
-    if num_pseudogenes > adata.var.shape[0] / 2:
-        raise TypeError(
-            "`num_pseudogenes` is greater than half of the total number of elements in the library!"
-        )
     
     adata_ctrl = adata[:,adata.var.targetType.eq(ctrl_label)].copy()
     ctrl_elements = adata_ctrl.var.index.to_list()
@@ -268,6 +262,10 @@ def runPhenoScore(adata, cond1, cond2, transformation, score_level, test,
         result['BH adj_pvalue'] = adj_p_values
     
     elif score_level in ['compare_guides']:
+        if n_reps == 2:
+            pass
+        else:
+            raise ValueError('Currently, only n_reps=2 is supported for score_level="compare_guides"')
         # keep original adata for later use
         adata0 = adata.copy()
 
