@@ -125,12 +125,13 @@ def generatePseudoGeneAnnData(adata, num_pseudogenes='auto', pseudogene_size='au
     Returns:
         AnnData: AnnData object with pseudogenes
     """
-    if num_pseudogenes == 'auto':
-        # approx number of target in the library
-        num_pseudogenes = len(adata.var.loc[~adata.var.targetType.eq(ctrl_label),'target'].unique())
     if pseudogene_size == 'auto':
         # sgRNA elements / target in the library
         pseudogene_size = int(adata.var[~adata.var.targetType.eq(ctrl_label)].groupby('target').size().mean())
+
+    if num_pseudogenes == 'auto':
+        # approx number of target in the library
+        num_pseudogenes = len(adata.var.loc[~adata.var.targetType.eq(ctrl_label),'target'].unique()) * pseudogene_size
     
     adata_ctrl = adata[:,adata.var.targetType.eq(ctrl_label)].copy()
     ctrl_elements = adata_ctrl.var.index.to_list()
