@@ -24,6 +24,11 @@ def matrixStat(x, y, test, level):
     if test == 'MW':
         # run Mann-Whitney U rank test
         raise ValueError('Mann-Whitney U rank test not implemented')
+    
+    elif test == 'KS':
+        # run Kolmorogov-Smirnov test
+        raise ValueError('Kolmorogov-Smirnov test not implemented')
+    
     elif test == 'ttest':
         # run ttest
         if level == 'col':

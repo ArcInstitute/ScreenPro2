@@ -5,7 +5,9 @@ Assays module
 import numpy as np
 import pandas as pd
 import anndata as ad
+import scanpy as sc
 
+from pydeseq2 import preprocessing
 from .phenoscore import runPhenoScore, runPhenoScoreForReplicate
 from .utils import ann_score_df
 from copy import copy
@@ -16,16 +18,16 @@ class PooledScreens(object):
     pooledScreens class for processing CRISPR screen datasets
     """
 
-    def __init__(self, adata, transformation='log2(x+1)', test='ttest', n_reps=3):
+    def __init__(self, adata, fc_transformation='log2(x+1)', test='ttest', n_reps=3):
         """
         Args:
             adata (AnnData): AnnData object with adata.X as a matrix of sgRNA counts
-            transformation (str): transformation to apply to the data before calculating phenotype scores
+            fc_transformation (str): fold change transformation to apply for calculating phenotype scores
             test (str): statistical test to use for calculating phenotype scores
         """
         self.adata = adata
         self.pdata = None
-        self.transformation = transformation
+        self.fc_transformation = fc_transformation
         self.test = test
         self.n_reps = n_reps
         self.phenotypes = {}
@@ -41,7 +43,7 @@ class PooledScreens(object):
 
     def copy(self):
         return copy(self)
-
+    
     def _add_phenotype_results(self, phenotype_name):
         if phenotype_name in self.phenotype_names:
             raise ValueError(f"Phenotype '{phenotype_name}' already exists in self.phenotype_names!")
@@ -75,7 +77,20 @@ class PooledScreens(object):
 
         return out
 
-    def calculateDrugScreen(self, t0, untreated, treated, db_untreated, db_treated, score_level, db_rate_col='pop_doublings', run_name=None):
+    def countNormalization(self):
+        """
+        Normalize the counts data in adata.X
+        """
+        self.adata.layers['raw_counts'] = self.adata.X.copy()
+        
+        # normalize counts by sequencing depth
+        norm_counts, size_factors = preprocessing.deseq2_norm(self.adata.X)
+        # update adata object
+        self.adata.obs['size_factors'] = size_factors
+        self.adata.layers['seq_depth_norm'] = norm_counts
+        self.adata.X = self.adata.layers['seq_depth_norm']
+    
+    def calculateDrugScreen(self, t0, untreated, treated, db_untreated, db_treated, score_level, db_rate_col='pop_doublings', run_name=None, **kwargs):
         """
         Calculate `gamma`, `rho`, and `tau` phenotype scores for a drug screen dataset in a given `score_level`.
         To normalize by growth rate, the doubling rate of the untreated and treated conditions are required.
@@ -89,23 +104,27 @@ class PooledScreens(object):
             score_level (str): name of the score level
             db_rate_col (str): column name for the doubling rate, default is 'pop_doublings'
             run_name (str): name for the phenotype calculation run
+            **kwargs: additional arguments to pass to runPhenoScore
         """
         # calculate phenotype scores: gamma, tau, rho
         gamma_name, gamma = runPhenoScore(
             self.adata, cond1=t0, cond2=untreated, growth_rate=db_untreated,
             n_reps=self.n_reps,
-            transformation=self.transformation, test=self.test, score_level=score_level
+            transformation=self.fc_transformation, test=self.test, score_level=score_level,
+            **kwargs
         )
         tau_name, tau = runPhenoScore(
             self.adata, cond1=t0, cond2=treated, growth_rate=db_treated,
             n_reps=self.n_reps,
-            transformation=self.transformation, test=self.test, score_level=score_level
+            transformation=self.fc_transformation, test=self.test, score_level=score_level,
+            **kwargs
         )
         # TO-DO: warning / error if db_untreated and db_treated are too close, i.e. growth_rate ~= 0.
         rho_name, rho = runPhenoScore(
             self.adata, cond1=untreated, cond2=treated, growth_rate=np.abs(db_untreated - db_treated),
             n_reps=self.n_reps,
-            transformation=self.transformation, test=self.test, score_level=score_level
+            transformation=self.fc_transformation, test=self.test, score_level=score_level,
+            **kwargs
         )
 
         if not run_name: run_name = score_level
@@ -125,9 +144,17 @@ class PooledScreens(object):
 
         # get replicate level phenotype scores
         pdata_df = pd.concat([
-            runPhenoScoreForReplicate(self,'T0', untreated,'gamma',growth_factor_table).add_prefix('gamma_'),
-            runPhenoScoreForReplicate(self,'T0', treated,'tau',growth_factor_table).add_prefix('tau_'),
-            runPhenoScoreForReplicate(self ,untreated,treated,'rho',growth_factor_table).add_prefix('rho_')
+            runPhenoScoreForReplicate(
+                self.adata, x_label = x_label, y_label = y_label, score = score_label,
+                transformation=self.fc_transformation, 
+                growth_factor_table=growth_factor_table
+            ).add_prefix(f'{score_label}_')
+
+            for x_label, y_label, score_label in [
+                ('T0', untreated, 'gamma'),
+                ('T0', treated, 'tau'),
+                (untreated, treated, 'rho')
+            ]
         ],axis=1).T
         # add .pdata
         self.pdata = ad.AnnData(
@@ -136,7 +163,7 @@ class PooledScreens(object):
             var=self.adata.var
         )
         
-    def calculateFlowBasedScreen(self, low_bin, high_bin, score_level, run_name=None):
+    def calculateFlowBasedScreen(self, low_bin, high_bin, score_level, run_name=None, **kwargs):
         """
         Calculate phenotype scores for a flow-based screen dataset.
 
@@ -145,11 +172,13 @@ class PooledScreens(object):
             high_bin (str): name of the high bin condition
             score_level (str): name of the score level
             run_name (str): name for the phenotype calculation run
+            **kwargs: additional arguments to pass to runPhenoScore
         """
         # calculate phenotype scores
         delta_name, delta = runPhenoScore(
             self.adata, cond1=low_bin, cond2=high_bin, n_reps=self.n_reps,
-            transformation=self.transformation, test=self.test, score_level=score_level
+            transformation=self.fc_transformation, test=self.test, score_level=score_level,
+            **kwargs
         )
 
         if not run_name: run_name = score_level

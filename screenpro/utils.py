@@ -48,7 +48,7 @@ def find_low_counts(adata, filter_type='either', minimum_reads=50):
     adata.var['low_count'] = ~adata.var.index.isin(out.var.index.to_list())
 
 
-def ann_score_df(df_in, up_hit='resistance_hit', down_hit='sensitivity_hit', ctrl_label='non-targeting', threshold=10):
+def ann_score_df(df_in, up_hit='resistance_hit', down_hit='sensitivity_hit', ctrl_label='negCtrl', threshold=10):
     """
     Annotate score dataframe with hit labels using given `threshold`
     (i.e. `score/pseudo_sd * -np.log10(pvalue) >= threshold`).
