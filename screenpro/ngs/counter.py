@@ -30,6 +30,14 @@ class Counter:
         elif self.cas_type == 'cas12':
             raise NotImplementedError("Cas12 library is not yet implemented.")
         
+        # Check if the library has duplicate sequences and remove them
+        if library.duplicated('sequence').any():
+            shape_before_dedup = library.shape[0]
+            library = library.drop_duplicates(subset='sequence', keep='first')
+            shape_after_dedup = library.shape[0]
+            if verbose:
+                print(f"Warning: {shape_before_dedup - shape_after_dedup} duplicate sgRNA sequences found and removed.")
+
         # covert to polar DataFrame
         library = pl.from_pandas(library)
 
