@@ -106,7 +106,7 @@ def plot_volcano(ax, df_in, threshold, up_hit='resistance_hit', down_hit='sensit
     ax.legend()
 
 
-def label_as_black(ax, df_in, label, threshold, size=2, size_txt=None, 
+def label_as_black(ax, df_in, label, threshold, size=2, size_txt="auto",
                    ctrl_label = 'no-targeting',
                    t_x=.5, t_y=-0.1):
     df = prep_data(df_in, threshold, ctrl_label)
@@ -117,17 +117,19 @@ def label_as_black(ax, df_in, label, threshold, size=2, size_txt=None,
     ax.scatter(target_data['score'], target_data['-log10(pvalue)'],
                s=size, linewidth=0.5, edgecolors='black', facecolors='black', label='target')
 
-    if not size_txt:
+    if size_txt == None:
+        pass
+    elif size_txt == 'auto':
         size_txt = size * 2
+    else:
+        # Annotate the points
+        for i, _ in enumerate(target_data['target']):
+            txt = target_data['target'].iloc[i]
+            ax.annotate(txt, (target_data['score'].iloc[i] + t_x, target_data['-log10(pvalue)'].iloc[i] + t_y),
+                        color='black', size=size_txt)
 
-    # Annotate the points
-    for i, _ in enumerate(target_data['target']):
-        txt = target_data['target'].iloc[i]
-        ax.annotate(txt, (target_data['score'].iloc[i] + t_x, target_data['-log10(pvalue)'].iloc[i] + t_y),
-                    color='black', size=size_txt)
 
-
-def label_sensitivity_hit(ax, df_in, label, threshold, size=2, size_txt=None,
+def label_sensitivity_hit(ax, df_in, label, threshold, size=2, size_txt="auto",
                           ctrl_label = 'no-targeting',
                           t_x=.5, t_y=-0.1):
     df = prep_data(df_in, threshold, ctrl_label)
@@ -138,17 +140,19 @@ def label_sensitivity_hit(ax, df_in, label, threshold, size=2, size_txt=None,
     ax.scatter(target_data['score'], target_data['-log10(pvalue)'],
                s=size, linewidth=0.5, edgecolors='black', facecolors='#3182bd', label='target')
 
-    if not size_txt:
+    if size_txt == None:
+        pass
+    elif size_txt == 'auto':
         size_txt = size * 2
+    else:
+        # Annotate the points
+        for i, _ in enumerate(target_data['target']):
+            txt = target_data['target'].iloc[i]
+            ax.annotate(txt, (target_data['score'].iloc[i] + t_x, target_data['-log10(pvalue)'].iloc[i] + t_y),
+                        color='black', size=size_txt)
 
-    # Annotate the points
-    for i, _ in enumerate(target_data['target']):
-        txt = target_data['target'].iloc[i]
-        ax.annotate(txt, (target_data['score'].iloc[i] + t_x, target_data['-log10(pvalue)'].iloc[i] + t_y),
-                    color='black', size=size_txt)
 
-
-def label_resistance_hit(ax, df_in, label, threshold, size=2, size_txt=None, 
+def label_resistance_hit(ax, df_in, label, threshold, size=2, size_txt="auto",
                          ctrl_label = 'no-targeting',
                          t_x=.5, t_y=-0.1):
     df = prep_data(df_in, threshold, ctrl_label)
@@ -159,14 +163,16 @@ def label_resistance_hit(ax, df_in, label, threshold, size=2, size_txt=None,
     ax.scatter(target_data['score'], target_data['-log10(pvalue)'],
                s=size, linewidth=0.5, edgecolors='black', facecolors='#de2d26', label='target')
 
-    if not size_txt:
+    if size_txt == None:
+        pass
+    elif size_txt == 'auto':
         size_txt = size * 2
-
-    # Annotate the points
-    for i, _ in enumerate(target_data['target']):
-        txt = target_data['target'].iloc[i]
-        ax.annotate(txt, (target_data['score'].iloc[i] + t_x, target_data['-log10(pvalue)'].iloc[i] + t_y),
-                    color='black', size=size_txt)
+    else:
+        # Annotate the points
+        for i, _ in enumerate(target_data['target']):
+            txt = target_data['target'].iloc[i]
+            ax.annotate(txt, (target_data['score'].iloc[i] + t_x, target_data['-log10(pvalue)'].iloc[i] + t_y),
+                        color='black', size=size_txt)
 
 
 def plotReplicateScatter(ax, adat_in, x, y, title, min_val=None, max_val=None, log_transform=True):
