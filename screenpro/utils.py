@@ -35,7 +35,7 @@ def find_low_counts(adata, filter_type='either', minimum_reads=50):
     """
     count_bin = adata.X >= minimum_reads
     if filter_type == 'either':
-        out = adata[:, count_bin.any(axis=0)].copy()
+        out = adata[:, ~(~count_bin.all(axis=0))].copy()
     elif filter_type == 'all':
         out = adata[:, count_bin.all(axis=0)].copy()
 
