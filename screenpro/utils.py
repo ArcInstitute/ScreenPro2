@@ -38,7 +38,9 @@ def find_low_counts(adata, filter_type='either', minimum_reads=50):
         out = adata[:, ~(~count_bin.all(axis=0))].copy()
     elif filter_type == 'all':
         out = adata[:, count_bin.all(axis=0)].copy()
-
+    elif filter_type == 'sum':
+        out = adata[:, adata.to_df().sum(axis=0) >= minimum_reads].copy()
+    
     # print the number of removed variables
     n_removed = adata.shape[1] - out.shape[1]
     print(
