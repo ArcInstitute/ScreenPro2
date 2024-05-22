@@ -190,7 +190,7 @@ class PooledScreens(object):
         # save phenotype name for reference
         self._add_phenotype_results(f'delta:{delta_name}')
 
-    def getPhenotypeScores(self, run_name, score_name, threshold=5, ctrl_label='negCtrl', target_col='target',pvalue_column='ttest pvalue', score_column='score'):
+    def getPhenotypeScores(self, score_name, run_name='auto', threshold=5, ctrl_label='negCtrl', target_col='target',pvalue_column='ttest pvalue', score_column='score'):
         """
         Get phenotype scores for a given score level
 
@@ -203,9 +203,19 @@ class PooledScreens(object):
             pvalue_column (str): column name for the p-value, default is 'ttest pvalue'
             score_column (str): column name for the score, default is 'score'
         """
+        if run_name == 'auto':
+            if len(list(self.phenotypes.keys())) == 1:
+                run_name = list(self.phenotypes.keys())[0]
+            else:
+                raise ValueError(
+                    'Multiple phenotype calculation runs found.'
+                    'Please specify run_name. Available runs: '
+                    '' + ', '.join(self.phenotypes.keys())
+                )
+        
         if score_name not in self.phenotype_names:
             raise ValueError(f"Phenotype '{score_name}' not found in self.phenotype_names")
-        
+
         keep_col = [target_col, score_column, pvalue_column]
 
         out = ann_score_df(
@@ -216,7 +226,7 @@ class PooledScreens(object):
 
         return out
 
-    def getAnnotatedTable(self, run_name, threshold=5, ctrl_label='negCtrl', target_col='target',pvalue_column='ttest pvalue', score_column='score'):
+    def getAnnotatedTable(self, run_name='auto', threshold=5, ctrl_label='negCtrl', target_col='target',pvalue_column='ttest pvalue', score_column='score'):
         hit_dict = {
             'gamma':{
                 'up_hit':'up_hit',
@@ -232,6 +242,16 @@ class PooledScreens(object):
             }
         }
         
+        if run_name == 'auto':
+            if len(list(self.phenotypes.keys())) == 1:
+                run_name = list(self.phenotypes.keys())[0]
+            else:
+                raise ValueError(
+                    'Multiple phenotype calculation runs found.'
+                    'Please specify run_name. Available runs: '
+                    '' + ', '.join(self.phenotypes.keys())
+                )
+
         keep_col = [target_col, score_column, pvalue_column]
 
         scores = {score for score, col in self.phenotypes[run_name].columns}
