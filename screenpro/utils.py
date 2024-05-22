@@ -44,7 +44,7 @@ def find_low_counts(adata, filter_type='either', minimum_reads=50):
     # print the number of removed variables
     n_removed = adata.shape[1] - out.shape[1]
     print(
-        f"{n_removed} variables with less than {minimum_reads} reads in {filter_type} replicates / experiment"
+        f"{n_removed} variables with less than {minimum_reads} reads are removed. (filter_type:{filter_type})"
     )
 
     adata.var['low_count'] = ~adata.var.index.isin(out.var.index.to_list())
