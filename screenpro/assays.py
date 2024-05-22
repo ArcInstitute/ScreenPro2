@@ -216,6 +216,50 @@ class PooledScreens(object):
 
         return out
 
+    def getAnnotatedTable(self, run_name, threshold=5, ctrl_label='negCtrl', target_col='target',pvalue_column='ttest pvalue', score_column='score'):
+        hit_dict = {
+            'gamma':{
+                'up_hit':'up_hit',
+                'down_hit':'essential_hit'
+            },
+            'tau':{
+                'up_hit':'up_hit', 
+                'down_hit':'down_hit'
+            },
+            'rho':{
+                'up_hit':'resistance_hit', 
+                'down_hit':'sensitivity_hit'
+            }
+        }
+        
+        keep_col = [target_col, score_column, pvalue_column]
+
+        scores = {score for score, col in self.phenotypes[run_name].columns}
+        sort_var = self.adata.var.sort_values(['targetType','target']).index.to_list()
+        
+        df_list = {}
+        for score in scores:
+            score_tag = score.split(':')[0]
+            # get label
+            df_label = ann_score_df(
+                self.phenotypes[run_name][score].loc[:,keep_col],
+                up_hit=hit_dict[score_tag]['up_hit'],
+                down_hit=hit_dict[score_tag]['down_hit'],
+                ctrl_label=ctrl_label,
+                threshold=threshold
+            )['label']
+            # get replicate phe
+            df_phe_reps = self.pdata[self.pdata.obs.score.eq(score_tag)].to_df().T
+            
+            # make table
+            df = pd.concat([self.phenotypes['compare_reps'][score], df_phe_reps, df_label],axis=1).loc[sort_var,:]
+            
+            df_list.update({score:df})
+        
+        out = pd.concat(df_list,axis=1)
+        
+        return out
+
 
 class GImaps(object):
     pass
