@@ -190,7 +190,10 @@ class DrugScreenDashboard(DataDashboard):
         p.y_range.end = y_max
 
         # Add legend
-        p.legend.location = legend_loc
+        if legend_loc == False or legend_loc == None:
+            p.legend.visible = False
+        else:
+            p.legend.location = legend_loc
 
         p.title.text = title
         p.title.align = 'center'
