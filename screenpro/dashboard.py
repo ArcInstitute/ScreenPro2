@@ -40,7 +40,7 @@ class DrugScreenDashboard(DataDashboard):
         self.threshold = threshold
         self.ctrl_label = ctrl_label
         self.run_name = run_name
-        self.gamma_score_name = f'gamma:{untreated}_vs_{T0}'
+        self.gamma_score_name = f'gamma:{untreated}_vs_{t0}'
         self.rho_score_name = f'rho:{treated}_vs_{untreated}'
         self.plots = {}
         super().__init__(self)
