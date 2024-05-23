@@ -37,6 +37,7 @@ class DataDashboard:
 class DrugScreenDashboard(DataDashboard):
     
     def __init__(self, screen, treated, untreated, t0='T0', threshold=3, ctrl_label='negative_control',run_name='auto'):
+        self.screen = screen
         self.threshold = threshold
         self.ctrl_label = ctrl_label
         self.run_name = run_name
