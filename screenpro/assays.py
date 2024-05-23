@@ -203,6 +203,21 @@ class PooledScreens(object):
             pvalue_column (str): column name for the p-value, default is 'ttest pvalue'
             score_column (str): column name for the score, default is 'score'
         """
+        hit_dict = {
+            'gamma':{
+                'up_hit':'up_hit',
+                'down_hit':'essential_hit'
+            },
+            'tau':{
+                'up_hit':'up_hit', 
+                'down_hit':'down_hit'
+            },
+            'rho':{
+                'up_hit':'resistance_hit', 
+                'down_hit':'sensitivity_hit'
+            }
+        }
+
         if run_name == 'auto':
             if len(list(self.phenotypes.keys())) == 1:
                 run_name = list(self.phenotypes.keys())[0]
@@ -217,10 +232,12 @@ class PooledScreens(object):
             raise ValueError(f"Phenotype '{score_name}' not found in self.phenotype_names")
 
         keep_col = [target_col, score_column, pvalue_column]
-
+        score_tag = score_name.split(':')[0]
         out = ann_score_df(
             self.phenotypes[run_name][score_name].loc[:,keep_col],
             ctrl_label=ctrl_label, 
+            up_hit=hit_dict[score_tag]['up_hit'],
+            down_hit=hit_dict[score_tag]['down_hit'],
             threshold=threshold
         )
 
@@ -254,15 +271,15 @@ class PooledScreens(object):
 
         keep_col = [target_col, score_column, pvalue_column]
 
-        scores = {score for score, col in self.phenotypes[run_name].columns}
+        score_names = {s for s, col in self.phenotypes[run_name].columns}
         sort_var = self.adata.var.sort_values(['targetType','target']).index.to_list()
         
         df_list = {}
-        for score in scores:
-            score_tag = score.split(':')[0]
+        for score_name in score_names:
+            score_tag = score_name.split(':')[0]
             # get label
             df_label = ann_score_df(
-                self.phenotypes[run_name][score].loc[:,keep_col],
+                self.phenotypes[run_name][score_name].loc[:,keep_col],
                 up_hit=hit_dict[score_tag]['up_hit'],
                 down_hit=hit_dict[score_tag]['down_hit'],
                 ctrl_label=ctrl_label,
@@ -272,9 +289,11 @@ class PooledScreens(object):
             df_phe_reps = self.pdata[self.pdata.obs.score.eq(score_tag)].to_df().T
             
             # make table
-            df = pd.concat([self.phenotypes['compare_reps'][score], df_phe_reps, df_label],axis=1).loc[sort_var,:]
+            df = pd.concat([
+                self.phenotypes['compare_reps'][score_name], df_phe_reps, df_label
+            ],axis=1).loc[sort_var,:]
             
-            df_list.update({score:df})
+            df_list.update({score_name:df})
         
         out = pd.concat(df_list,axis=1)
         
