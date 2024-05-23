@@ -14,7 +14,7 @@ class DataDashboard:
     def __init__(self):
         pass
 
-    def _new_plot(self,TOOLTIPS,width,height,toolbar_location):
+    def _new_plot(self,title,tooltips,width,height,toolbar_location):
         
         TOOLS = "box_select,box_zoom,lasso_select,reset,save,wheel_zoom,pan,copy,undo,redo,reset,examine,fullscreen"
 
@@ -22,7 +22,7 @@ class DataDashboard:
         p = bokeh.plotting.figure(
             sizing_mode="stretch_width",
             tools=TOOLS,
-            tooltips=TOOLTIPS,
+            tooltips=tooltips,
             toolbar_location=toolbar_location,
             title=title,
             max_width=width, height=height, 
@@ -102,7 +102,13 @@ class DrugScreenDashboard(DataDashboard):
             ("gamma label", "@gamma_label"),        
         ]
 
-        p = self._new_plot(TOOLTIPS,width,height,toolbar_location)
+        p = self._new_plot(
+            title=title,
+            tooltips=TOOLTIPS,
+            width=width,
+            height=height,
+            toolbar_location=toolbar_location
+        )
 
         source = bokeh.models.ColumnDataSource(
             df.loc[df[hit_label_col] == 'target_non_hit',:]
