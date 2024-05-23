@@ -3,7 +3,7 @@
 ## Gilbart Lab, UCSF / Arc Institute.
 ## Multi-Omics Tech Center, Arc Insititue.
 
-improt numpy as np
+import numpy as np
 import pandas as pd
 import bokeh
 import bokeh.plotting
