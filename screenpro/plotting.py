@@ -88,9 +88,9 @@ def plot_volcano(ax, df_in, threshold, up_hit='resistance_hit', down_hit='sensit
                alpha=0.9, s=dot_size, c='#fcae91', label=up_hit)
     ax.scatter(df.loc[df['label'] == down_hit, 'score'], df.loc[df['label'] == down_hit, '-log10(pvalue)'],
                alpha=0.9, s=dot_size, c='#bdd7e7', label=down_hit)
-    ax.scatter(df.loc[df['label'] == 'non-targeting', 'score'],
-               df.loc[df['label'] == 'non-targeting', '-log10(pvalue)'],
-               alpha=0.1, s=dot_size, c='gray', label='non-targeting')
+    ax.scatter(df.loc[df['label'] == ctrl_label, 'score'],
+               df.loc[df['label'] == ctrl_label, '-log10(pvalue)'],
+               alpha=0.1, s=dot_size, c='gray', label=ctrl_label)
 
     # Set x-axis and y-axis labels
     ax.set_xlabel('phenotype score')
