@@ -43,7 +43,7 @@ class DrugScreenDashboard(DataDashboard):
         self.gamma_score_name = f'gamma:{untreated}_vs_{t0}'
         self.rho_score_name = f'rho:{treated}_vs_{untreated}'
         self.plots = {}
-        super().__init__(self)
+        super().__init__()
 
     def _prep_data(self):
 
