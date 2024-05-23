@@ -92,6 +92,11 @@ class DrugScreenDashboard(DataDashboard):
 
         df = self._prep_data(self.screen)
 
+        if y_max == 'auto': y_max = df[y_source].max() * 1.2
+        if x_max == 'auto': x_max = df[x_source].max() * 1.2
+        if y_min == 'auto': y_min = df[y_source].min() * 1.2
+        if x_min == 'auto': x_min = df[x_source].min() * 1.2
+
         TOOLTIPS = [
             ("name", "@target"),
             ("rho score", "@rho_score"),
@@ -200,7 +205,7 @@ class DrugScreenDashboard(DataDashboard):
         yaxis_label='-log10(p-value)',
         up_hit='resistance_hit', down_hit='sensitivity_hit',
         hit_label_col='rho_label',
-        x_min=-2.5, x_max=2.5, y_min=0, y_max=5.5,
+        x_min=-2.5, x_max=2.5, y_min=0, y_max='auto',
         return_html=True,
         **kwargs
         ):
@@ -227,7 +232,7 @@ class DrugScreenDashboard(DataDashboard):
         yaxis_label='-log10(p-value)',
         up_hit='up_hit', down_hit='essential_hit',
         hit_label_col='gamma_label',
-        x_min=-2.5, x_max=2.5, y_min=0, y_max=5.5,
+        x_min=-2.5, x_max=2.5, y_min=0, y_max='auto',
         return_html=True,
         **kwargs
         ):
