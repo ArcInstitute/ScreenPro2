@@ -190,7 +190,7 @@ class PooledScreens(object):
         # save phenotype name for reference
         self._add_phenotype_results(f'delta:{delta_name}')
 
-    def getPhenotypeScores(self, run_name, score_name, threshold=5, ctrl_label='negCtrl', target_col='target',pvalue_column='ttest pvalue', score_column='score'):
+    def getPhenotypeScores(self, score_name, run_name='auto', threshold=5, ctrl_label='negCtrl', target_col='target',pvalue_column='ttest pvalue', score_column='score'):
         """
         Get phenotype scores for a given score level
 
@@ -203,17 +203,100 @@ class PooledScreens(object):
             pvalue_column (str): column name for the p-value, default is 'ttest pvalue'
             score_column (str): column name for the score, default is 'score'
         """
+        hit_dict = {
+            'gamma':{
+                'up_hit':'up_hit',
+                'down_hit':'essential_hit'
+            },
+            'tau':{
+                'up_hit':'up_hit', 
+                'down_hit':'down_hit'
+            },
+            'rho':{
+                'up_hit':'resistance_hit', 
+                'down_hit':'sensitivity_hit'
+            }
+        }
+
+        if run_name == 'auto':
+            if len(list(self.phenotypes.keys())) == 1:
+                run_name = list(self.phenotypes.keys())[0]
+            else:
+                raise ValueError(
+                    'Multiple phenotype calculation runs found.'
+                    'Please specify run_name. Available runs: '
+                    '' + ', '.join(self.phenotypes.keys())
+                )
+        
         if score_name not in self.phenotype_names:
             raise ValueError(f"Phenotype '{score_name}' not found in self.phenotype_names")
-        
-        keep_col = [target_col, score_column, pvalue_column]
 
+        keep_col = [target_col, score_column, pvalue_column]
+        score_tag = score_name.split(':')[0]
         out = ann_score_df(
             self.phenotypes[run_name][score_name].loc[:,keep_col],
             ctrl_label=ctrl_label, 
+            up_hit=hit_dict[score_tag]['up_hit'],
+            down_hit=hit_dict[score_tag]['down_hit'],
             threshold=threshold
         )
 
+        return out
+
+    def getAnnotatedTable(self, run_name='auto', threshold=5, ctrl_label='negCtrl', target_col='target',pvalue_column='ttest pvalue', score_column='score'):
+        hit_dict = {
+            'gamma':{
+                'up_hit':'up_hit',
+                'down_hit':'essential_hit'
+            },
+            'tau':{
+                'up_hit':'up_hit', 
+                'down_hit':'down_hit'
+            },
+            'rho':{
+                'up_hit':'resistance_hit', 
+                'down_hit':'sensitivity_hit'
+            }
+        }
+        
+        if run_name == 'auto':
+            if len(list(self.phenotypes.keys())) == 1:
+                run_name = list(self.phenotypes.keys())[0]
+            else:
+                raise ValueError(
+                    'Multiple phenotype calculation runs found.'
+                    'Please specify run_name. Available runs: '
+                    '' + ', '.join(self.phenotypes.keys())
+                )
+
+        keep_col = [target_col, score_column, pvalue_column]
+
+        score_names = {s for s, col in self.phenotypes[run_name].columns}
+        sort_var = self.adata.var.sort_values(['targetType','target']).index.to_list()
+        
+        df_list = {}
+        for score_name in score_names:
+            score_tag = score_name.split(':')[0]
+            # get label
+            df_label = ann_score_df(
+                self.phenotypes[run_name][score_name].loc[:,keep_col],
+                up_hit=hit_dict[score_tag]['up_hit'],
+                down_hit=hit_dict[score_tag]['down_hit'],
+                ctrl_label=ctrl_label,
+                threshold=threshold
+            )['label']
+            # get replicate phe
+            df_phe_reps = self.pdata[self.pdata.obs.score.eq(score_tag)].to_df().T
+            
+            # make table
+            df = pd.concat([
+                self.phenotypes['compare_reps'][score_name], df_phe_reps, df_label
+            ],axis=1).loc[sort_var,:]
+            
+            df_list.update({score_name:df})
+        
+        out = pd.concat(df_list,axis=1)
+        
         return out
 
 

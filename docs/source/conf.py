@@ -43,6 +43,7 @@ autodoc_mock_imports = [
     "polars",
     "biobear",
     "numba",
+    "bokeh",
     "pydeseq2",
     "watermark"
 ]
