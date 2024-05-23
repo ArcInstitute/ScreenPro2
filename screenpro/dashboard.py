@@ -47,7 +47,7 @@ class DrugScreenDashboard(DataDashboard):
 
     def _prep_data(self):
 
-        gamma = screen.getPhenotypeScores(
+        gamma = self.screen.getPhenotypeScores(
             run_name=self.run_name,
             score_name=self.gamma_score_name,
             ctrl_label=self.ctrl_label,
