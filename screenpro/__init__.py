@@ -1,8 +1,11 @@
 from . import plotting as pl
 from . import phenoscore as ps
+
 from . import utils
 from . import ngs
 from . import load
+from . import dashboard
+
 from .ngs import Counter
 from .assays import PooledScreens, GImaps
 
