@@ -7,7 +7,33 @@ import pandas as pd
 import bokeh
 
 
-class DrugScreenDashboard:
+class DataDashboard:
+
+    def __init__(self):
+        pass
+
+    def _new_plot(self,TOOLTIPS,width,height,toolbar_location):
+        
+        TOOLS = "box_select,box_zoom,lasso_select,reset,save,wheel_zoom,pan,copy,undo,redo,reset,examine,fullscreen"
+
+        # create a new plot with a specific size
+        p = bokeh.plotting.figure(
+            sizing_mode="stretch_width",
+            tools=TOOLS,
+            tooltips=TOOLTIPS,
+            toolbar_location=toolbar_location,
+            title=title,
+            max_width=width, height=height, 
+        )
+        p.toolbar.autohide = True
+        return p
+    
+    def _get_html(self, p):
+        html = bokeh.embed.file_html(p, bokeh.resources.CDN, "")
+        return html
+
+
+class DrugScreenDashboard(DataDashboard):
     
     def __init__(self, screen, treated, untreated, t0='T0', threshold=3, ctrl_label='negative_control',run_name='auto'):
         self.threshold = threshold
@@ -16,6 +42,7 @@ class DrugScreenDashboard:
         self.gamma_score_name = f'gamma:{untreated}_vs_{T0}'
         self.rho_score_name = f'rho:{treated}_vs_{untreated}'
         self.plots = {}
+        super().__init__(self)
 
     def _prep_data(self):
 
@@ -62,12 +89,6 @@ class DrugScreenDashboard:
 
         df = self._prep_data()
 
-        # if filter_labels is not None:
-        #     df = df[df['label'].isin(filter_labels)]
-
-        TOOLS = "box_select,box_zoom,lasso_select,reset,save,wheel_zoom,pan,copy,undo,redo,reset,examine,fullscreen"
-
-        # create a new plot with a specific size
         TOOLTIPS = [
             ("name", "@target"),
             ("rho score", "@rho_score"),
@@ -77,15 +98,8 @@ class DrugScreenDashboard:
             ("gamma p-value", "@gamma_pvalue"),
             ("gamma label", "@gamma_label"),        
         ]
-        p = bokeh.plotting.figure(
-            sizing_mode="stretch_width",
-            tools=TOOLS,
-            tooltips=TOOLTIPS,
-            toolbar_location=toolbar_location,
-            title=title,
-            max_width=width, height=height, 
-        )
-        p.toolbar.autohide = True
+
+        p = self._new_plot(TOOLTIPS,width,height,toolbar_location)
 
         source = bokeh.models.ColumnDataSource(
             df.loc[df[hit_label_col] == 'target_non_hit',:]
@@ -169,10 +183,6 @@ class DrugScreenDashboard:
         p.title.text_font_style = 'bold'
 
         return p
-
-    def _get_html(self, p):
-        html = bokeh.embed.file_html(p, bokeh.resources.CDN, "")
-        return html
     
     def RhoVolcanoPlot(
         self,
