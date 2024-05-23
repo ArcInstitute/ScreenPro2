@@ -46,9 +46,9 @@ class DrugScreenDashboard(DataDashboard):
         self.plots = {}
         super().__init__()
 
-    def _prep_data(self):
+    def _prep_data(self,screen):
 
-        gamma = self.screen.getPhenotypeScores(
+        gamma = screen.getPhenotypeScores(
             run_name=self.run_name,
             score_name=self.gamma_score_name,
             ctrl_label=self.ctrl_label,
@@ -89,7 +89,7 @@ class DrugScreenDashboard(DataDashboard):
             toolbar_location='below',
         ):
 
-        df = self._prep_data()
+        df = self._prep_data(self.screen)
 
         TOOLTIPS = [
             ("name", "@target"),
