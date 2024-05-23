@@ -5,6 +5,7 @@
 
 import pandas as pd
 import bokeh
+import bokeh.plotting
 
 
 class DataDashboard:
