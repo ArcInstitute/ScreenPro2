@@ -210,13 +210,15 @@ class DrugScreenPlotter:
 
     def drawVolcanoRho(
             self, ax,
+            rho_df=None,
             dot_size=1,
             xlabel='auto',
             ylabel='-log10(pvalue)',
             xlims=(-5, 5),
             ylims=(0.1, 6)
             ):
-        _, _, rho_df = self._prep_data()
+        if rho_df is None:
+            _, _, rho_df = self._prep_data()
         if xlabel == 'auto':
             xlabel = self.rho_score_name.replace(':', ': ').replace('_', ' ')
         
@@ -227,13 +229,15 @@ class DrugScreenPlotter:
     
     def drawVolcanoGamma(
             self, ax,
+            gamma_df=None,
             dot_size=1,
             xlabel='auto',
             ylabel='-log10(pvalue)',
             xlims=(-5, 5),
             ylims=(0.1, 6)
             ):
-        gamma_df, _, _ = self._prep_data()
+        if gamma_df is None:
+            gamma_df, _, _ = self._prep_data()
         if xlabel == 'auto':
             xlabel = self.gamma_score_name.replace(':', ': ').replace('_', ' ')
         
@@ -244,13 +248,15 @@ class DrugScreenPlotter:
         
     def drawVolcanoTau(
             self, ax,
+            tau_df=None,
             dot_size=1,
             xlabel='auto',
             ylabel='-log10(pvalue)',
             xlims=(-5, 5),
             ylims=(0.1, 6)
             ):
-        _, tau_df, _, = self._prep_data()
+        if tau_df is None:
+            _, tau_df, _, = self._prep_data()
         if xlabel == 'auto':
             xlabel = self.tau_score_name.replace(':', ': ').replace('_', ' ')
         
