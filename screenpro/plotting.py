@@ -160,7 +160,7 @@ class Volcano(PheScatterPlot):
              dot_size=1,
              xlims=(-5, 5),
              ylim=6):
-        df = self._prepare_score_df(df_in)
+        df = self._prepare_score_df(df_in, self.threshold, self.ctrl_label)
         xlim_l, xlim_r = xlims
 
         # Scatter plot for each category
@@ -195,21 +195,27 @@ class Volcano(PheScatterPlot):
 
     def label_as_black(self, ax, df_in, label, size=2, size_txt="auto",
                        t_x=.5, t_y=-0.1):
-        self._label_by_color(ax, df_in, label, size, size_txt,
+        self._label_by_color(ax, df_in, label, 
+                             threshold=self.threshold, ctrl_label=self.ctrl_label,
+                             size=size, size_txt=size_txt,
                              edgecolors='black', facecolors='black',
                              textcolor='black',
                              t_x=t_x, t_y=t_y)
     
     def label_sensitivity_hit(self, ax, df_in, label, size=2, size_txt="auto",
                               t_x=.5, t_y=-0.1):
-        self._label_by_color(ax, df_in, label, size, size_txt,
+        self._label_by_color(ax, df_in, label, 
+                             threshold=self.threshold, ctrl_label=self.ctrl_label,
+                             size=size, size_txt=size_txt,
                              edgecolors='black', facecolors='#3182bd',
                              textcolor='black',
                              t_x=t_x, t_y=t_y)
     
     def label_resistance_hit(self, ax, df_in, label, size=2, size_txt="auto",
                              t_x=.5, t_y=-0.1):
-        self._label_by_color(ax, df_in, label, size, size_txt,
+        self._label_by_color(ax, df_in, label, 
+                             threshold=self.threshold, ctrl_label=self.ctrl_label,
+                             size=size, size_txt=size_txt,
                              edgecolors='black', facecolors='#de2d26',
                              textcolor='black',
                              t_x=t_x, t_y=t_y)
@@ -238,8 +244,8 @@ class RhoGammaScatter(PheScatterPlot):
             threshold=self.threshold
         )
 
-        rho = self._prepare_score_df(rho)
-        gamma = self._prepare_score_df(gamma)
+        rho = self._prepare_score_df(rho, self.threshold, self.ctrl_label)
+        gamma = self._prepare_score_df(gamma, self.threshold, self.ctrl_label)
 
         return rho, gamma
         
@@ -289,7 +295,9 @@ class RhoGammaScatter(PheScatterPlot):
     
     def label_as_black(self, ax, label, size=2, size_txt="auto",
                        t_x=.5, t_y=-0.1):
-        self._label_by_color(ax, label, size, size_txt,
+        self._label_by_color(ax, label,
+                             threshold=self.threshold, ctrl_label=self.ctrl_label,
+                             size=size, size_txt=size_txt,                             
                              edgecolors='black', facecolors='black',
                              textcolor='black',
                              t_x=t_x, t_y=t_y)
@@ -297,7 +305,9 @@ class RhoGammaScatter(PheScatterPlot):
     def label_sensitivity_hit(self, ax, label, size=2, size_txt="auto",
                               t_x=.5, t_y=-0.1):
     
-        self._label_by_color(ax, label, size, size_txt,
+        self._label_by_color(ax, label, 
+                             threshold=self.threshold, ctrl_label=self.ctrl_label,
+                             size=size, size_txt=size_txt,                             
                              edgecolors='black', facecolors='#3182bd',
                              textcolor='black',
                              t_x=t_x, t_y=t_y)
@@ -305,7 +315,9 @@ class RhoGammaScatter(PheScatterPlot):
     def label_resistance_hit(self, ax, label, size=2, size_txt="auto",
                              t_x=.5, t_y=-0.1):
         
-        self._label_by_color(ax, label, size, size_txt,
+        self._label_by_color(ax, label, 
+                             threshold=self.threshold, ctrl_label=self.ctrl_label,
+                             size=size, size_txt=size_txt,                             
                              edgecolors='black', facecolors='#de2d26',
                              textcolor='black',
                              t_x=t_x, t_y=t_y)
