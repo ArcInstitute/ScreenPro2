@@ -119,25 +119,13 @@ class DrugScreenPlots:
             ctrl_label=self.ctrl_label,
             threshold=self.threshold,
         )
+        gamma['-log10(pvalue)'] = np.log10(gamma.pvalue) * -1
 
         rho = self.screen.getPhenotypeScores(
             run_name=self.run_name,
             score_name=self.rho_score_name,
             ctrl_label=self.ctrl_label,
             threshold=self.threshold
-        )
-
-        gamma = ann_score_df(
-            gamma,
-            up_hit='up_hit', down_hit='essential_hit',
-            threshold=self.threshold, ctrl_label=self.ctrl_label
-        )
-        gamma['-log10(pvalue)'] = np.log10(gamma.pvalue) * -1
-
-        rho = ann_score_df(
-            rho, 
-            up_hit='resistance_hit', down_hit='sensitivity_hit',
-            threshold=self.threshold, ctrl_label=self.ctrl_label
         )
         rho['-log10(pvalue)'] = np.log10(rho.pvalue) * -1
                            
