@@ -157,7 +157,7 @@ class Volcano(PheScatterPlot):
              dot_size=1,
              xlims=(-5, 5),
              ylim=6):
-        df = self._prepare_score_df(df_in, self.threshold, self.ctrl_label)
+        df = self._prepare_score_df(df_in)
         xlim_l, xlim_r = xlims
 
         # Scatter plot for each category
@@ -233,8 +233,8 @@ class RhoGammaScatter(PheScatterPlot):
             threshold=self.threshold
         )
 
-        rho = self._prepare_score_df(rho, self.threshold, self.ctrl_label)
-        gamma = self._prepare_score_df(gamma, self.threshold, self.ctrl_label)
+        rho = self._prepare_score_df(rho)
+        gamma = self._prepare_score_df(gamma)
 
         return rho, gamma
         
