@@ -113,8 +113,8 @@ class DrugScreenPlotter:
         self.tau_score_name = f'tau:{treated}_vs_{t0}'
 
     def _label_by_color(self, ax, df_in, label, 
+                        x_col, y_col,
                         size=2, size_txt="auto",
-                        x_col='score', y_col='-log10(pvalue)',
                         edgecolors='black', facecolors='black',
                         textcolor='black',
                         t_x=.5, t_y=-0.1):
@@ -307,25 +307,35 @@ class DrugScreenPlotter:
         # Add legend
         ax.legend()
         
-    def label_as_black(self, ax, df_in, label, size=2, size_txt="auto",
+    def label_as_black(self, ax, df_in, label, 
+                       x_col='score', y_col='-log10(pvalue)',
+                       size=2, size_txt="auto",
+
                        t_x=.5, t_y=-0.1):
         self._label_by_color(ax, df_in, label, 
+                             x_col=x_col, y_col=y_col,
                              size=size, size_txt=size_txt,
                              edgecolors='black', facecolors='black',
                              textcolor='black',
                              t_x=t_x, t_y=t_y)
     
-    def label_sensitivity_hit(self, ax, df_in, label, size=2, size_txt="auto",
+    def label_sensitivity_hit(self, ax, df_in, label, 
+                              x_col='score', y_col='-log10(pvalue)',
+                              size=2, size_txt="auto",
                               t_x=.5, t_y=-0.1):
         self._label_by_color(ax, df_in, label, 
+                             x_col=x_col, y_col=y_col,
                              size=size, size_txt=size_txt,
                              edgecolors='black', facecolors='#3182bd',
                              textcolor='black',
                              t_x=t_x, t_y=t_y)
     
-    def label_resistance_hit(self, ax, df_in, label, size=2, size_txt="auto",
+    def label_resistance_hit(self, ax, df_in, label, 
+                             x_col='score', y_col='-log10(pvalue)',
+                             size=2, size_txt="auto",
                              t_x=.5, t_y=-0.1):
         self._label_by_color(ax, df_in, label, 
+                             x_col=x_col, y_col=y_col,
                              size=size, size_txt=size_txt,
                              edgecolors='black', facecolors='#de2d26',
                              textcolor='black',
