@@ -153,7 +153,7 @@ class DrugScreenPlotter:
 
         tau = self.screen.getPhenotypeScores(
             run_name=self.run_name,
-            score_name='tau',
+            score_name=self.tau_score_name,
             ctrl_label=self.ctrl_label,
             threshold=self.threshold
         )
