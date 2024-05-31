@@ -102,7 +102,7 @@ def plotReplicateScatter(ax, adat_in, x, y, title, min_val=None, max_val=None, l
 
 ## Phenotype plotting functions
 
-class DrugScreenPlots:
+class DrugScreenPlotter:
     def __init__(self, screen, treated, untreated, t0='T0', threshold=3, ctrl_label='negative_control',run_name='auto'):
         self.screen = screen
         self.threshold = threshold
@@ -110,35 +110,16 @@ class DrugScreenPlots:
         self.run_name = run_name
         self.gamma_score_name = f'gamma:{untreated}_vs_{t0}'
         self.rho_score_name = f'rho:{treated}_vs_{untreated}'
+        self.tau_score_name = f'tau:{treated}_vs_{t0}'
 
-    def _prep_data(self):
-
-        gamma = self.screen.getPhenotypeScores(
-            run_name=self.run_name,
-            score_name=self.gamma_score_name,
-            ctrl_label=self.ctrl_label,
-            threshold=self.threshold,
-        )
-        gamma['-log10(pvalue)'] = np.log10(gamma.pvalue) * -1
-
-        rho = self.screen.getPhenotypeScores(
-            run_name=self.run_name,
-            score_name=self.rho_score_name,
-            ctrl_label=self.ctrl_label,
-            threshold=self.threshold
-        )
-        rho['-log10(pvalue)'] = np.log10(rho.pvalue) * -1
-                           
-        return gamma, rho
-    
     def _label_by_color(self, ax, df_in, label, 
                         size=2, size_txt="auto",
                         x_col='score', y_col='-log10(pvalue)',
                         edgecolors='black', facecolors='black',
                         textcolor='black',
                         t_x=.5, t_y=-0.1):
-        df = self._prepare_score_df(df_in, self.threshold, self.ctrl_label)
-
+        
+        df = df_in.copy()
         target_data = df[df['target'] == label]
 
         # Scatter plot for labeled data
@@ -160,24 +141,42 @@ class DrugScreenPlots:
                 ax.annotate(txt, (target_data[x_col].iloc[i] + t_x, target_data[y_col].iloc[i] + t_y),
                             color=textcolor, size=size_txt)
 
-    def volcanoPlot(self, ax, score,
-             xlabel='phenotype score',
-             ylabel='-log10(pvalue)',
-             dot_size=1,
-             xlims=(-5, 5),
-             ylims=(0.1,6)
+    def _prep_data(self):
+
+        gamma = self.screen.getPhenotypeScores(
+            run_name=self.run_name,
+            score_name=self.gamma_score_name,
+            ctrl_label=self.ctrl_label,
+            threshold=self.threshold,
+        )
+        gamma['-log10(pvalue)'] = np.log10(gamma.pvalue) * -1
+
+        tau = self.screen.getPhenotypeScores(
+            run_name=self.run_name,
+            score_name='tau',
+            ctrl_label=self.ctrl_label,
+            threshold=self.threshold
+        )
+        tau['-log10(pvalue)'] = np.log10(tau.pvalue) * -1
+
+        rho = self.screen.getPhenotypeScores(
+            run_name=self.run_name,
+            score_name=self.rho_score_name,
+            ctrl_label=self.ctrl_label,
+            threshold=self.threshold
+        )
+        rho['-log10(pvalue)'] = np.log10(rho.pvalue) * -1
+
+        return gamma, tau, rho
+    
+    def _volcano(
+            self, ax, df, up_hit, down_hit,
+            xlabel='phenotype score',
+            ylabel='-log10(pvalue)',
+            dot_size=1,
+            xlims=(-5, 5),
+            ylims=(0.1,6)
             ):
-        gamma, rho = self._prep_data()
-        
-        if score == 'gamma':
-            df = gamma
-            up_hit = 'up_hit'
-            down_hit = 'essential_hit'
-        
-        elif score == 'rho':
-            df = rho
-            up_hit = 'resistance_hit'
-            down_hit = 'sensitivity_hit'
         
         # Scatter plot for each category
         ax.scatter( df.loc[df['label'] == 'target_non_hit', 'score'],
@@ -209,14 +208,67 @@ class DrugScreenPlots:
         # Add legend
         ax.legend()
 
-    def scatterRhoGamma(self, ax,
-             dot_size=1,
-             xlabel='rho score',
-             ylabel='gamma score',
-             xlims=(-5, 5),
-             ylims=(-5, 5)):
+    def drawVolcanoRho(
+            self, ax,
+            dot_size=1,
+            xlabel='auto',
+            ylabel='-log10(pvalue)',
+            xlims=(-5, 5),
+            ylims=(0.1, 6)
+            ):
+        _, _, rho_df = self._prep_data()
+        if xlabel == 'auto':
+            xlabel = self.rho_score_name
+        
+        self._volcano(ax, rho_df, 
+                      up_hit='resistance_hit', down_hit='sensitivity_hit',
+                      xlabel=xlabel, ylabel=ylabel,
+                      dot_size=dot_size, xlims=xlims, ylims=ylims)
+    
+    def drawVolcanoGamma(
+            self, ax,
+            dot_size=1,
+            xlabel='auto',
+            ylabel='-log10(pvalue)',
+            xlims=(-5, 5),
+            ylims=(0.1, 6)
+            ):
+        gamma_df, _, _ = self._prep_data()
+        if xlabel == 'auto':
+            xlabel = self.gamma_score_name
+        
+        self._volcano(ax, gamma_df, 
+                      up_hit='up_hit', down_hit='essential_hit',
+                      xlabel=xlabel, ylabel=ylabel,
+                      dot_size=dot_size, xlims=xlims, ylims=ylims)
+        
+    def drawVolcanoTau(
+            self, ax,
+            dot_size=1,
+            xlabel='auto',
+            ylabel='-log10(pvalue)',
+            xlims=(-5, 5),
+            ylims=(0.1, 6)
+            ):
+        _, tau_df, _, = self._prep_data()
+        if xlabel == 'auto':
+            xlabel = self.tau_score_name
+        
+        self._volcano(ax, tau_df, 
+                      up_hit='up_hit', down_hit='down_hit',
+                      xlabel=xlabel, ylabel=ylabel,
+                      dot_size=dot_size, xlims=xlims, ylims=ylims)
 
-        rho_df, gamma_df = self._prep_data()
+    def drawRhoGammaScatter(
+            self, ax,
+            dot_size=1,
+            xlabel='rho score',
+            ylabel='gamma score',
+            xlims=(-5, 5),
+            ylims=(-5, 5)
+            ):
+
+        gamma_df, _, rho_df = self._prep_data()
         
         # color by rho score labels
         up_hit = 'resistance_hit'
