@@ -104,25 +104,26 @@ def plotReplicateScatter(ax, adat_in, x, y, title, min_val=None, max_val=None, l
 
 class PheScatterPlot:
 
-    def __init__(self,threshold=3,ctrl_label='no-targeting') -> None:
-        self.threshold = threshold
-        self.ctrl_label = ctrl_label
+    def __init__(self) -> None:
+        pass
 
-    def _prepare_score_df(self, df_in):
+    def _prepare_score_df(self, df_in,threshold,ctrl_label):
         df = df_in.copy()
 
-        df = ann_score_df(df, self.threshold, self.ctrl_label)
+        df = ann_score_df(df, threshold, ctrl_label)
 
         df['-log10(pvalue)'] = np.log10(df.pvalue) * -1
 
         return df
     
-    def _label_by_color(self, ax, df_in, label, size=2, size_txt="auto",
+    def _label_by_color(self, ax, df_in, label, 
+                        threshold,ctrl_label,
+                        size=2, size_txt="auto",
                         x_col='score', y_col='-log10(pvalue)',
                         edgecolors='black', facecolors='black',
                         textcolor='black',
                         t_x=.5, t_y=-0.1):
-        df = self._prepare_score_df(df_in, self.threshold, self.ctrl_label)
+        df = self._prepare_score_df(df_in, threshold, ctrl_label)
 
         target_data = df[df['target'] == label]
 
@@ -149,7 +150,9 @@ class PheScatterPlot:
 class Volcano(PheScatterPlot):
 
     def __init__(self, threshold=3, ctrl_label='no-targeting') -> None:
-        super().__init__(threshold, ctrl_label)
+        self.threshold = threshold
+        self.ctrl_label = ctrl_label
+        super().__init__()
 
     def plot(self, ax, df_in, up_hit='resistance_hit', down_hit='sensitivity_hit', 
              xlabel='phenotype score',
@@ -214,8 +217,10 @@ class Volcano(PheScatterPlot):
 
 class RhoGammaScatter(PheScatterPlot):
     def __init__(self, screen, threshold=3, ctrl_label='no-targeting') -> None:
+        self.threshold = threshold
+        self.ctrl_label = ctrl_label
         self.screen = screen
-        super().__init__(threshold, ctrl_label)
+        super().__init__()
 
     def _prep_data(self):
 
