@@ -102,22 +102,25 @@ def plotReplicateScatter(ax, adat_in, x, y, title, min_val=None, max_val=None, l
 
 ## Phenotype plotting functions
 
-class PheScatterPlot:
-
-    def __init__(self, threshold, ctrl_label) -> None:
+class DrugScreenPlots:
+    def __init__(self, screen, treated, untreated, t0='T0', threshold=3, ctrl_label='negative_control',run_name='auto'):
+        self.screen = screen
         self.threshold = threshold
         self.ctrl_label = ctrl_label
+        self.run_name = run_name
+        self.gamma_score_name = f'gamma:{untreated}_vs_{t0}'
+        self.rho_score_name = f'rho:{treated}_vs_{untreated}'
 
-    def _prep_data(self, screen):
+    def _prep_data(self):
 
-        gamma = screen.getPhenotypeScores(
+        gamma = self.screen.getPhenotypeScores(
             run_name=self.run_name,
             score_name=self.gamma_score_name,
             ctrl_label=self.ctrl_label,
             threshold=self.threshold,
         )
 
-        rho = screen.getPhenotypeScores(
+        rho = self.screen.getPhenotypeScores(
             run_name=self.run_name,
             score_name=self.rho_score_name,
             ctrl_label=self.ctrl_label,
@@ -169,20 +172,14 @@ class PheScatterPlot:
                 ax.annotate(txt, (target_data[x_col].iloc[i] + t_x, target_data[y_col].iloc[i] + t_y),
                             color=textcolor, size=size_txt)
 
-
-class Volcano(PheScatterPlot):
-
-    def __init__(self, threshold=3, ctrl_label='no-targeting') -> None:
-        super().__init__(threshold, ctrl_label)
-
-    def plot(self, ax, screen, score,
+    def volcanoPlot(self, ax, score,
              xlabel='phenotype score',
              ylabel='-log10(pvalue)',
              dot_size=1,
              xlims=(-5, 5),
              ylims=(0.1,6)
             ):
-        gamma, rho = self._prep_data(screen)
+        gamma, rho = self._prep_data()
         
         if score == 'gamma':
             df = gamma
@@ -224,43 +221,14 @@ class Volcano(PheScatterPlot):
         # Add legend
         ax.legend()
 
-    def label_as_black(self, ax, df_in, label, size=2, size_txt="auto",
-                       t_x=.5, t_y=-0.1):
-        self._label_by_color(ax, df_in, label, 
-                             size=size, size_txt=size_txt,
-                             edgecolors='black', facecolors='black',
-                             textcolor='black',
-                             t_x=t_x, t_y=t_y)
-    
-    def label_sensitivity_hit(self, ax, df_in, label, size=2, size_txt="auto",
-                              t_x=.5, t_y=-0.1):
-        self._label_by_color(ax, df_in, label, 
-                             size=size, size_txt=size_txt,
-                             edgecolors='black', facecolors='#3182bd',
-                             textcolor='black',
-                             t_x=t_x, t_y=t_y)
-    
-    def label_resistance_hit(self, ax, df_in, label, size=2, size_txt="auto",
-                             t_x=.5, t_y=-0.1):
-        self._label_by_color(ax, df_in, label, 
-                             size=size, size_txt=size_txt,
-                             edgecolors='black', facecolors='#de2d26',
-                             textcolor='black',
-                             t_x=t_x, t_y=t_y)
-
-
-class RhoGammaScatter(PheScatterPlot):
-    def __init__(self, threshold=3, ctrl_label='no-targeting') -> None:
-        super().__init__(threshold, ctrl_label)
-        
-    def plot(self, ax, screen,
+    def scatterRhoGamma(self, ax,
              dot_size=1,
-             xlabel=None,
-             ylabel=None,
+             xlabel='rho score',
+             ylabel='gamma score',
              xlims=(-5, 5),
              ylims=(-5, 5)):
 
-        rho_df, gamma_df = self._prep_data(screen)
+        rho_df, gamma_df = self._prep_data()
         
         # color by rho score labels
         up_hit = 'resistance_hit'
@@ -284,14 +252,8 @@ class RhoGammaScatter(PheScatterPlot):
                     alpha=0.1, s=dot_size, c='gray', label=self.ctrl_label)
         
         # Set x-axis and y-axis labels
-        if not xlabel:
-            ax.set_xlabel('rho score')
-        else:
-            ax.set_xlabel(xlabel)
-        if not ylabel:
-            ax.set_ylabel('gamma score')
-        else:
-            ax.set_ylabel(ylabel)
+        ax.set_xlabel(xlabel)
+        ax.set_ylabel(ylabel)
 
         # Set x-axis limits
         ax.set_xlim(xlims)
@@ -299,29 +261,27 @@ class RhoGammaScatter(PheScatterPlot):
 
         # Add legend
         ax.legend()
-    
-    def label_as_black(self, ax, label, size=2, size_txt="auto",
+        
+    def label_as_black(self, ax, df_in, label, size=2, size_txt="auto",
                        t_x=.5, t_y=-0.1):
-        self._label_by_color(ax, label,
-                             size=size, size_txt=size_txt,                             
+        self._label_by_color(ax, df_in, label, 
+                             size=size, size_txt=size_txt,
                              edgecolors='black', facecolors='black',
                              textcolor='black',
                              t_x=t_x, t_y=t_y)
-        
-    def label_sensitivity_hit(self, ax, label, size=2, size_txt="auto",
-                              t_x=.5, t_y=-0.1):
     
-        self._label_by_color(ax, label, 
-                             size=size, size_txt=size_txt,                             
+    def label_sensitivity_hit(self, ax, df_in, label, size=2, size_txt="auto",
+                              t_x=.5, t_y=-0.1):
+        self._label_by_color(ax, df_in, label, 
+                             size=size, size_txt=size_txt,
                              edgecolors='black', facecolors='#3182bd',
                              textcolor='black',
                              t_x=t_x, t_y=t_y)
-        
-    def label_resistance_hit(self, ax, label, size=2, size_txt="auto",
+    
+    def label_resistance_hit(self, ax, df_in, label, size=2, size_txt="auto",
                              t_x=.5, t_y=-0.1):
-        
-        self._label_by_color(ax, label, 
-                             size=size, size_txt=size_txt,                             
+        self._label_by_color(ax, df_in, label, 
+                             size=size, size_txt=size_txt,
                              edgecolors='black', facecolors='#de2d26',
                              textcolor='black',
                              t_x=t_x, t_y=t_y)
