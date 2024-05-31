@@ -9,6 +9,6 @@ from . import dashboard
 from .ngs import Counter
 from .assays import PooledScreens, GImaps
 
-__version__ = "0.3.3"
+__version__ = "0.3.4"
 __author__ = "Abe Arab"
 __email__ = 'abea@arcinstitute.org' # "abarbiology@gmail.com"
