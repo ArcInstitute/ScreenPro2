@@ -271,9 +271,9 @@ class DrugScreenPlotter:
         gamma_df, _, rho_df = self._prep_data()
 
         if xlabel == 'auto':
-            xlabel = self.gamma_score_name.replace(':', ': ').replace('_', ' ')
+            xlabel = self.rho_score_name.replace(':', ': ').replace('_', ' ')
         if ylabel == 'auto':
-            ylabel = self.rho_score_name.replace(':', ': ').replace('_', ' ')
+            ylabel = self.gamma_score_name.replace(':', ': ').replace('_', ' ')
         
         # color by rho score labels
         up_hit = 'resistance_hit'
