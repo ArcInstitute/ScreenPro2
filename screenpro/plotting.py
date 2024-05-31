@@ -218,7 +218,7 @@ class DrugScreenPlotter:
             ):
         _, _, rho_df = self._prep_data()
         if xlabel == 'auto':
-            xlabel = self.rho_score_name
+            xlabel = self.rho_score_name.replace(':', ': ').replace('_', ' ')
         
         self._volcano(ax, rho_df, 
                       up_hit='resistance_hit', down_hit='sensitivity_hit',
@@ -235,7 +235,7 @@ class DrugScreenPlotter:
             ):
         gamma_df, _, _ = self._prep_data()
         if xlabel == 'auto':
-            xlabel = self.gamma_score_name
+            xlabel = self.gamma_score_name.replace(':', ': ').replace('_', ' ')
         
         self._volcano(ax, gamma_df, 
                       up_hit='up_hit', down_hit='essential_hit',
@@ -252,7 +252,7 @@ class DrugScreenPlotter:
             ):
         _, tau_df, _, = self._prep_data()
         if xlabel == 'auto':
-            xlabel = self.tau_score_name
+            xlabel = self.tau_score_name.replace(':', ': ').replace('_', ' ')
         
         self._volcano(ax, tau_df, 
                       up_hit='up_hit', down_hit='down_hit',
