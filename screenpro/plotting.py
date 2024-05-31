@@ -110,7 +110,7 @@ class PheScatterPlot:
     def _prepare_score_df(self, df_in,threshold,ctrl_label):
         df = df_in.copy()
 
-        df = ann_score_df(df, threshold, ctrl_label)
+        df = ann_score_df(df, threshold=threshold, ctrl_label=ctrl_label)
 
         df['-log10(pvalue)'] = np.log10(df.pvalue) * -1
 
