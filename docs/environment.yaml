@@ -13,6 +13,7 @@ dependencies:
   - scipy
   - matplotlib<3.7
   - seaborn
+  - bokeh
   - pyarrow
   - ipykernel
   - mscorefonts
