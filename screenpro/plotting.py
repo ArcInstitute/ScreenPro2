@@ -65,7 +65,7 @@ def draw_threshold(x, threshold, pseudo_sd):
 
 ## Scatter plot of replicates
 
-def plotReplicateScatter(ax, adat_in, x, y, title, min_val=None, max_val=None, log_transform=True):
+def plotReplicateScatter(ax, adat_in, x, y, title, min_val=None, max_val=None, log_transform=True, **args):
     adat = adat_in[[x, y], :].copy()
 
     adat.obs.index = [f'Replicate {str(r)}' for r in adat.obs.replicate.to_list()]
@@ -90,7 +90,8 @@ def plotReplicateScatter(ax, adat_in, x, y, title, min_val=None, max_val=None, l
         title=title,
         size=5,
         show=False,
-        ax=ax
+        ax=ax,
+        **args
     )
     ax.set_ylim(min_val, max_val)
     ax.set_xlim(min_val, max_val)
@@ -117,7 +118,7 @@ class DrugScreenPlotter:
                         size=2, size_txt="auto",
                         edgecolors='black', facecolors='black',
                         textcolor='black',
-                        t_x=.5, t_y=-0.1):
+                        t_x=.5, t_y=-0.1, **args):
         
         df = df_in.copy()
         target_data = df[df['target'] == label]
@@ -127,7 +128,8 @@ class DrugScreenPlotter:
             target_data[x_col], target_data[y_col],
             s=size, linewidth=0.5, 
             edgecolors=edgecolors, 
-            facecolors=facecolors, label='target'
+            facecolors=facecolors, label='target',
+            **args
         )
 
         if size_txt == None:
@@ -175,25 +177,30 @@ class DrugScreenPlotter:
             ylabel='-log10(pvalue)',
             dot_size=1,
             xlims=(-5, 5),
-            ylims=(0.1,6)
+            ylims=(0.1,6),
+            **args
             ):
         
         # Scatter plot for each category
         ax.scatter( df.loc[df['label'] == 'target_non_hit', 'score'],
                     df.loc[df['label'] == 'target_non_hit', '-log10(pvalue)'],
-                    alpha=0.1, s=dot_size, c='black', label='target_non_hit')
+                    alpha=0.1, s=dot_size, c='black', label='target_non_hit',
+                    **args)
         
         ax.scatter( df.loc[df['label'] == up_hit, 'score'], 
                     df.loc[df['label'] == up_hit, '-log10(pvalue)'],
-                    alpha=0.9, s=dot_size, c='#fcae91', label=up_hit)
+                    alpha=0.9, s=dot_size, c='#fcae91', label=up_hit,
+                    **args)
         
         ax.scatter( df.loc[df['label'] == down_hit, 'score'], 
                     df.loc[df['label'] == down_hit, '-log10(pvalue)'],
-                    alpha=0.9, s=dot_size, c='#bdd7e7', label=down_hit)
+                    alpha=0.9, s=dot_size, c='#bdd7e7', label=down_hit,
+                    **args)
         
         ax.scatter( df.loc[df['label'] == self.ctrl_label, 'score'],
                     df.loc[df['label'] == self.ctrl_label, '-log10(pvalue)'],
-                    alpha=0.1, s=dot_size, c='gray', label=self.ctrl_label)
+                    alpha=0.1, s=dot_size, c='gray', label=self.ctrl_label,
+                    **args)
 
         # Set x-axis and y-axis labels
         ax.set_xlabel(xlabel)
@@ -215,7 +222,8 @@ class DrugScreenPlotter:
             xlabel='auto',
             ylabel='-log10(pvalue)',
             xlims=(-5, 5),
-            ylims=(0.1, 6)
+            ylims=(0.1, 6),
+            **args
             ):
         if rho_df is None:
             _, _, rho_df = self._prep_data()
@@ -225,7 +233,8 @@ class DrugScreenPlotter:
         self._volcano(ax, rho_df, 
                       up_hit='resistance_hit', down_hit='sensitivity_hit',
                       xlabel=xlabel, ylabel=ylabel,
-                      dot_size=dot_size, xlims=xlims, ylims=ylims)
+                      dot_size=dot_size, xlims=xlims, ylims=ylims,
+                      **args)
     
     def drawVolcanoGamma(
             self, ax,
@@ -234,7 +243,8 @@ class DrugScreenPlotter:
             xlabel='auto',
             ylabel='-log10(pvalue)',
             xlims=(-5, 5),
-            ylims=(0.1, 6)
+            ylims=(0.1, 6),
+            **args
             ):
         if gamma_df is None:
             gamma_df, _, _ = self._prep_data()
@@ -244,7 +254,8 @@ class DrugScreenPlotter:
         self._volcano(ax, gamma_df, 
                       up_hit='up_hit', down_hit='essential_hit',
                       xlabel=xlabel, ylabel=ylabel,
-                      dot_size=dot_size, xlims=xlims, ylims=ylims)
+                      dot_size=dot_size, xlims=xlims, ylims=ylims,
+                      **args)
         
     def drawVolcanoTau(
             self, ax,
@@ -253,7 +264,8 @@ class DrugScreenPlotter:
             xlabel='auto',
             ylabel='-log10(pvalue)',
             xlims=(-5, 5),
-            ylims=(0.1, 6)
+            ylims=(0.1, 6),
+            **args
             ):
         if tau_df is None:
             _, tau_df, _, = self._prep_data()
@@ -263,18 +275,25 @@ class DrugScreenPlotter:
         self._volcano(ax, tau_df, 
                       up_hit='up_hit', down_hit='down_hit',
                       xlabel=xlabel, ylabel=ylabel,
-                      dot_size=dot_size, xlims=xlims, ylims=ylims)
+                      dot_size=dot_size, xlims=xlims, ylims=ylims,
+                      **args)
 
     def drawRhoGammaScatter(
             self, ax,
+            rho_df=None, gamma_df=None,
             dot_size=1,
             xlabel='auto',
             ylabel='auto',
             xlims=(-5, 5),
-            ylims=(-5, 5)
+            ylims=(-5, 5),
+            **args
             ):
-
-        gamma_df, _, rho_df = self._prep_data()
+        if rho_df is None or gamma_df is None:
+            gamma_df, _, rho_df = self._prep_data()
+        elif rho_df is None:
+            _, _, rho_df = self._prep_data()
+        elif gamma_df is None:
+            gamma_df, _, _ = self._prep_data()
 
         if xlabel == 'auto':
             xlabel = self.rho_score_name.replace(':', ': ').replace('_', ' ')
@@ -288,19 +307,23 @@ class DrugScreenPlotter:
         # Scatter plot for each category
         ax.scatter( rho_df.loc[rho_df['label'] == 'target_non_hit', 'score'],
                     gamma_df.loc[rho_df['label'] == 'target_non_hit', 'score'],
-                    alpha=0.1, s=dot_size, c='black', label='target_non_hit')
+                    alpha=0.1, s=dot_size, c='black', label='target_non_hit',
+                    **args)
         
         ax.scatter( rho_df.loc[rho_df['label'] == up_hit, 'score'],
                     gamma_df.loc[rho_df['label'] == up_hit, 'score'],
-                    alpha=0.9, s=dot_size, c='#fcae91', label=up_hit)
+                    alpha=0.9, s=dot_size, c='#fcae91', label=up_hit,
+                    **args)
         
         ax.scatter( rho_df.loc[rho_df['label'] == down_hit, 'score'],
                     gamma_df.loc[rho_df['label'] == down_hit, 'score'],
-                    alpha=0.9, s=dot_size, c='#bdd7e7', label=down_hit)
+                    alpha=0.9, s=dot_size, c='#bdd7e7', label=down_hit,
+                    **args)
         
         ax.scatter( rho_df.loc[rho_df['label'] == self.ctrl_label, 'score'],
                     gamma_df.loc[rho_df['label'] == self.ctrl_label, 'score'],
-                    alpha=0.1, s=dot_size, c='gray', label=self.ctrl_label)
+                    alpha=0.1, s=dot_size, c='gray', label=self.ctrl_label,
+                    **args)
         
         # Set x-axis and y-axis labels
         ax.set_xlabel(xlabel)
@@ -316,33 +339,38 @@ class DrugScreenPlotter:
     def label_as_black(self, ax, df_in, label, 
                        x_col='score', y_col='-log10(pvalue)',
                        size=2, size_txt="auto",
-
-                       t_x=.5, t_y=-0.1):
+                       t_x=.5, t_y=-0.1,
+                       **args):
         self._label_by_color(ax, df_in, label, 
                              x_col=x_col, y_col=y_col,
                              size=size, size_txt=size_txt,
                              edgecolors='black', facecolors='black',
                              textcolor='black',
-                             t_x=t_x, t_y=t_y)
+                             t_x=t_x, t_y=t_y,
+                             **args)
     
     def label_sensitivity_hit(self, ax, df_in, label, 
                               x_col='score', y_col='-log10(pvalue)',
                               size=2, size_txt="auto",
-                              t_x=.5, t_y=-0.1):
+                              t_x=.5, t_y=-0.1,
+                              **args):
         self._label_by_color(ax, df_in, label, 
                              x_col=x_col, y_col=y_col,
                              size=size, size_txt=size_txt,
                              edgecolors='black', facecolors='#3182bd',
                              textcolor='black',
-                             t_x=t_x, t_y=t_y)
+                             t_x=t_x, t_y=t_y,
+                             **args)
     
     def label_resistance_hit(self, ax, df_in, label, 
                              x_col='score', y_col='-log10(pvalue)',
                              size=2, size_txt="auto",
-                             t_x=.5, t_y=-0.1):
+                             t_x=.5, t_y=-0.1,
+                             **args):
         self._label_by_color(ax, df_in, label, 
                              x_col=x_col, y_col=y_col,
                              size=size, size_txt=size_txt,
                              edgecolors='black', facecolors='#de2d26',
                              textcolor='black',
-                             t_x=t_x, t_y=t_y)
+                             t_x=t_x, t_y=t_y,
+                             **args)
