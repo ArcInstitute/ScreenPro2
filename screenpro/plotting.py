@@ -288,8 +288,6 @@ class DrugScreenPlotter:
             ylims=(-5, 5),
             **args
             ):
-        if rho_df is None or gamma_df is None:
-            gamma_df, _, rho_df = self._prep_data()
         if rho_df is None:
             _, _, rho_df = self._prep_data()
         if gamma_df is None:
