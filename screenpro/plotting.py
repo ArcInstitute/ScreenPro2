@@ -290,9 +290,9 @@ class DrugScreenPlotter:
             ):
         if rho_df is None or gamma_df is None:
             gamma_df, _, rho_df = self._prep_data()
-        elif rho_df is None:
+        if rho_df is None:
             _, _, rho_df = self._prep_data()
-        elif gamma_df is None:
+        if gamma_df is None:
             gamma_df, _, _ = self._prep_data()
 
         if xlabel == 'auto':
