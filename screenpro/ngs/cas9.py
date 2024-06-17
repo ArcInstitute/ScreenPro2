@@ -172,12 +172,12 @@ def map_to_library_dual_guide(df_count, library, get_recombinant=False, return_t
         ])
 
         res_unmap_remapped_a = res_unmap.join(
-            pl.DataFrame(sgRNA_table[['sgID','protospacer']]),
+            pl.DataFrame(sgRNA_table.rename(columns={'protospacer':'protospacer_A'})[['sgID','protospacer_A']]),
             on=["protospacer_A"], how="left"
         )
 
         res_recomb_events = res_unmap_remapped_a.join(
-            pl.DataFrame(sgRNA_table[['sgID','protospacer']]),
+            pl.DataFrame(sgRNA_table.rename(columns={'protospacer':'protospacer_B'})[['sgID','protospacer_B']]),
             on=["protospacer_B"], how="left"
         )
         if verbose:            
