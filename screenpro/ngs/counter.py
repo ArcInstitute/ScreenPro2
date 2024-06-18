@@ -244,17 +244,25 @@ class Counter:
         '''
         self.counts_mat = pd.read_csv(counts_mat_path, **kwargs)
     
-    def _build_cas9_dual_guide_var_table(self, counts_table, ctrl_label='negative_control'):
+    def _build_cas9_dual_guide_var_table(self, counts_table, source, ctrl_label='negative_control'):
         '''Build variant table for dual guide design
 
         Args:
             counts_table (pd.DataFrame): count table for dual guide design (e.g. main library mapped counts or recombinant counts)
         '''
-        var_table = pd.DataFrame(
-            counts_table.index.to_list(),
-            index = ['|'.join(i) for i in counts_table.index.to_list()],
-            columns=['sgID_A','sgID_B']
-        )
+        if source=='library':
+            var_table = pd.DataFrame(
+                counts_table.index.str.split('|').to_list(),
+                index = counts_table.index.to_list(),
+                columns=['sgID_A','sgID_B']
+            )
+        
+        elif source=='recombinant':
+            var_table = pd.DataFrame(
+                counts_table.index.to_list(),
+                index = ['|'.join(i) for i in counts_table.index.to_list()],
+                columns=['sgID_A','sgID_B']
+            )
         var_table.index.name = 'sgID_AB'
 
         sgRNA_table = self.sgRNA_table.to_pandas().set_index('sgID')
@@ -315,7 +323,7 @@ class Counter:
             
             adata = ad.AnnData(
                 X = self.counts_mat.T, 
-                var = self._build_cas9_dual_guide_var_table(self.counts_mat)
+                var = self._build_cas9_dual_guide_var_table(self.counts_mat, source='library')
             )
             adata.var['targetSource'] = 'library'
             
@@ -333,7 +341,7 @@ class Counter:
 
                 if verbose: print('recombinant count matrix built ...')
 
-                var_table = self._build_cas9_dual_guide_var_table(counts_recombinants)
+                var_table = self._build_cas9_dual_guide_var_table(counts_recombinants, source='recombinant')
 
                 rdata = ad.AnnData(
                     X = counts_recombinants.T.to_numpy(),
