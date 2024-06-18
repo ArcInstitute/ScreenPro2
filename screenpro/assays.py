@@ -147,7 +147,8 @@ class PooledScreens(object):
             runPhenoScoreForReplicate(
                 self.adata, x_label = x_label, y_label = y_label, score = score_label,
                 transformation=self.fc_transformation, 
-                growth_factor_table=growth_factor_table
+                growth_factor_table=growth_factor_table,
+                **kwargs
             ).add_prefix(f'{score_label}_')
 
             for x_label, y_label, score_label in [
