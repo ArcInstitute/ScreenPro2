@@ -53,9 +53,11 @@ class Counter:
                 sgRNA_table = pd.concat([
                     self.library.to_pandas()[['target','sgID_A','protospacer_A']].rename(columns={'sgID_A':'sgID','protospacer_A':'protospacer'}),
                     self.library.to_pandas()[['target','sgID_B', 'protospacer_B']].rename(columns={'sgID_B':'sgID','protospacer_B':'protospacer'})
-                ]).set_index('sgID')
+                ])
+                # drop duplicates and set index
+                sgRNA_table = sgRNA_table.drop_duplicates(keep='first').set_index('sgID', inplace=True)
 
-        return sgRNA_table
+        self.sgRNA_table = sgRNA_table
 
     def _process_cas9_single_guide_sample(self, fastq_dir, sample_id, trim_first_g, protospacer_length, write, verbose=False):
         if verbose: print(green(sample_id, ['bold']))
@@ -238,7 +240,7 @@ class Counter:
             self.recombinants = recombinants
     
     def load_counts_matrix(self, counts_mat_path, **kwargs):
-        '''Load count matrix
+        '''Load count matrix from file
         '''
         self.counts_mat = pd.read_csv(counts_mat_path, **kwargs)
     
