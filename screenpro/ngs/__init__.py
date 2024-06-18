@@ -330,12 +330,12 @@ class GuideCounter:
         ### assign target types: control-gene
         control_gene_targets = (var_table.target_A.eq(ctrl_label)) & ~(var_table.target_B.eq(ctrl_label))
         var_table.loc[control_gene_targets,'targetType']  = 'control-gene'
-        var_table.loc[gene_control_targets,'target']  = var_table.target_A + '|' + var_table.target_B
+        var_table.loc[control_gene_targets,'target']  = var_table.target_A + '|' + var_table.target_B
 
         ### assign target types: gene-gene
         gene_gene_targets = (var_table.target_A != var_table.target_B) & ~(var_table.target_A.eq(ctrl_label)) & ~(var_table.target_B.eq(ctrl_label))
         var_table.loc[gene_gene_targets,'targetType']  = 'gene-gene'
-        var_table.loc[gene_control_targets,'target']  = var_table.target_A + '|' + var_table.target_B
+        var_table.loc[gene_gene_targets,'target']  = var_table.target_A + '|' + var_table.target_B
 
         var_table.index.name = None
         var_table.targetType = pd.Categorical(
