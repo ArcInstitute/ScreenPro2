@@ -276,24 +276,32 @@ class Counter:
 
         var_table['targetType'] = ''
 
+        ### assign target types: control
         var_table.loc[
             (var_table.target_A.eq(ctrl_label)) & 
-            (var_table.target_B.eq(ctrl_label)),'targetType']  = 'negCtrl'
+            (var_table.target_B.eq(ctrl_label)),'targetType']  = 'control'
 
+        ### assign target types: gene
         var_table.loc[
             (var_table.target_A == var_table.target_B) & 
             ~(var_table.target_A.eq(ctrl_label)) &
             ~(var_table.target_B.eq(ctrl_label)),'targetType']  = 'gene'
+        # update target names
+        var_table.loc[
+            (var_table.target_A == var_table.target_B) & 
+            ~(var_table.target_A.eq(ctrl_label)) &
+            ~(var_table.target_B.eq(ctrl_label)),'target']  = var_table.target_A
 
-
+        ### assign target types: gene-control, control-gene
         var_table.loc[
             ~(var_table.target_A.eq(ctrl_label)) & 
-            (var_table.target_B.eq(ctrl_label)),'targetType']  = 'gene-ctrl'
+            (var_table.target_B.eq(ctrl_label)),'targetType']  = 'gene-control'
 
         var_table.loc[
             (var_table.target_A.eq(ctrl_label)) & 
-            ~(var_table.target_B.eq(ctrl_label)),'targetType']  = 'ctrl-gene'
+            ~(var_table.target_B.eq(ctrl_label)),'targetType']  = 'control-gene'
 
+        ### assign target types: gene-gene
         var_table.loc[
             ~(var_table.target_A.eq(ctrl_label)) & 
             ~(var_table.target_B.eq(ctrl_label)),'targetType']  = 'gene-gene'

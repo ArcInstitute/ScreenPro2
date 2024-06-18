@@ -113,14 +113,14 @@ def matrixTest(x, y, x_ctrl, y_ctrl, transformation, level, test = 'ttest', grow
     return scores, p_values
 
 
-def generatePseudoGeneAnnData(adata, num_pseudogenes='auto', pseudogene_size='auto', ctrl_label='negCtrl'):
+def generatePseudoGeneAnnData(adata, num_pseudogenes='auto', pseudogene_size='auto', ctrl_label='control'):
     """Generate pseudogenes from negative control elements in the library.
 
     Args:
         adata (AnnData): AnnData object
         num_pseudogenes (int): number of pseudogenes to generate
         pseudogene_size (int): number of sgRNA elements in each pseudogene
-        ctrl_label (str): control label, default is 'negCtrl'
+        ctrl_label (str): control label, default is 'control'
     
     Returns:
         AnnData: AnnData object with pseudogenes
@@ -162,12 +162,12 @@ def generatePseudoGeneAnnData(adata, num_pseudogenes='auto', pseudogene_size='au
     return out
 
 
-def calculateZScorePhenotypeScore(score_df,ctrl_label='negCtrl'):
+def calculateZScorePhenotypeScore(score_df,ctrl_label='control'):
     """Calculate z-score normalized phenotype score.
     
     Args:
         score_df (pd.DataFrame): dataframe of scores that includes `score` and `targetType` columns
-        ctrl_label (str): control label, default is 'negCtrl'
+        ctrl_label (str): control label, default is 'control'
     
     Returns:
         pd.Series: z-score normalized phenotype score
@@ -182,7 +182,7 @@ def calculateZScorePhenotypeScore(score_df,ctrl_label='negCtrl'):
 
 def runPhenoScore(adata, cond1, cond2, transformation, score_level, test,
                   growth_rate=1, n_reps=2, keep_top_n = None,num_pseudogenes='auto', pseudogene_size='auto',
-                  count_layer=None, get_z_score=False, ctrl_label='negCtrl'):
+                  count_layer=None, get_z_score=False, ctrl_label='control'):
     """Calculate phenotype score and p-values when comparing `cond2` vs `cond1`.
 
     Args:
@@ -348,7 +348,7 @@ def runPhenoScore(adata, cond1, cond2, transformation, score_level, test,
     return result_name, result
 
 
-def runPhenoScoreForReplicate(adata, x_label, y_label, score, growth_factor_table, transformation, get_z_score=False, ctrl_label='negCtrl'):
+def runPhenoScoreForReplicate(adata, x_label, y_label, score, growth_factor_table, transformation, get_z_score=False, ctrl_label='control'):
     """Calculate phenotype score for each pair of replicates.
 
     Args:
@@ -359,7 +359,7 @@ def runPhenoScoreForReplicate(adata, x_label, y_label, score, growth_factor_tabl
         growth_factor_table: dataframe of growth factors, i.e. output from `getGrowthFactors` function
         transformation (str): transformation to use for calculating score
         get_z_score: boolean to calculate z-score normalized phenotype score instead of regular score (default is False)
-        ctrl_label: string to identify labels of negative control elements in sgRNA library (default is 'negCtrl')
+        ctrl_label: string to identify labels of negative control elements in sgRNA library (default is 'control')
 
     Returns:
         pd.DataFrame: dataframe of phenotype scores
