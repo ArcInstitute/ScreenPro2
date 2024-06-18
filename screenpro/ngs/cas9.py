@@ -169,18 +169,20 @@ def map_to_library_dual_guide(df_count, library, get_recombinant=False, return_t
         sgRNA_table = pd.concat([
             library.to_pandas()[['sgID_A','protospacer_A']].rename(columns={'sgID_A':'sgID','protospacer_A':'protospacer'}),
             library.to_pandas()[['sgID_B', 'protospacer_B']].rename(columns={'sgID_B':'sgID','protospacer_B':'protospacer'})
-        ])
+        ]).drop_duplicates(keep='first')
 
         res_unmap_remapped_a = res_unmap.join(
-            pl.DataFrame(sgRNA_table.rename(columns={'protospacer':'protospacer_A'})[['sgID','protospacer_A']]),
+            pl.DataFrame(sgRNA_table.rename(
+                columns={'protospacer':'protospacer_A','sgID':'sgID_A'})[['sgID_A','protospacer_A']]),
             on=["protospacer_A"], how="left"
         )
 
         res_recomb_events = res_unmap_remapped_a.join(
-            pl.DataFrame(sgRNA_table.rename(columns={'protospacer':'protospacer_B'})[['sgID','protospacer_B']]),
+            pl.DataFrame(sgRNA_table.rename(
+                columns={'protospacer':'protospacer_B','sgID':'sgID_B'})[['sgID_B','protospacer_B']]),
             on=["protospacer_B"], how="left"
         )
-        if verbose:            
+        if verbose:
             print("% fully remapped recombination events",
                 100 * \
                 res_recomb_events.drop_nulls().to_pandas()['count'].fillna(0).sum() / \
