@@ -40,6 +40,8 @@ def find_low_counts(adata, filter_type='either', minimum_reads=50):
         out = adata[:, count_bin.all(axis=0)].copy()
     elif filter_type == 'sum':
         out = adata[:, adata.to_df().sum(axis=0) >= minimum_reads].copy()
+    else:
+        raise ValueError(f'filter_type "{filter_type}" not recognized. Use "either", "all", or "sum".')
     
     # print the number of removed variables
     n_removed = adata.shape[1] - out.shape[1]
@@ -50,7 +52,7 @@ def find_low_counts(adata, filter_type='either', minimum_reads=50):
     adata.var['low_count'] = ~adata.var.index.isin(out.var.index.to_list())
 
 
-def ann_score_df(df_in, up_hit='resistance_hit', down_hit='sensitivity_hit', ctrl_label='negCtrl', threshold=10):
+def ann_score_df(df_in, up_hit='resistance_hit', down_hit='sensitivity_hit', ctrl_label='control', threshold=10):
     """
     Annotate score dataframe with hit labels using given `threshold`
     (i.e. `score/pseudo_sd * -np.log10(pvalue) >= threshold`).
@@ -74,25 +76,25 @@ def ann_score_df(df_in, up_hit='resistance_hit', down_hit='sensitivity_hit', ctr
     df['pvalue'] = df['pvalue'].astype(float)
 
     # calculate pseudo_sd
-    pseudo_sd = df[df['target'].str.contains(ctrl_label)]['score'].tolist()
+    pseudo_sd = df[df['target'].eq(ctrl_label)]['score'].tolist()
     pseudo_sd = np.std(pseudo_sd)
 
     df['label'] = '.'
 
     # annotate hits: up
     df.loc[
-        (df['score'] > 0) & (~df['target'].str.contains(ctrl_label)) &
+        (df['score'] > 0) & (~df['target'].eq(ctrl_label)) &
         (df['score']/pseudo_sd * -np.log10(df['pvalue']) >= threshold), 'label'
     ] = up_hit
 
     # annotate hits: down
     df.loc[
-        (df['score'] < 0) & (~df['target'].str.contains(ctrl_label)) &
+        (df['score'] < 0) & (~df['target'].eq(ctrl_label)) &
         (df['score']/pseudo_sd * -np.log10(df['pvalue']) <= -threshold), 'label'
     ] = down_hit
 
     # annotate control
-    df.loc[df['target'].str.contains(ctrl_label), 'label'] = ctrl_label
+    df.loc[df['target'].eq(ctrl_label), 'label'] = ctrl_label
 
     # annotate non-hit
     df.loc[df['label'] == '.', 'label'] = 'target_non_hit'
