@@ -310,40 +310,35 @@ class GuideCounter:
         ], axis=1).set_index('sgID_AB')
 
         var_table['targetType'] = ''
+        var_table['target'] = ''
 
         ### assign target types: control
-        var_table.loc[
-            (var_table.target_A.eq(ctrl_label)) & 
-            (var_table.target_B.eq(ctrl_label)),'targetType']  = 'control'
+        control_targets = (var_table.target_A.eq(ctrl_label)) & (var_table.target_B.eq(ctrl_label))
+        var_table.loc[control_targets,'targetType']  = 'control'
+        var_table.loc[control_targets,'target']  = ctrl_label
 
         ### assign target types: gene
-        var_table.loc[
-            (var_table.target_A == var_table.target_B) & 
-            ~(var_table.target_A.eq(ctrl_label)) &
-            ~(var_table.target_B.eq(ctrl_label)),'targetType']  = 'gene'
-        # update target names
-        var_table.loc[
-            (var_table.target_A == var_table.target_B) & 
-            ~(var_table.target_A.eq(ctrl_label)) &
-            ~(var_table.target_B.eq(ctrl_label)),'target']  = var_table.target_A
+        same_gene_targets = (var_table.target_A == var_table.target_B) & ~(var_table.target_A.eq(ctrl_label)) & ~(var_table.target_B.eq(ctrl_label))
+        var_table.loc[same_gene_targets,'targetType']  = 'gene'
+        var_table.loc[same_gene_targets,'target']  = var_table.target_A # or target_B
 
-        ### assign target types: gene-control, control-gene
-        var_table.loc[
-            ~(var_table.target_A.eq(ctrl_label)) & 
-            (var_table.target_B.eq(ctrl_label)),'targetType']  = 'gene-control'
+        ### assign target types: gene-control
+        gene_control_targets = ~(var_table.target_A.eq(ctrl_label)) & (var_table.target_B.eq(ctrl_label))
+        var_table.loc[gene_control_targets,'targetType']  = 'gene-control'
+        var_table.loc[gene_control_targets,'target']  = var_table.target_A + '|' + var_table.target_B
 
-        var_table.loc[
-            (var_table.target_A.eq(ctrl_label)) & 
-            ~(var_table.target_B.eq(ctrl_label)),'targetType']  = 'control-gene'
+        ### assign target types: control-gene
+        control_gene_targets = (var_table.target_A.eq(ctrl_label)) & ~(var_table.target_B.eq(ctrl_label))
+        var_table.loc[control_gene_targets,'targetType']  = 'control-gene'
+        var_table.loc[gene_control_targets,'target']  = var_table.target_A + '|' + var_table.target_B
 
         ### assign target types: gene-gene
-        var_table.loc[
-            ~(var_table.target_A.eq(ctrl_label)) & 
-            ~(var_table.target_B.eq(ctrl_label)),'targetType']  = 'gene-gene'
+        gene_gene_targets = (var_table.target_A != var_table.target_B) & ~(var_table.target_A.eq(ctrl_label)) & ~(var_table.target_B.eq(ctrl_label))
+        var_table.loc[gene_gene_targets,'targetType']  = 'gene-gene'
+        var_table.loc[gene_control_targets,'target']  = var_table.target_A + '|' + var_table.target_B
 
         var_table.index.name = None
 
-        var_table['target'] = var_table['target_A'] + '|' + var_table['target_B']
         var_table['sequence'] = var_table['protospacer_A'] + ';' + var_table['protospacer_B']
 
         return var_table
