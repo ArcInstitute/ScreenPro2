@@ -149,7 +149,7 @@ class Counter:
             verbose=verbose
         )
         
-        return out
+        return out        
 
     def get_counts_matrix(self, fastq_dir, samples, get_recombinant=False, cas_type='cas9', protospacer_length='auto', trim_first_g=False, write=True, parallel=False, verbose=False):
         '''Get count matrix for given samples
@@ -244,6 +244,59 @@ class Counter:
         '''
         self.counts_mat = pd.read_csv(counts_mat_path, **kwargs)
     
+    def _build_cas9_dual_guide_var_table(self, counts_table, ctrl_label='negative_control'):
+        '''Build variant table for dual guide design
+
+        Args:
+            counts_table (pd.DataFrame): count table for dual guide design (e.g. main library mapped counts or recombinant counts)
+        '''
+        var_table = pd.DataFrame(
+            counts_table.index.to_list(),
+            index = ['|'.join(i) for i in counts_table.index.to_list()],
+            columns=['sgID_A','sgID_B']
+        )
+        var_table.index.name = 'sgID_AB'
+
+        sgRNA_table = self.sgRNA_table.to_pandas().set_index('sgID')
+        
+        #TODO: extract "target" values from protospacer IDs
+        var_table = pd.concat([
+            var_table.reset_index().reset_index(drop=True),
+            sgRNA_table.loc[var_table['sgID_A']].rename(columns={'target':'target_A', 'protospacer':'protospacer_A'}).reset_index(drop=True),
+            sgRNA_table.loc[var_table['sgID_B']].rename(columns={'target':'target_B', 'protospacer':'protospacer_B'}).reset_index(drop=True),
+        ], axis=1).set_index('sgID_AB')
+
+        var_table['targetType'] = ''
+
+        var_table.loc[
+            (var_table.target_A.eq(ctrl_label)) & 
+            (var_table.target_B.eq(ctrl_label)),'targetType']  = 'negCtrl'
+
+        var_table.loc[
+            (var_table.target_A == var_table.target_B) & 
+            ~(var_table.target_A.eq(ctrl_label)) &
+            ~(var_table.target_B.eq(ctrl_label)),'targetType']  = 'gene'
+
+
+        var_table.loc[
+            ~(var_table.target_A.eq(ctrl_label)) & 
+            (var_table.target_B.eq(ctrl_label)),'targetType']  = 'gene-ctrl'
+
+        var_table.loc[
+            (var_table.target_A.eq(ctrl_label)) & 
+            ~(var_table.target_B.eq(ctrl_label)),'targetType']  = 'ctrl-gene'
+
+        var_table.loc[
+            ~(var_table.target_A.eq(ctrl_label)) & 
+            ~(var_table.target_B.eq(ctrl_label)),'targetType']  = 'gene-gene'
+
+        var_table.index.name = None
+
+        var_table['target'] = var_table['target_A'] + '|' + var_table['target_B']
+        var_table['sequence'] = var_table['protospacer_A'] + ';' + var_table['protospacer_B']
+
+        return var_table
+
     def build_counts_anndata(self, source='library', verbose=False):
         '''Build AnnData object from count matrix
         '''
@@ -259,10 +312,12 @@ class Counter:
             )
         
         elif self.library_type == "dual_guide_design":
+            
             adata = ad.AnnData(
                 X = self.counts_mat.T, 
-                var = self.library.to_pandas().set_index('sgID_AB')
+                var = self._build_cas9_dual_guide_var_table(self.counts_mat)
             )
+            adata.var['targetSource'] = 'library'
             
             if source == 'recombinant':
                 counts_recombinants = {}
@@ -276,58 +331,16 @@ class Counter:
 
                 counts_recombinants = pd.concat(counts_recombinants,axis=1).fillna(0)
 
-                counts_recombinants = pd.concat([
-                    counts_recombinants,
-                    pd.concat([
-                        # add non-targeting counts from the main count matrix
-                        self.counts_mat[self.counts_mat.index.str.contains('non-targeting')],
-                        # add non-targeting counts from the main count matrix
-                        self.library.to_pandas().set_index('sgID_AB')[['sgID_A','sgID_B']][self.counts_mat.index.str.contains('non-targeting')]
-                    ],axis=1).set_index(['sgID_A','sgID_B'])
-                ])
-
                 if verbose: print('recombinant count matrix built ...')
-                var_table = pd.DataFrame(
-                    counts_recombinants.index.to_list(),
-                    index = ['|'.join(i) for i in counts_recombinants.index.to_list()],
-                    columns=['sgID_A','sgID_B'])
 
-                var_table.index.name = 'sgID_AB'
-
-                var_table = pd.concat([
-                    var_table.reset_index().reset_index(drop=True),
-                    self.sgRNA_table.loc[var_table['sgID_A']].rename(columns={'target':'target_A', 'protospacer':'protospacer_A'}).reset_index(drop=True),
-                    self.sgRNA_table.loc[var_table['sgID_B']].rename(columns={'target':'target_B', 'protospacer':'protospacer_B'}).reset_index(drop=True),
-                ], axis=1).set_index('sgID_AB')
-
-                var_table['targetType'] = ''
-
-                var_table.loc[
-                    (var_table.target_A.eq('negative_control')) & 
-                    (var_table.target_B.eq('negative_control')),'targetType']  = 'negCtrl'
-
-                var_table.loc[
-                    ~(var_table.target_A.eq('negative_control')) & 
-                    (var_table.target_B.eq('negative_control')),'targetType']  = 'gene-ctrl'
-
-                var_table.loc[
-                    (var_table.target_A.eq('negative_control')) & 
-                    ~(var_table.target_B.eq('negative_control')),'targetType']  = 'ctrl-gene'
-
-                var_table.loc[
-                    ~(var_table.target_A.eq('negative_control')) & 
-                    ~(var_table.target_B.eq('negative_control')),'targetType']  = 'gene-gene'
-
-                var_table.index.name = None
-
-                var_table['target'] = var_table['target_A'] + '|' + var_table['target_B']
-                var_table['sequence'] = var_table['protospacer_A'] + ';' + var_table['protospacer_B']
+                var_table = self._build_cas9_dual_guide_var_table(counts_recombinants)
 
                 rdata = ad.AnnData(
                     X = counts_recombinants.T.to_numpy(),
                     var = var_table,
                     obs = adata.obs
                 )
+                adata.var['targetSource'] = 'recombinant'
 
                 if verbose: print('recombinant AnnData created.')
 
