@@ -338,6 +338,9 @@ class GuideCounter:
         var_table.loc[gene_control_targets,'target']  = var_table.target_A + '|' + var_table.target_B
 
         var_table.index.name = None
+        var_table.targetType = pd.Categorical(
+            var_table.targetType, categories=['gene','gene-gene','gene-control','control-gene','control']
+        ).remove_unused_categories()
 
         var_table['sequence'] = var_table['protospacer_A'] + ';' + var_table['protospacer_B']
 
