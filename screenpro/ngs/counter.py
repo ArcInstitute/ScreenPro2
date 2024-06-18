@@ -294,12 +294,10 @@ class Counter:
 
                 var_table.index.name = 'sgID_AB'
 
-                sgRNA_table = self._get_sgRNA_table()
-                
                 var_table = pd.concat([
                     var_table.reset_index().reset_index(drop=True),
-                    sgRNA_table.loc[var_table['sgID_A']].rename(columns={'target':'target_A', 'protospacer':'protospacer_A'}).reset_index(drop=True),
-                    sgRNA_table.loc[var_table['sgID_B']].rename(columns={'target':'target_B', 'protospacer':'protospacer_B'}).reset_index(drop=True),
+                    self.sgRNA_table.loc[var_table['sgID_A']].rename(columns={'target':'target_A', 'protospacer':'protospacer_A'}).reset_index(drop=True),
+                    self.sgRNA_table.loc[var_table['sgID_B']].rename(columns={'target':'target_B', 'protospacer':'protospacer_B'}).reset_index(drop=True),
                 ], axis=1).set_index('sgID_AB')
 
                 var_table['targetType'] = ''
