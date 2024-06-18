@@ -27,25 +27,16 @@ class Counter:
         if self.cas_type == 'cas9':
             library = load_cas9_sgRNA_library(library_path, library_type=self.library_type, sep=sep, index_col=index_col, protospacer_length=protospacer_length, verbose=verbose)
 
-        elif self.cas_type == 'cas12':
-            raise NotImplementedError("Cas12 library is not yet implemented.")
-        
-        # Check if the library has duplicate sequences and remove them
-        if library.duplicated('sequence').any():
-            shape_before_dedup = library.shape[0]
-            library = library.drop_duplicates(subset='sequence', keep='first')
-            shape_after_dedup = library.shape[0]
-            if verbose:
-                print(f"Warning: {shape_before_dedup - shape_after_dedup} duplicate sgRNA sequences found and removed.")
+            if verbose: print('library loaded ...')
 
-        # covert to polar DataFrame
-        library = pl.from_pandas(library)
+            # Check if the library has duplicate sequences and remove them
+            if library.duplicated('sequence').any():
+                shape_before_dedup = library.shape[0]
+                library = library.drop_duplicates(subset='sequence', keep='first')
+                shape_after_dedup = library.shape[0]
+                if verbose:
+                    print(f"Warning: {shape_before_dedup - shape_after_dedup} duplicate sgRNA sequences found and removed.")
 
-        self.library = library
-        
-    def _get_sgRNA_table(self):
-
-        if self.cas_type == 'cas9':
             if self.library_type == "single_guide_design":
                 sgRNA_table = self.library.to_pandas()[['target','sgID','protospacer']].set_index('sgID')
 
@@ -55,8 +46,18 @@ class Counter:
                     self.library.to_pandas()[['target','sgID_B', 'protospacer_B']].rename(columns={'sgID_B':'sgID','protospacer_B':'protospacer'})
                 ])
                 # drop duplicates and set index
-                sgRNA_table = sgRNA_table.drop_duplicates(keep='first').set_index('sgID', inplace=True)
+                sgRNA_table = sgRNA_table.drop_duplicates(keep='first')
 
+            if verbose: print('total # of cas9 sgRNAs:', sgRNA_table.shape[0])
+
+        elif self.cas_type == 'cas12':
+            raise NotImplementedError("Cas12 library is not yet implemented.")
+        
+        # covert to polar DataFrame
+        library = pl.from_pandas(library)
+        sgRNA_table = pl.from_pandas(sgRNA_table)
+        
+        self.library = library
         self.sgRNA_table = sgRNA_table
 
     def _process_cas9_single_guide_sample(self, fastq_dir, sample_id, trim_first_g, protospacer_length, write, verbose=False):
