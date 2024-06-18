@@ -38,12 +38,12 @@ class Counter:
                     print(f"Warning: {shape_before_dedup - shape_after_dedup} duplicate sgRNA sequences found and removed.")
 
             if self.library_type == "single_guide_design":
-                sgRNA_table = self.library.to_pandas()[['target','sgID','protospacer']].set_index('sgID')
+                sgRNA_table = library[['target','sgID','protospacer']].set_index('sgID')
 
             elif self.library_type == "dual_guide_design":
                 sgRNA_table = pd.concat([
-                    self.library.to_pandas()[['target','sgID_A','protospacer_A']].rename(columns={'sgID_A':'sgID','protospacer_A':'protospacer'}),
-                    self.library.to_pandas()[['target','sgID_B', 'protospacer_B']].rename(columns={'sgID_B':'sgID','protospacer_B':'protospacer'})
+                    library[['target','sgID_A','protospacer_A']].rename(columns={'sgID_A':'sgID','protospacer_A':'protospacer'}),
+                    library[['target','sgID_B', 'protospacer_B']].rename(columns={'sgID_B':'sgID','protospacer_B':'protospacer'})
                 ])
                 # drop duplicates and set index
                 sgRNA_table = sgRNA_table.drop_duplicates(keep='first')
@@ -56,7 +56,7 @@ class Counter:
         # covert to polar DataFrame
         library = pl.from_pandas(library)
         sgRNA_table = pl.from_pandas(sgRNA_table)
-        
+
         self.library = library
         self.sgRNA_table = sgRNA_table
 
