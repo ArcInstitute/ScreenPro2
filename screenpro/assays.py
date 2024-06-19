@@ -147,7 +147,8 @@ class PooledScreens(object):
             runPhenoScoreForReplicate(
                 self.adata, x_label = x_label, y_label = y_label, score = score_label,
                 transformation=self.fc_transformation, 
-                growth_factor_table=growth_factor_table
+                growth_factor_table=growth_factor_table,
+                **kwargs
             ).add_prefix(f'{score_label}_')
 
             for x_label, y_label, score_label in [
@@ -190,7 +191,7 @@ class PooledScreens(object):
         # save phenotype name for reference
         self._add_phenotype_results(f'delta:{delta_name}')
 
-    def getPhenotypeScores(self, score_name, run_name='auto', threshold=5, ctrl_label='negCtrl', target_col='target',pvalue_column='ttest pvalue', score_column='score'):
+    def getPhenotypeScores(self, score_name, run_name='auto', threshold=5, ctrl_label='control', target_col='target',pvalue_column='ttest pvalue', score_column='score'):
         """
         Get phenotype scores for a given score level
 
@@ -198,7 +199,7 @@ class PooledScreens(object):
             run_name (str): name of the phenotype calculation run to retrieve
             score_name (str): name of the score to retrieve, e.g. 'gamma', 'tau', 'rho', 'delta'
             threshold (float): threshold for filtering significant hits, default is 5
-            ctrl_label (str): label for the negative control, default is 'negCtrl'
+            ctrl_label (str): label for the negative control, default is 'control'
             target_col (str): column name for the target gene, default is 'target'
             pvalue_column (str): column name for the p-value, default is 'ttest pvalue'
             score_column (str): column name for the score, default is 'score'
@@ -243,7 +244,7 @@ class PooledScreens(object):
 
         return out
 
-    def getAnnotatedTable(self, run_name='auto', threshold=5, ctrl_label='negCtrl', target_col='target',pvalue_column='ttest pvalue', score_column='score'):
+    def getAnnotatedTable(self, run_name='auto', threshold=5, ctrl_label='control', target_col='target',pvalue_column='ttest pvalue', score_column='score'):
         hit_dict = {
             'gamma':{
                 'up_hit':'up_hit',

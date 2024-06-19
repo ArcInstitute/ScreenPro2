@@ -6,9 +6,9 @@ from . import ngs
 from . import load
 from . import dashboard
 
-from .ngs import Counter
+from .ngs import GuideCounter
 from .assays import PooledScreens, GImaps
 
-__version__ = "0.3.4"
+__version__ = "0.3.5"
 __author__ = "Abe Arab"
 __email__ = 'abea@arcinstitute.org' # "abarbiology@gmail.com"
