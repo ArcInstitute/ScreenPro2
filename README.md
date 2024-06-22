@@ -59,15 +59,15 @@ A minor novelty here has enabled processing single, dual, or multiple sgRNA
 CRISPR screens. Also, this approach can retain recombination events which can
 occur in dual or higher order sgRNA CRISPR screens.
 
-Currently, `Counter` class from the `ngs` module can process FASTQ files and generate counts for standard 
+Currently, `GuideCounter` class from the `ngs` module can process FASTQ files and generate counts for standard 
 CRISPR screens with [single](#dcas9-crisprai-single-sgrna-screens) or [dual](#crispri-dual-sgrna-screens) 
 guide design. 
 
 Here is a draft code to process FASTQ files and generate counts for an experiment with [CRISPRi-dual-sgRNA-screens](#crispri-dual-sgrna-screens):
 
 ```python
-# Initialize the Counter object
-counter = scp.Counter(cas_type = 'cas9', library_type = 'single_guide_design')
+# Initialize the GuideCounter object
+counter = scp.GuideCounter(cas_type = 'cas9', library_type = 'single_guide_design')
 
 # Load the reference library
 counter.load_library("<path-to-CRISPR-library-table>", sep = '\t', verbose = True, index_col=None)
@@ -90,7 +90,7 @@ Here is a draft code to process FASTQ files and generate counts for an experimen
 
 ```python
 # Initialize the Counter object
-counter = scp.Counter(cas_type = 'dCas9', library_type = 'dual_guide_design')
+counter = scp.GuideCounter(cas_type = 'dCas9', library_type = 'dual_guide_design')
 
 # Load the reference library
 counter.load_library("<path-to-CRISPR-library-table>", sep = '\t', verbose = True, index_col=None)
@@ -108,7 +108,7 @@ counter.get_counts_matrix(
 )
 ```
 
-After this, you have `.counts_mat` calculated in the `Counter` object.
+After this, you have `.counts_mat` calculated in the `GuideCounter` object.
 
 ___
 

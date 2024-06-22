@@ -366,7 +366,6 @@ class GuideCounter:
                 X = self.counts_mat.T, 
                 var = self._build_cas9_dual_guide_var_table(self.counts_mat, source='library')
             )
-            adata.var['targetSource'] = 'library'
             
             if source == 'recombinant':
                 counts_recombinants = {}
@@ -389,7 +388,6 @@ class GuideCounter:
                     var = var_table,
                     obs = adata.obs
                 )
-                adata.var['targetSource'] = 'recombinant'
 
                 if verbose: print('recombinant AnnData created.')
 
