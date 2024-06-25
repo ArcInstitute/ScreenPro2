@@ -70,7 +70,20 @@ ScreenPro2 has a built-in command line interface (CLI) to process FASTQ files an
 screenpro guidecounter --help
 ```
 
-Here is a draft code to process FASTQ files and generate counts for an experiment with [CRISPRi-dual-sgRNA-screens](#dcas9-crisprai-dual-sgrna-screens):
+A draft code to process FASTQ files and generate counts for [CRISPRa/i-single-sgRNA-screens](#dcas9-crisprai-single-sgrna-screens) dataset:
+
+```bash
+screenpro guidecounter
+  --cas-type dCas9
+  --single-guide-design
+  -l <path-to-CRISPR-library-table>
+  -p <path-to-fastq-directory>
+  -s <sample-id-1>,<sample2-id>       # comma-separated list of sample ids, i.e. `<sample_id>.fastq.gz` for single sgRNA screens
+  -o <output-directory>
+  --write-count-matrix
+```
+
+A draft code to process FASTQ files and generate counts for [CRISPRa/i-dual-sgRNA-screens](#dcas9-crisprai-dual-sgrna-screens) dataset:
   
 ```bash
 screenpro guidecounter
@@ -78,7 +91,7 @@ screenpro guidecounter
   --dual-guide-design
   -l <path-to-CRISPR-library-table>
   -p <path-to-fastq-directory>
-  -s <sample-id-1>,<sample2-id>
+  -s <sample-id-1>,<sample2-id>       # comma-separated list of sample ids, i.e. `<sample_id>_R[1,2].fastq.gz` for dual sgRNA screens
   -o <output-directory>
   --write-count-matrix
 ```
@@ -95,7 +108,7 @@ Currently, `GuideCounter` class from the `ngs` module can process FASTQ files an
 CRISPR screens with [single](#dcas9-crisprai-single-sgrna-screens) or [dual](#dcas9-crisprai-dual-sgrna-screens) 
 guide design. 
 
-Here is a draft code to process FASTQ files and generate counts for an experiment with [CRISPRi-dual-sgRNA-screens](#dcas9-crisprai-dual-sgrna-screens):
+Here is a draft code to process FASTQ files and generate counts for an experiment with [CRISPRa/i-dual-sgRNA-screens](#dcas9-crisprai-dual-sgrna-screens):
 
 ```python
 # Initialize the GuideCounter object
@@ -117,7 +130,7 @@ counter.get_counts_matrix(
 )
 ```
 
-Here is a draft code to process FASTQ files and generate counts for an experiment with [CRISPRi-dual-sgRNA-screens](#crispri-dual-sgrna-screens):
+Here is a draft code to process FASTQ files and generate counts for an experiment with [CRISPRa/i-dual-sgRNA-screens](#crispri-dual-sgrna-screens):
 
 
 ```python
