@@ -1,6 +1,6 @@
 import polars as pl
 from screenpro import ngs
-
+from screenpro.ngs import GuideCounter
 
 def test_cas9_single_guide():
     df_count = ngs.cas9.fastq_to_count_single_guide(
@@ -25,3 +25,6 @@ def test_cas9_dual_guide():
     )
 
     assert isinstance(df_count, pl.DataFrame)
+
+def test_guide_counter():
+    pass

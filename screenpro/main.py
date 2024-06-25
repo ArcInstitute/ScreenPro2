@@ -3,18 +3,19 @@ import sys
 import os 
 import pandas as pd
 import polars as pl
-
+from glob import glob
+from simple_colors import green
 from .__init__ import __version__
 from . import ngs
 
 def add_counter_parser(parent_subparsers, parent):
-    name = "counter"
+    name = "guidecounter"
     desc = "Process FASTQ files to count sgRNA sequences."
     help = """
     Example usage:
 
-        `screenpro counter --single-guide-design -l <path-to-library> -s <path-to-sample-sheet>`
-        `screenpro counter --dual-guide-design -l <path-to-library> -s <path-to-sample-sheet>`
+        `screenpro guidecounter --single-guide-design -l <path-to-library> -s <path-to-sample-sheet>`
+        `screenpro guidecounter --dual-guide-design -l <path-to-library> -s <path-to-sample-sheet>`
     
     """
 
@@ -51,10 +52,25 @@ def add_counter_parser(parent_subparsers, parent):
     )
 
     sub_parser.add_argument(
-        "-s",
-        "--sample_sheet",
+        "-p",
+        "--path",
         type=str,
-        help="Path to sample sheet.",
+        required=True,
+        help="Path to directory containing FASTQ files."
+    )
+    
+    sub_parser.add_argument(
+        "-s",
+        "--samples",
+        required=True,
+        type=str,
+        help="Sample ID(s) to process. Regex can be used to match multiple samples."
+    )
+
+    sub_parser.add_argument(
+        "--write-count-matrix",
+        action="store_true",
+        help="Write count matrix to file."
     )
 
     sub_parser.add_argument(
@@ -124,7 +140,7 @@ def main():
 
     # Show module specific help if only module but no further arguments are given
     command_to_parser = {
-        "counter": counter_parser,
+        "guidecounter": counter_parser,
     }
 
     if len(sys.argv) == 2:
@@ -135,45 +151,76 @@ def main():
         sys.exit(1)
     
     ## counter return
-    if args.command == "counter":
+    if args.command == "guidecounter":
         ### Perform checks on input arguments
         ## Check if library platform is provided by user
         if args.single_guide_design:
-            library_type = "single_guide_design"
+            args.library_type = "single_guide_design"
         elif args.dual_guide_design:
-            library_type = "dual_guide_design"
+            args.library_type = "dual_guide_design"
         else:
             print("Library type not provided. Available options are '--single-guide-design' or '--dual-guide-design'. Exiting...")
             sys.exit(1)
 
-        if args.out:
+        if args.output:
             pass
         else:
             print("No output directory provided. Exiting...")
             sys.exit(1)
         
-        ### Parse input files: library, sample sheet, and fastq files
-        counter = ngs.Counter(args.cas_type, args.library_type)
-        ## 1. Load library table and check if required columns are present
-        counter.load_library(args.library)
-
-        counter.library.to_csv(
-            f"{args.out}/library.reformatted.tsv",
-            sep='\t'
-        )
-        print(f"Library table saved to {args.out}/library.reformatted.tsv")
-
-        ## 2. Load sample sheet and check if required information are provided
-        # Check if required columns are present
-        # TODO: Add more columns to check for sample sheet
-
         # Create saving directory
-        directory = "/".join(args.out.split("/")[:-1])
+        directory = "/".join(args.output.split("/")[:-1])
         if directory != "":
-            os.makedirs(directory, exist_ok=True)        
+            os.makedirs(directory, exist_ok=True)   
         
-        ## 3. Load FASTQ files and count sgRNA sequences
-        # Save count matrix
+        ### Parse input files: library, samples, and fastq files
+        counter = ngs.GuideCounter(args.cas_type, args.library_type)
+        
+        ## 1. Load library table and check if required columns are present
+        counter.load_library(
+            args.library, sep = '\t', index_col=False, 
+            verbose=True
+        )
 
-        # TODO: Implement counter workflow.
-        # process FASTQ files to generate counts per sample and then save a count matrix.
+        counter.library.to_pandas().to_csv(
+            f"{args.output}/library.reformatted.tsv", sep = '\t',
+        )
+        print(f"Library table saved to {args.output}/library.reformatted.tsv")
+
+        ## 2. Get list of samples to process
+        #TODO: Implement regex to match multiple samples
+        samples = args.samples.split(",")
+
+        if len(samples) == 0:
+            print(f"No samples found in {args.path}/{args.samples}. Exiting...")
+            sys.exit(1)
+        
+        print(f"Samples to process: {','.join(samples)}")
+
+        ## 3. Load FASTQ files and count sgRNA sequences
+        counter.get_counts_matrix(
+            fastq_dir = args.path,
+            samples = samples,
+            # get_recombinant=True,
+            # write='force',
+            verbose = True
+        )
+        print("Finished FASTQ processing.")
+
+        # Save counts for each sample
+        for sample in samples:
+            cnt = counter.counts_mat[[sample]].rename(columns={sample: 'count'}).astype({'count': int})
+            cnt.to_csv(f"{args.output}/{sample}.counts.tsv", sep='\t')
+            print(f"Counts for sample {sample} saved to {args.output}/{sample}.counts.tsv")
+
+        # Save count matrix
+        if args.write_count_matrix:
+            counter.counts_mat.to_csv(
+                f"{args.output}/count_matrix.tsv",
+                sep='\t'
+            )
+            print(f"Count matrix saved to {args.output}/count_matrix.tsv")
+
+        # Pipeline finished
+        print(green("Your run is finished successfully."))
+        sys.exit(0)
