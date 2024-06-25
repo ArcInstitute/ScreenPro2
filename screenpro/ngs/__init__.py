@@ -186,7 +186,7 @@ class GuideCounter:
         
         return out        
 
-    def get_counts_matrix(self, fastq_dir, samples, get_recombinant=False, cas_type='cas9', protospacer_length='auto', trim_first_g=False, write=True, parallel=False, verbose=False):
+    def get_counts_matrix(self, fastq_dir, samples, get_recombinant=False, cas_type='cas9', protospacer_length='auto', trim_first_g=False, write=True, verbose=False):
         '''Get count matrix for given samples
         '''
         if self.cas_type == 'cas9':
@@ -198,22 +198,18 @@ class GuideCounter:
                 if protospacer_length == 'auto':
                     protospacer_length = self.library['protospacer'].str.lengths().unique().to_list()[0]
 
-                if parallel:
-                    raise NotImplementedError("Parallel processing is not yet implemented.")
-
-                else:
-                    for sample_id in samples:
-                        cnt = self._process_cas9_single_guide_sample(
-                            fastq_dir=fastq_dir, 
-                            sample_id=sample_id, 
-                            trim_first_g=trim_first_g,
-                            protospacer_length=protospacer_length,
-                            write=write,
-                            verbose=verbose
-                        )
-                        
-                        counts[sample_id] = cnt['mapped']
-            
+                for sample_id in samples:
+                    cnt = self._process_cas9_single_guide_sample(
+                        fastq_dir=fastq_dir, 
+                        sample_id=sample_id, 
+                        trim_first_g=trim_first_g,
+                        protospacer_length=protospacer_length,
+                        write=write,
+                        verbose=verbose
+                    )
+                    
+                    counts[sample_id] = cnt['mapped']
+        
                 counts_mat = pd.concat([
                     counts[sample_id].to_pandas().set_index('sgID')['count'].rename(sample_id)
                     for sample_id in counts.keys()
@@ -234,28 +230,20 @@ class GuideCounter:
                 else:
                     raise ValueError("Invalid protospacer_length argument. If not 'auto', please provide an integer or a dictionary with 'protospacer_A' and 'protospacer_B' keys.")
 
-                if parallel:
-                    raise NotImplementedError("Parallel processing is not yet implemented.")
-                    # pool = mp.Pool(len(samples))
-                    # pool.map(process_sample, samples)
-                    # pool.close()
-                    # pool.join()
-                
-                else:
-                    for sample_id in samples:
-                        cnt = self._process_cas9_dual_guide_sample(
-                            fastq_dir=fastq_dir, 
-                            sample_id=sample_id, 
-                            get_recombinant=get_recombinant, 
-                            trim_first_g=trim_first_g,
-                            protospacer_A_length=protospacer_A_length,
-                            protospacer_B_length=protospacer_B_length,
-                            write=write, 
-                            verbose=verbose
-                        )
-                        counts[sample_id] = cnt['mapped']
-                        if get_recombinant:
-                            recombinants[sample_id] = cnt['recombinant']
+                for sample_id in samples:
+                    cnt = self._process_cas9_dual_guide_sample(
+                        fastq_dir=fastq_dir, 
+                        sample_id=sample_id, 
+                        get_recombinant=get_recombinant, 
+                        trim_first_g=trim_first_g,
+                        protospacer_A_length=protospacer_A_length,
+                        protospacer_B_length=protospacer_B_length,
+                        write=write, 
+                        verbose=verbose
+                    )
+                    counts[sample_id] = cnt['mapped']
+                    if get_recombinant:
+                        recombinants[sample_id] = cnt['recombinant']
                 
                 counts_mat = pd.concat([
                     counts[sample_id].to_pandas().set_index('sgID_AB')['count'].rename(sample_id) 
