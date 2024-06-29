@@ -21,6 +21,7 @@ def runDESeq(adata, design, tested_level, ref_level, n_cpus=8):
         design_factors=design,  # compare samples based on the "condition"
         refit_cooks=True,
         inference=inference,
+        quiet=True
     )
 
     dds.deseq2()
@@ -28,7 +29,7 @@ def runDESeq(adata, design, tested_level, ref_level, n_cpus=8):
     stat_res = DeseqStats(
         dds, 
         contrast=[design, tested_level, ref_level], 
-        inference=inference
+        inference=inference,
     )
     stat_res.summary()
 
