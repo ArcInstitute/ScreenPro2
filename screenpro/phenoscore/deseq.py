@@ -2,10 +2,10 @@
 deseq module: adapt pyDESeq2 for use in ScreenPro2 package
 """
 
-import sys 
 import numpy as np
 import pandas as pd
 import anndata as ad
+import os, contextlib
 
 from pydeseq2.dds import DeseqDataSet
 from pydeseq2.default_inference import DefaultInference
@@ -34,7 +34,10 @@ def runDESeq(adata, design, tested_level, ref_level, n_cpus=8,quiet=False):
         quiet=quiet
     )
     
-    sys.stdout = open(stat_res.summary(), 'w')
+
+    with open(os.devnull, 'w') as devnull:
+        with contextlib.redirect_stdout(devnull):
+            stat_res.summary()
 
     df = stat_res.results_df
 
