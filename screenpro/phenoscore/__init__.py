@@ -6,7 +6,7 @@ import numpy as np
 import anndata as ad
 import pandas as pd
 
-from deseq import runDESeq
+from .deseq import runDESeq
 from .phenostat import matrixStat, getFDR
 
 
