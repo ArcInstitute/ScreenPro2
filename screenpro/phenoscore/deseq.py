@@ -12,7 +12,7 @@ from pydeseq2.default_inference import DefaultInference
 from pydeseq2.ds import DeseqStats
 
 
-def runDESeq(adata, design, tested_level, ref_level, n_cpus=8):
+def runDESeq(adata, design, tested_level, ref_level, n_cpus=8,quiet=False):
 
     inference = DefaultInference(n_cpus=n_cpus)
     
@@ -22,7 +22,7 @@ def runDESeq(adata, design, tested_level, ref_level, n_cpus=8):
         design_factors=design,  # compare samples based on the "condition"
         refit_cooks=True,
         inference=inference,
-        quiet=True
+        quiet=quiet
     )
 
     dds.deseq2()
@@ -31,7 +31,7 @@ def runDESeq(adata, design, tested_level, ref_level, n_cpus=8):
         dds, 
         contrast=[design, tested_level, ref_level], 
         inference=inference,
-        quiet=True
+        quiet=quiet
     )
     
     sys.stdout = open(stat_res.summary(), 'w')
