@@ -30,6 +30,7 @@ def runDESeq(adata, design, tested_level, ref_level, n_cpus=8):
         dds, 
         contrast=[design, tested_level, ref_level], 
         inference=inference,
+        quiet=True
     )
     stat_res.summary()
 
