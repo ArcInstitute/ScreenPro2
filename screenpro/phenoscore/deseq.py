@@ -15,7 +15,7 @@ from pydeseq2.ds import DeseqStats
 def runDESeq(adata, design, n_cpus=8,quiet=False):
 
     inference = DefaultInference(n_cpus=n_cpus)
-    
+
     dds = DeseqDataSet(
         counts=adata.to_df().astype(int),
         metadata=adata.obs,
@@ -36,8 +36,6 @@ def extractDESeqResults(dds, design, tested_level, ref_level, n_cpus=8, quiet=Fa
 
     result_name = f'{tested_level}_vs_{ref_level}'
 
-    print(f'\t{tested_level}_vs_{ref_level}')
-
     stat_res = DeseqStats(
         dds, 
         contrast=[design, tested_level, ref_level], 
@@ -45,7 +43,6 @@ def extractDESeqResults(dds, design, tested_level, ref_level, n_cpus=8, quiet=Fa
         quiet=quiet
     )
     
-
     with open(os.devnull, 'w') as devnull:
         with contextlib.redirect_stdout(devnull):
             stat_res.summary()
