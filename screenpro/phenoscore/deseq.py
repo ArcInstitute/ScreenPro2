@@ -16,6 +16,8 @@ def runDESeq(adata, design, n_cpus=8,quiet=False):
 
     inference = DefaultInference(n_cpus=n_cpus)
 
+    print(f'\tcreating `dds` object...')
+    
     dds = DeseqDataSet(
         counts=adata.to_df().astype(int),
         metadata=adata.obs,
@@ -35,6 +37,8 @@ def extractDESeqResults(dds, design, tested_level, ref_level, n_cpus=8, quiet=Fa
     inference = DefaultInference(n_cpus=n_cpus)
 
     result_name = f'{tested_level}_vs_{ref_level}'
+
+    print(f'\t{tested_level}_vs_{ref_level}')
 
     stat_res = DeseqStats(
         dds, 
