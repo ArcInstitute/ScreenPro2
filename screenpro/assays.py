@@ -25,7 +25,7 @@ class PooledScreens(object):
             fc_transformation (str): fold change transformation to apply for calculating phenotype scores
             test (str): statistical test to use for calculating phenotype scores
         """
-        self.adata = adata
+        self.adata = adata.copy()
         self.pdata = None
         self.fc_transformation = fc_transformation
         self.test = test
