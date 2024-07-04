@@ -32,7 +32,7 @@ def runDESeq(adata, design, n_cpus=8,quiet=False):
     return dds
 
 
-def extractDESeqResults(dds, design, tested_level, ref_level, n_cpus=8, quiet=False):
+def extractDESeqResults(dds, design, ref_level, tested_level, n_cpus=8, quiet=False):
 
     inference = DefaultInference(n_cpus=n_cpus)
 
