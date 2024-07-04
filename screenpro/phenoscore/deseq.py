@@ -34,7 +34,9 @@ def extractDESeqResults(dds, design, tested_level, ref_level, n_cpus=8, quiet=Fa
 
     inference = DefaultInference(n_cpus=n_cpus)
 
-    name = f'{tested_level}_vs_{ref_level}'
+    result_name = f'{tested_level}_vs_{ref_level}'
+
+    print(f'\t{tested_level}_vs_{ref_level}')
 
     stat_res = DeseqStats(
         dds, 
@@ -48,6 +50,6 @@ def extractDESeqResults(dds, design, tested_level, ref_level, n_cpus=8, quiet=Fa
         with contextlib.redirect_stdout(devnull):
             stat_res.summary()
 
-    df = stat_res.results_df
+    results = stat_res.results_df
 
-    return name, df
+    return result_name, results
