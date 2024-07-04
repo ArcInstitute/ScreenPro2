@@ -12,7 +12,7 @@ from pydeseq2.default_inference import DefaultInference
 from pydeseq2.ds import DeseqStats
 
 
-def runDESeq(adata, design, tested_level, ref_level, n_cpus=8,quiet=False):
+def runDESeq(adata, design, n_cpus=8,quiet=False):
 
     inference = DefaultInference(n_cpus=n_cpus)
     
@@ -26,6 +26,13 @@ def runDESeq(adata, design, tested_level, ref_level, n_cpus=8,quiet=False):
     )
 
     dds.deseq2()
+
+    return dds
+
+
+def extractDESeqResults(dds, design, tested_level, ref_level, n_cpus=8, quiet=False):
+
+    inference = DefaultInference(n_cpus=n_cpus)
 
     stat_res = DeseqStats(
         dds, 
