@@ -65,17 +65,14 @@ def draw_threshold(x, threshold, pseudo_sd):
 
 ## Scatter plot of replicates
 
-def plotReplicateScatter(ax, adat_in, x, y, title, min_val=None, max_val=None, log_transform='log10(x+1)', **args):
+def plotReplicateScatter(ax, adat_in, x, y, title, min_val=None, max_val=None, log_transform=False, **args):
     adat = adat_in[[x, y], :].copy()
 
     adat.obs.index = [f'Replicate {str(r)}' for r in adat.obs.replicate.to_list()]
     x_lab, y_lab = [f'Replicate {str(r)}' for r in adat.obs.replicate.to_list()]
 
     if log_transform:
-        if log_transform == 'log1p':
-            adat = sc.pp.log1p(adat)
-        elif log_transform == 'log10(x+1)':
-            adat.X = np.log10(adat.X+1)
+        adat.X = np.log10(adat.X+1)
     
     if min_val is None:
         min_val = min([adat.to_df().loc[x_lab,:].min(), adat.to_df().loc[y_lab,:].min()])
