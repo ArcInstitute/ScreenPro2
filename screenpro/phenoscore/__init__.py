@@ -1,5 +1,12 @@
-"""
-phenoscore module
+## Copyright (c) 2022-2024 ScreenPro2 Development Team.
+## All rights reserved.
+## Gilbart Lab, UCSF / Arc Institute.
+## Multi-Omics Tech Center, Arc Insititue.
+
+"""phenoscore module
+
+This module contains functions for calculating relative phenotypes from CRISPR screens
+datasets.
 """
 
 import numpy as np
