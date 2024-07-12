@@ -9,19 +9,8 @@ used for the screen, the functions are divided into two classes:
 `Cas9` and `Cas12`.
 
 ------------------------------------------------------------------------
-
-::: {.automodule members="" undoc-members="" show-inheritance=""}
-screenpro.ngs
-:::
-
-::: {.automodule members="" undoc-members="" show-inheritance=""}
-screenpro.ngs.GuideCounter
-:::
-
-::: {.automodule members="" undoc-members="" show-inheritance=""}
-screenpro.ngs.cas9
-:::
-
-::: {.automodule members="" undoc-members="" show-inheritance=""}
-screenpro.ngs.cas12
-:::
+```{eval-rst}  
+.. automodule:: screenpro.ngs
+   :members:
+   :show-inheritance:
+```
