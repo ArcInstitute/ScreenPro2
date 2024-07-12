@@ -40,6 +40,7 @@ import os
 
 from . import cas9
 from . import cas12
+from .utils import find_low_counts, addPseudoCount
 from ..load import load_cas9_sgRNA_library
 from simple_colors import green
 
@@ -384,3 +385,8 @@ class GuideCounter:
             return rdata
         else:
             raise ValueError("Invalid source argument. Please choose from 'mapped', 'recombinant' or 'library'. Note: 'mapped' and 'library' act the same way.")
+
+    def filter_low_counts(self, filter_type='either', minimum_reads=50, verbose=False):
+        '''Filter low counts from count matrix
+        '''
+        raise NotImplementedError("This method is not yet implemented.")
