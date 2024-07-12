@@ -48,8 +48,16 @@ module](https://docs.scipy.org/doc/scipy/reference/generated/scipy.stats.ttest_r
 > This is a test for the null hypothesis that two related or repeated
 > samples have identical average (expected) values.
 
-------------------------------------------------------------------------
+___
 
-::: {.automodule members="" show-inheritance=""}
-screenpro.phenoscore
-:::
+```{eval-rst}  
+.. automodule:: screenpro.phenoscore
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+.. automodule:: screenpro.phenostats
+   :members:
+   :undoc-members:
+   :show-inheritance:
+```
