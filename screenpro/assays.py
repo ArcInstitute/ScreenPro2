@@ -1,5 +1,10 @@
-"""
-Assays module
+## Copyright (c) 2022-2024 ScreenPro2 Development Team.
+## All rights reserved.
+## Gilbart Lab, UCSF / Arc Institute.
+## Multi-Omics Tech Center, Arc Insititue.
+
+"""Assays module
+
 """
 
 import numpy as np
@@ -10,7 +15,7 @@ import scanpy as sc
 from pydeseq2 import preprocessing
 from .phenoscore.deseq import runDESeq, extractDESeqResults
 from .phenoscore import runPhenoScore, runPhenoScoreForReplicate
-from .utils import ann_score_df
+from .ngs.utils import ann_score_df
 from copy import copy
 
 

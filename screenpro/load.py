@@ -1,11 +1,15 @@
-"""
-Module for loading screen datasets
+## Copyright (c) 2022-2024 ScreenPro2 Development Team.
+## All rights reserved.
+## Gilbart Lab, UCSF / Arc Institute.
+## Multi-Omics Tech Center, Arc Insititue.
+
+"""Load module
+
+Functions to load screen datasets and sgRNA library tables.
 """
 
 import pickle
 import pandas as pd
-
-from .utils import check_protospacer_length, trim_protospacer
 
 
 def load_cas9_sgRNA_library(library_path, library_type, sep='\t', index_col=0, protospacer_length=19, verbose=True, **args):
@@ -38,12 +42,12 @@ def load_cas9_sgRNA_library(library_path, library_type, sep='\t', index_col=0, p
         library['protospacer'] = library['protospacer'].str.upper()
 
         protospacer_col = 'protospacer'
-        in_length = check_protospacer_length(library, 'protospacer')
+        in_length = _check_protospacer_length(library, 'protospacer')
         if in_length == protospacer_length:
             pass
         elif in_length > protospacer_length:
             if verbose: print(f"Trimming protospacer sequences in '{protospacer_col}' column.")
-            library = trim_protospacer(
+            library = _trim_protospacer(
                 library, protospacer_col, 
                 '5prime', 
                 in_length - protospacer_length
@@ -82,12 +86,12 @@ def load_cas9_sgRNA_library(library_path, library_type, sep='\t', index_col=0, p
 
         # # TODO: Enable trimming of protospacer sequences through command line arguments.
         for protospacer_col in ['protospacer_A', 'protospacer_B']:
-            in_length = check_protospacer_length(library, protospacer_col) 
+            in_length = _check_protospacer_length(library, protospacer_col) 
             if in_length == protospacer_length:
                 pass
             elif in_length > protospacer_length:
                 if verbose: print(f"Trimming protospacer sequences in '{protospacer_col}' column.")
-                library = trim_protospacer(
+                library = _trim_protospacer(
                     library, protospacer_col, 
                     '5prime', 
                     in_length - protospacer_length
@@ -189,7 +193,26 @@ def loadScreenProcessingData(experimentName, collapsedToTranscripts=True, premer
     return dataDict
 
 
-def write_screen_pkl(screen, name):
+def _check_protospacer_length(library, protospacer_col):
+    lengths = list(set(library[protospacer_col].str.len()))
+    if len(lengths) > 1:
+        raise ValueError(f"Protospacer lengths are not uniform: {lengths}")
+    else:
+        length = lengths[0]
+        return length
+
+
+def _trim_protospacer(library, protospacer_col, trim_side, trim_len):
+    if trim_side == '5prime':
+        library[protospacer_col] = library[protospacer_col].str[trim_len:].str.upper()
+    
+    elif trim_side == '3prime':
+        library[protospacer_col] = library[protospacer_col].str[:-trim_len].str.upper()
+    
+    return library
+
+
+def _write_screen_pkl(screen, name):
     """
     Write AnnData object to a pickle file
     
@@ -203,7 +226,7 @@ def write_screen_pkl(screen, name):
         print(f'Object successfully saved to "{file_name}"')
 
 
-def read_screen_pkl(name):
+def _read_screen_pkl(name):
     """
     Read ScreenPro object from a pickle file
     
