@@ -15,7 +15,7 @@ import scanpy as sc
 from pydeseq2 import preprocessing
 from .phenoscore.deseq import runDESeq, extractDESeqResults
 from .phenoscore import runPhenoScore, runPhenoScoreForReplicate
-from .ngs.utils import ann_score_df
+from .phenoscore.annotate import ann_score_df
 from copy import copy
 
 
