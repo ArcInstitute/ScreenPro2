@@ -2,9 +2,10 @@
 History
 =======
 
-0.4.0 (coming soon)
+0.3.1 - 0.4.0 (June 2024 - July 2024)
 ~~~~~~~~~~~~~~~~~~~
 * add command line interface
+* major bug fixes and improvements in code formatting
 
 0.2.11 - 0.3.0 (Apr 2024 - May 2024)
 ~~~~~~~~~~~~~~~~~
