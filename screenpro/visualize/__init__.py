@@ -3,13 +3,9 @@
 ## Gilbart Lab, UCSF / Arc Institute.
 ## Multi-Omics Tech Center, Arc Insititue.
 
-import pandas as pd
 import numpy as np
-import matplotlib.pyplot as plt
-import matplotlib
-from ..ngs.utils import ann_score_df
-from .utils import almost_black
 import scanpy as sc
+from .utils import almost_black
 
 
 ## Scatter plot of replicates
