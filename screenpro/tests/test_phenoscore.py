@@ -32,7 +32,7 @@ def test_runPhenoScore():
                     'ATGCGTATGCGTATGCATC',
                     'CATCGTATGCGTATGCGTG'
                 ],
-                'targetType': ['gene'] * 8 + ['negCtrl'] * 2
+                'targetType': ['gene'] * 8 + ['negative_control'] * 2
             },
             index=pd.Index(['targetID_' + str(i) for i in range(10)], name='target')
         )
@@ -52,7 +52,7 @@ def test_runPhenoScore():
         score_level='compare_reps',
         growth_rate=1,
         n_reps=2,
-        ctrl_label='negCtrl'
+        ctrl_label='negative_control'
     )
 
     # check result name

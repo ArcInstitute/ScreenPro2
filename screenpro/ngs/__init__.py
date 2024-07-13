@@ -40,7 +40,6 @@ import os
 
 from . import cas9
 from . import cas12
-from .utils import find_low_counts, addPseudoCount
 from ..load import load_cas9_sgRNA_library
 from simple_colors import green
 
@@ -56,12 +55,12 @@ class GuideCounter:
         self.counts_mat = None
         self.recombinants = None
 
-    def load_library(self, library_path, sep='\t', index_col=0, protospacer_length=19, verbose=False):
+    def load_library(self, library_path, sep='\t', index_col=0, protospacer_length=19, verbose=False, **args):
         '''Load library file
         '''
         if self.cas_type == 'cas9':
 
-            library = load_cas9_sgRNA_library(library_path, library_type=self.library_type, sep=sep, index_col=index_col, protospacer_length=protospacer_length, verbose=verbose)
+            library = load_cas9_sgRNA_library(library_path, library_type=self.library_type, sep=sep, index_col=index_col, protospacer_length=protospacer_length, verbose=verbose, **args)
 
             # Check if the library has duplicate sequences and remove them
             if library.duplicated('sequence').any():
@@ -300,9 +299,9 @@ class GuideCounter:
         var_table['targetType'] = ''
         var_table['target'] = ''
 
-        ### assign target types: control
+        ### assign target types: negative_control
         control_targets = (var_table.target_A.eq(ctrl_label)) & (var_table.target_B.eq(ctrl_label))
-        var_table.loc[control_targets,'targetType']  = 'control'
+        var_table.loc[control_targets,'targetType']  = 'negative_control'
         var_table.loc[control_targets,'target']  = ctrl_label
 
         ### assign target types: gene
@@ -310,24 +309,28 @@ class GuideCounter:
         var_table.loc[same_gene_targets,'targetType']  = 'gene'
         var_table.loc[same_gene_targets,'target']  = var_table.target_A # or target_B
 
-        ### assign target types: gene-control
+        ### assign target types: gene-negative_control
         gene_control_targets = ~(var_table.target_A.eq(ctrl_label)) & (var_table.target_B.eq(ctrl_label))
-        var_table.loc[gene_control_targets,'targetType']  = 'gene-control'
+        var_table.loc[gene_control_targets,'targetType']  = 'gene--negative_control'
         var_table.loc[gene_control_targets,'target']  = var_table.target_A + '|' + var_table.target_B
 
-        ### assign target types: control-gene
+        ### assign target types: negative_control-gene
         control_gene_targets = (var_table.target_A.eq(ctrl_label)) & ~(var_table.target_B.eq(ctrl_label))
-        var_table.loc[control_gene_targets,'targetType']  = 'control-gene'
+        var_table.loc[control_gene_targets,'targetType']  = 'negative_control--negative_control'
         var_table.loc[control_gene_targets,'target']  = var_table.target_A + '|' + var_table.target_B
 
         ### assign target types: gene-gene
         gene_gene_targets = (var_table.target_A != var_table.target_B) & ~(var_table.target_A.eq(ctrl_label)) & ~(var_table.target_B.eq(ctrl_label))
-        var_table.loc[gene_gene_targets,'targetType']  = 'gene-gene'
+        var_table.loc[gene_gene_targets,'targetType']  = 'gene--gene'
         var_table.loc[gene_gene_targets,'target']  = var_table.target_A + '|' + var_table.target_B
 
         var_table.index.name = None
         var_table.targetType = pd.Categorical(
-            var_table.targetType, categories=['gene','gene-gene','gene-control','control-gene','control']
+            var_table.targetType, categories=[
+                'gene','gene--gene',
+                'gene--negative_control','negative_control--gene',
+                'negative_control'
+            ]
         ).remove_unused_categories()
 
         var_table['sequence'] = var_table['protospacer_A'] + ';' + var_table['protospacer_B']

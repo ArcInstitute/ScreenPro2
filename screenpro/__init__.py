@@ -19,7 +19,7 @@ This package contains several modules, including:
 '''
 
 from . import phenoscore as ps
-
+from . import preprocessing as pp
 from . import ngs
 from . import assays
 from . import load
@@ -28,6 +28,6 @@ from . import visualize as viz
 from .ngs import GuideCounter
 from .assays import PooledScreens, GImaps
 
-__version__ = "0.4.1"
+__version__ = "0.4.2"
 __author__ = "Abe Arab"
 __email__ = 'abea@arcinstitute.org' # "abarbiology@gmail.com"

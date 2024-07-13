@@ -13,123 +13,20 @@ import numpy as np
 import anndata as ad
 import pandas as pd
 
-from .deseq import runDESeq
-from .phenostat import matrixStat, getFDR
+from .delta import calculatePhenotypeScore, matrixTest
+from .deseq import runDESeq, extractDESeqResults
+from .annotate import annotateScoreTable
+from .phenostat import getFDR
 
 
-def calculateDelta(x, y, transformation, level):
-    """Calculate log ratio of y / x.
-    `level` == 'all' (i.e. averaged across all values, sgRNA library elements and replicates)
-    `level` == 'col' (i.e. averaged across columns, replicates)
-
-    Args:
-        x (np.array): array of values
-        y (np.array): array of values
-        transformation (str): transformation to use for calculating score
-        level (str): level to use for calculating score
-    
-    Returns:
-        np.array: array of log ratio values
-    """
-    # check if transformation is implemented
-    if transformation not in ['log2', 'log2(x+1)', 'log10', 'log1p']:
-        raise ValueError(f'transformation "{transformation}" not recognized')
-    
-    if level == 'all':
-        # average across all values
-        if transformation == 'log2':
-            return np.log2(y) - np.log2(x)
-        elif transformation == 'log2(x+1)':
-            return np.mean(np.log2(y+1) - np.log2(x+1))
-        elif transformation == 'log10':
-            return np.mean(np.log10(y) - np.log10(x))
-        elif transformation == 'log1p':
-            return np.mean(np.log1p(y) - np.log1p(x))
-    elif level == 'row':
-        # average across rows
-        if transformation == 'log2':
-            return np.log2(y) - np.log2(x)
-        elif transformation == 'log2(x+1)':
-            return np.mean(np.log2(y+1) - np.log2(x+1), axis=0)
-        elif transformation == 'log10':
-            return np.mean(np.log10(y) - np.log10(x), axis=0)
-        elif transformation == 'log1p':
-            return np.mean(np.log1p(y) - np.log1p(x), axis=0)
-    elif level == 'col':
-        # average across columns
-        if transformation == 'log2':
-            return np.mean(np.log2(y) - np.log2(x), axis=1)
-        elif transformation == 'log2(x+1)':
-            return np.mean(np.log2(y+1) - np.log2(x+1), axis=1)
-        elif transformation == 'log10':
-            return np.mean(np.log10(y) - np.log10(x), axis=1)
-        elif transformation == 'log1p':
-            return np.mean(np.log1p(y) - np.log1p(x), axis=1)
-
-
-def calculatePhenotypeScore(x, y, x_ctrl, y_ctrl, growth_rate, transformation, level):
-    """Calculate phenotype score normalized by negative control and growth rate.
-    
-    Args:
-        x (np.array): array of values
-        y (np.array): array of values
-        x_ctrl (np.array): array of values
-        y_ctrl (np.array): array of values
-        growth_rate (int): growth rate
-        transformation (str): transformation to use for calculating score
-        level (str): level to use for calculating score
-    
-    Returns:
-        np.array: array of scores
-    """
-    # calculate control median and std
-    ctrl_median = np.median(calculateDelta(x=x_ctrl, y=y_ctrl, transformation=transformation, level=level))
-
-    # calculate delta
-    delta = calculateDelta(x=x, y=y, transformation=transformation, level=level)
-
-    # calculate score
-    return (delta - ctrl_median) / growth_rate
-
-
-def matrixTest(x, y, x_ctrl, y_ctrl, transformation, level, test = 'ttest', growth_rate = 1):
-    """Calculate phenotype score and p-values comparing `y` vs `x` matrices.
-
-    Args:
-        x (np.array): array of values
-        y (np.array): array of values
-        x_ctrl (np.array): array of values
-        y_ctrl (np.array): array of values
-        transformation (str): transformation to use for calculating score
-        level (str): level to use for calculating score and p-value
-        test (str): test to use for calculating p-value
-        growth_rate (int): growth rate
-    
-    Returns:
-        np.array: array of scores
-        np.array: array of p-values
-    """
-    # calculate growth score
-    scores = calculatePhenotypeScore(
-        x = x, y = y, x_ctrl = x_ctrl, y_ctrl = y_ctrl,
-        growth_rate = growth_rate, transformation = transformation,
-        level = level
-    )
-
-    # compute p-value
-    p_values = matrixStat(x, y, test=test, level = level)
-
-    return scores, p_values
-
-
-def generatePseudoGeneAnnData(adata, num_pseudogenes='auto', pseudogene_size='auto', ctrl_label='control'):
+def generatePseudoGeneAnnData(adata, num_pseudogenes='auto', pseudogene_size='auto', ctrl_label='negative_control'):
     """Generate pseudogenes from negative control elements in the library.
 
     Args:
         adata (AnnData): AnnData object
         num_pseudogenes (int): number of pseudogenes to generate
         pseudogene_size (int): number of sgRNA elements in each pseudogene
-        ctrl_label (str): control label, default is 'control'
+        ctrl_label (str): control label, default is 'negative_control'
     
     Returns:
         AnnData: AnnData object with pseudogenes
@@ -171,27 +68,9 @@ def generatePseudoGeneAnnData(adata, num_pseudogenes='auto', pseudogene_size='au
     return out
 
 
-def calculateZScorePhenotypeScore(score_df,ctrl_label='control'):
-    """Calculate z-score normalized phenotype score.
-    
-    Args:
-        score_df (pd.DataFrame): dataframe of scores that includes `score` and `targetType` columns
-        ctrl_label (str): control label, default is 'control'
-    
-    Returns:
-        pd.Series: z-score normalized phenotype score
-    """
-    # calculate control median and std
-    ctrl_std = score_df[score_df.targetType.eq(ctrl_label)].score.std()
-    # z-score normalization
-    out = score_df.score / ctrl_std
-
-    return out
-
-
 def runPhenoScore(adata, cond1, cond2, transformation, score_level, test,
                   growth_rate=1, n_reps=2, keep_top_n = None,num_pseudogenes='auto', pseudogene_size='auto',
-                  count_layer=None, get_z_score=False, ctrl_label='control'):
+                  count_layer=None, ctrl_label='negative_control'):
     """Calculate phenotype score and p-values when comparing `cond2` vs `cond1`.
 
     Args:
@@ -207,8 +86,7 @@ def runPhenoScore(adata, cond1, cond2, transformation, score_level, test,
         num_pseudogenes (int): number of pseudogenes to generate
         pseudogene_size (int): number of sgRNA elements in each pseudogene
         count_layer (str): count layer to use for calculating score, default is None (use default count layer in adata.X)
-        get_z_score (bool): boolean to calculate z-score normalized phenotype score and add as a new column (default is False)
-        ctrl_label (str): control label
+        ctrl_label (str): control label, default is 'negative_control'
     
     Returns:
         str: result name
@@ -264,18 +142,11 @@ def runPhenoScore(adata, cond1, cond2, transformation, score_level, test,
             pd.Series(scores, index=adata.var.index, name='score'),
         ], axis=1)
         
-        if get_z_score:
-            # z-score normalization
-            result['z_score'] = calculateZScorePhenotypeScore(result, ctrl_label=ctrl_label)
         # add p-values
         result[f'{test} pvalue'] = p_values
         result['BH adj_pvalue'] = adj_p_values
     
     elif score_level in ['compare_guides']:
-        if n_reps == 2:
-            pass
-        else:
-            raise ValueError('Currently, only n_reps=2 is supported for score_level="compare_guides"')
         # keep original adata for later use
         adata0 = adata.copy()
 
@@ -327,37 +198,27 @@ def runPhenoScore(adata, cond1, cond2, transformation, score_level, test,
             p_values.append(target_p_values)
             targets.append(target_name)
         
+        # get mean scores and p-values across replicates
+        scores = [np.mean(s) for s in scores]
+        p_values = [np.mean(p) for p in p_values]
+
+        # get adjusted p-values
+        adj_p_values = getFDR(p_values)
+        
         # combine results into a dataframe
         result = pd.concat([
-            pd.Series([np.mean(s) for s in scores], index=targets, name='score'),
-            pd.Series([np.mean(p) for p in p_values], index=targets, name=f'{test} pvalue'),
+            pd.Series(scores, index=targets, name='score'),
+            pd.Series(p_values, index=targets, name=f'{test} pvalue'),
+            pd.Series(adj_p_values, index=targets, name='BH adj_pvalue'),
         ], axis=1)
-
-        # # combine results into a dataframe
-        # result = pd.concat({
-        #     'replicate_1':pd.concat([
-        #         pd.Series([s1 for s1,_ in scores], index=targets, name='score'),
-        #         pd.Series([p1 for p1,_ in p_values], index=targets, name=f'{test} pvalue'),
-                
-        #     ],axis=1),
-        #     'replicate_2':pd.concat([
-        #         pd.Series([s2 for _,s2 in scores], index=targets, name='score'),
-        #         pd.Series([p2 for _,p2 in p_values], index=targets, name=f'{test} pvalue'),
-        #     ],axis=1),
-        #     'replicate_ave':pd.concat([
-        #         pd.Series([np.mean([s1,s2]) for s1,s2 in scores], index=targets, name='score'),
-        #         pd.Series([np.mean([p1,p2]) for p1,p2 in p_values], index=targets, name=f'{test} pvalue'),
-        #     ],axis=1)
-        # },axis=1)
     
     else:
         raise ValueError(f'score_level "{score_level}" not recognized. Currently, "compare_reps" and "compare_guides" are supported.')
     
-    
     return result_name, result
 
 
-def runPhenoScoreForReplicate(adata, x_label, y_label, score, growth_factor_table, transformation, get_z_score=False, ctrl_label='control'):
+def runPhenoScoreForReplicate(adata, x_label, y_label, score, growth_factor_table, transformation, ctrl_label='negative_control'):
     """Calculate phenotype score for each pair of replicates.
 
     Args:
@@ -367,8 +228,7 @@ def runPhenoScoreForReplicate(adata, x_label, y_label, score, growth_factor_tabl
         score: score to use for calculating phenotype score, i.e. 'gamma', 'tau', or 'rho'
         growth_factor_table: dataframe of growth factors, i.e. output from `getGrowthFactors` function
         transformation (str): transformation to use for calculating score
-        get_z_score: boolean to calculate z-score normalized phenotype score instead of regular score (default is False)
-        ctrl_label: string to identify labels of negative control elements in sgRNA library (default is 'control')
+        ctrl_label: string to identify labels of negative control elements in sgRNA library (default is 'negative_control')
 
     Returns:
         pd.DataFrame: dataframe of phenotype scores
@@ -392,13 +252,7 @@ def runPhenoScoreForReplicate(adata, x_label, y_label, score, growth_factor_tabl
             level='row'  # there is only one column so `row` option here is equivalent to the value before averaging.
         )
 
-        if get_z_score:
-            res = calculateZScorePhenotypeScore(
-                pd.DataFrame({'score':res,'targetType':adat.var.targetType},index=adat.var.index),
-                ctrl_label=ctrl_label
-            )
-
-        results.update({f'replicate_{replicate}': res})
+        results.update({f'replicate_{replicate}': res.reshape(-1)})
 
     out = pd.DataFrame(
         results,

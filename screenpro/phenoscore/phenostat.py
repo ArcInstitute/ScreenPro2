@@ -1,5 +1,5 @@
 """
-phenostat module
+phenostat module: internal module for statistical analysis of phenoscore data.
 """
 
 from scipy.stats import ttest_rel

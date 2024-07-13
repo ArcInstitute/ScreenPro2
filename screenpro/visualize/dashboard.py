@@ -42,20 +42,24 @@ class DrugScreenDashboard(DataDashboard):
         self.plots = {}
         super().__init__()
 
-    def _prep_data(self,screen):
+    def _prep_data(self,screen, score_col='score', pvalue_col='pvalue'):
 
         gamma = screen.getPhenotypeScores(
             run_name=self.run_name,
             score_name=self.gamma_score_name,
-            ctrl_label=self.ctrl_label,
             threshold=self.threshold,
+            ctrl_label=self.ctrl_label,
+            score_col=score_col,
+            pvalue_col=pvalue_col
         )
 
         rho = screen.getPhenotypeScores(
             run_name=self.run_name,
             score_name=self.rho_score_name,
+            threshold=self.threshold,
             ctrl_label=self.ctrl_label,
-            threshold=self.threshold
+            score_col=score_col,
+            pvalue_col=pvalue_col
         )
 
         df = pd.DataFrame({

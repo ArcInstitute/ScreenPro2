@@ -5,49 +5,9 @@
 
 import numpy as np
 import scanpy as sc
-from .utils import almost_black
-
-
-## Scatter plot of replicates
-
-def plotReplicateScatter(ax, adat_in, x, y, title, min_val=None, max_val=None, log_transform=True, **args):
-    adat = adat_in[[x, y], :].copy()
-
-    adat.obs.index = [f'Replicate {str(r)}' for r in adat.obs.replicate.to_list()]
-    x_lab, y_lab = [f'Replicate {str(r)}' for r in adat.obs.replicate.to_list()]
-
-    if log_transform:
-        adat.X = np.log10(adat.X+1)
-    
-    if min_val is None:
-        min_val = min([adat.to_df().loc[x_lab,:].min(), adat.to_df().loc[y_lab,:].min()])
-        min_val = min_val * 1.1 
-    if max_val is None:
-        max_val = max([adat.to_df().loc[x_lab,:].max(), adat.to_df().loc[y_lab,:].max()])
-        max_val = max_val * 1.1
-    
-    sc.pl.scatter(
-        adat,
-        x_lab, y_lab,
-        legend_fontsize='xx-large',
-        palette=[almost_black, '#BFBFBF'],
-        color='targetType',
-        title=title,
-        size=5,
-        show=False,
-        ax=ax,
-        **args
-    )
-    ax.set_ylim(min_val, max_val)
-    ax.set_xlim(min_val, max_val)
-    ax.tick_params(axis='both', labelsize=10)
-    ax.get_legend().remove()
-
-    ax.grid(False)
-
+from .qc_plots import *
 
 ## Phenotype plotting functions
-
 class DrugScreenPlotter:
     def __init__(self, screen, treated, untreated, t0='T0', threshold=3, ctrl_label='negative_control',run_name='auto'):
         self.screen = screen
@@ -88,62 +48,78 @@ class DrugScreenPlotter:
                 ax.annotate(txt, (target_data[x_col].iloc[i] + t_x, target_data[y_col].iloc[i] + t_y),
                             color=textcolor, size=size_txt)
 
-    def _prep_data(self):
+    def _prep_data(self, score_col='score', pvalue_col='pvalue'):
 
         gamma = self.screen.getPhenotypeScores(
             run_name=self.run_name,
             score_name=self.gamma_score_name,
-            ctrl_label=self.ctrl_label,
             threshold=self.threshold,
+            ctrl_label=self.ctrl_label,
+            score_col=score_col,
+            pvalue_col=pvalue_col
         )
-        gamma['-log10(pvalue)'] = np.log10(gamma.pvalue) * -1
+
+        gamma[f'-log10({pvalue_col})'] = np.log10(gamma[pvalue_col]) * -1
 
         tau = self.screen.getPhenotypeScores(
             run_name=self.run_name,
             score_name=self.tau_score_name,
+            threshold=self.threshold,
             ctrl_label=self.ctrl_label,
-            threshold=self.threshold
+            score_col=score_col,
+            pvalue_col=pvalue_col
         )
-        tau['-log10(pvalue)'] = np.log10(tau.pvalue) * -1
+        tau[f'-log10({pvalue_col})'] = np.log10(tau[pvalue_col]) * -1
 
         rho = self.screen.getPhenotypeScores(
             run_name=self.run_name,
             score_name=self.rho_score_name,
+            threshold=self.threshold,
             ctrl_label=self.ctrl_label,
-            threshold=self.threshold
+            score_col=score_col,
+            pvalue_col=pvalue_col
         )
-        rho['-log10(pvalue)'] = np.log10(rho.pvalue) * -1
+        rho[f'-log10({pvalue_col})'] = np.log10(rho[pvalue_col]) * -1
 
         return gamma, tau, rho
     
     def _volcano(
             self, ax, df, up_hit, down_hit,
+            score_col='score', pvalue_col='pvalue',
             xlabel='phenotype score',
             ylabel='-log10(pvalue)',
             dot_size=1,
-            xlims=(-5, 5),
-            ylims=(0.1,6),
+            xlims='auto',
+            ylims='auto',
             **args
             ):
         
+        if f'-log10({pvalue_col})' not in df.columns:
+            df[f'-log10({pvalue_col})'] = np.log10(df[pvalue_col]) * -1
+
+        if xlims == 'auto':
+            xlims = (df[score_col].min() - 0.1, df[score_col].max() + 0.1)
+        if ylims == 'auto':
+            ylims = (df[f'-log10({pvalue_col})'].min() - 0.1, df[f'-log10({pvalue_col})'].max() + 0.1)
+        
         # Scatter plot for each category
-        ax.scatter( df.loc[df['label'] == 'target_non_hit', 'score'],
-                    df.loc[df['label'] == 'target_non_hit', '-log10(pvalue)'],
+        ax.scatter( df.loc[df['label'] == 'target_non_hit', score_col],
+                    df.loc[df['label'] == 'target_non_hit', f'-log10({pvalue_col})'],
                     alpha=0.1, s=dot_size, c='black', label='target_non_hit',
                     **args)
         
-        ax.scatter( df.loc[df['label'] == up_hit, 'score'], 
-                    df.loc[df['label'] == up_hit, '-log10(pvalue)'],
+        ax.scatter( df.loc[df['label'] == up_hit, score_col], 
+                    df.loc[df['label'] == up_hit, f'-log10({pvalue_col})'],
                     alpha=0.9, s=dot_size, c='#fcae91', label=up_hit,
                     **args)
         
-        ax.scatter( df.loc[df['label'] == down_hit, 'score'], 
-                    df.loc[df['label'] == down_hit, '-log10(pvalue)'],
+        ax.scatter( df.loc[df['label'] == down_hit, score_col], 
+                    df.loc[df['label'] == down_hit, f'-log10({pvalue_col})'],
                     alpha=0.9, s=dot_size, c='#bdd7e7', label=down_hit,
                     **args)
         
-        ax.scatter( df.loc[df['label'] == self.ctrl_label, 'score'],
-                    df.loc[df['label'] == self.ctrl_label, '-log10(pvalue)'],
+        ax.scatter( df.loc[df['label'] == self.ctrl_label, score_col],
+                    df.loc[df['label'] == self.ctrl_label, f'-log10({pvalue_col})'],
                     alpha=0.1, s=dot_size, c='gray', label=self.ctrl_label,
                     **args)
 
@@ -164,10 +140,12 @@ class DrugScreenPlotter:
             self, ax,
             rho_df=None,
             dot_size=1,
+            score_col='score', 
+            pvalue_col='pvalue',
             xlabel='auto',
             ylabel='-log10(pvalue)',
-            xlims=(-5, 5),
-            ylims=(0.1, 6),
+            xlims='auto',
+            ylims='auto',
             **args
             ):
         if rho_df is None:
@@ -177,6 +155,7 @@ class DrugScreenPlotter:
         
         self._volcano(ax, rho_df, 
                       up_hit='resistance_hit', down_hit='sensitivity_hit',
+                      score_col=score_col, pvalue_col=pvalue_col,
                       xlabel=xlabel, ylabel=ylabel,
                       dot_size=dot_size, xlims=xlims, ylims=ylims,
                       **args)
@@ -185,10 +164,12 @@ class DrugScreenPlotter:
             self, ax,
             gamma_df=None,
             dot_size=1,
+            score_col='score', 
+            pvalue_col='pvalue',
             xlabel='auto',
             ylabel='-log10(pvalue)',
-            xlims=(-5, 5),
-            ylims=(0.1, 6),
+            xlims='auto',
+            ylims='auto',
             **args
             ):
         if gamma_df is None:
@@ -198,6 +179,7 @@ class DrugScreenPlotter:
         
         self._volcano(ax, gamma_df, 
                       up_hit='up_hit', down_hit='essential_hit',
+                      score_col=score_col, pvalue_col=pvalue_col,
                       xlabel=xlabel, ylabel=ylabel,
                       dot_size=dot_size, xlims=xlims, ylims=ylims,
                       **args)
@@ -206,10 +188,12 @@ class DrugScreenPlotter:
             self, ax,
             tau_df=None,
             dot_size=1,
+            score_col='score', 
+            pvalue_col='pvalue',
             xlabel='auto',
             ylabel='-log10(pvalue)',
-            xlims=(-5, 5),
-            ylims=(0.1, 6),
+            xlims='auto',
+            ylims='auto',
             **args
             ):
         if tau_df is None:
@@ -219,6 +203,7 @@ class DrugScreenPlotter:
         
         self._volcano(ax, tau_df, 
                       up_hit='up_hit', down_hit='down_hit',
+                      score_col=score_col, pvalue_col=pvalue_col,
                       xlabel=xlabel, ylabel=ylabel,
                       dot_size=dot_size, xlims=xlims, ylims=ylims,
                       **args)
@@ -227,10 +212,11 @@ class DrugScreenPlotter:
             self, ax,
             rho_df=None, gamma_df=None,
             dot_size=1,
+            score_col='score',
             xlabel='auto',
             ylabel='auto',
-            xlims=(-5, 5),
-            ylims=(-5, 5),
+            xlims='auto',
+            ylims='auto',
             **args
             ):
         #TODO: fix by making a single dataframe with both rho and gamma scores
@@ -249,23 +235,23 @@ class DrugScreenPlotter:
         down_hit = 'sensitivity_hit'
 
         # Scatter plot for each category
-        ax.scatter( rho_df.loc[rho_df['label'] == 'target_non_hit', 'score'],
-                    gamma_df.loc[rho_df['label'] == 'target_non_hit', 'score'],
+        ax.scatter( rho_df.loc[rho_df['label'] == 'target_non_hit', score_col],
+                    gamma_df.loc[rho_df['label'] == 'target_non_hit', score_col],
                     alpha=0.1, s=dot_size, c='black', label='target_non_hit',
                     **args)
         
-        ax.scatter( rho_df.loc[rho_df['label'] == up_hit, 'score'],
-                    gamma_df.loc[rho_df['label'] == up_hit, 'score'],
+        ax.scatter( rho_df.loc[rho_df['label'] == up_hit, score_col],
+                    gamma_df.loc[rho_df['label'] == up_hit, score_col],
                     alpha=0.9, s=dot_size, c='#fcae91', label=up_hit,
                     **args)
         
-        ax.scatter( rho_df.loc[rho_df['label'] == down_hit, 'score'],
-                    gamma_df.loc[rho_df['label'] == down_hit, 'score'],
+        ax.scatter( rho_df.loc[rho_df['label'] == down_hit, score_col],
+                    gamma_df.loc[rho_df['label'] == down_hit, score_col],
                     alpha=0.9, s=dot_size, c='#bdd7e7', label=down_hit,
                     **args)
         
-        ax.scatter( rho_df.loc[rho_df['label'] == self.ctrl_label, 'score'],
-                    gamma_df.loc[rho_df['label'] == self.ctrl_label, 'score'],
+        ax.scatter( rho_df.loc[rho_df['label'] == self.ctrl_label, score_col],
+                    gamma_df.loc[rho_df['label'] == self.ctrl_label, score_col],
                     alpha=0.1, s=dot_size, c='gray', label=self.ctrl_label,
                     **args)
         
