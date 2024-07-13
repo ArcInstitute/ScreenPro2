@@ -108,7 +108,7 @@ class PooledScreens(object):
         # add pseudocount
         addPseudoCount(self.adata, behavior='default', value=pseudo_count_value)
         
-        if self.verbose: print('Counts normalized by sequencing depth.')
+        if self.verbose: print('Pseudocount added to counts.')
         
         # normalize counts by sequencing depth
         normalizeSeqDepth(self.adata)
