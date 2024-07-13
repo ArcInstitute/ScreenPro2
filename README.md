@@ -180,7 +180,7 @@ The `AnnData` object must have the following contents:
     used to store gene names. For dual or multiple targeting sgRNA libraries, this column can be used to store gene pairs
     or any other relevant information about the target.
   - "targetType": the type of target for each entry in reference sgRNA library. Note that this column is used to 
-    distinguish between different types of sgRNAs in the library and negative control sgRNAs can be defined as `"targetType" == "negCtrl"`.
+    distinguish between different types of sgRNAs in the library and negative control sgRNAs can be defined as `"targetType" == "negative_control"`.
     This is important for the phenotype calculation step.
 
 
