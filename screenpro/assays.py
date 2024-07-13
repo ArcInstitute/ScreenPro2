@@ -24,7 +24,7 @@ class PooledScreens(object):
     pooledScreens class for processing CRISPR screen datasets
     """
 
-    def __init__(self, adata, fc_transformation='log2(x+1)', test='ttest', n_reps=3):
+    def __init__(self, adata, fc_transformation='log2', test='ttest', n_reps=3):
         """
         Args:
             adata (AnnData): AnnData object with adata.X as a matrix of sgRNA counts
