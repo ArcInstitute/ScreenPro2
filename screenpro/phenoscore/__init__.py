@@ -15,7 +15,7 @@ import pandas as pd
 
 from .delta import calculatePhenotypeScore, matrixTest
 from .deseq import runDESeq, extractDESeqResults
-from .annotate import annotateTargets, hit_dict
+from .annotate import annotateScoreTable
 from .phenostat import getFDR
 
 
