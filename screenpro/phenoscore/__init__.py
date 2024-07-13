@@ -19,14 +19,14 @@ from .annotate import annotateScoreTable
 from .phenostat import getFDR
 
 
-def generatePseudoGeneAnnData(adata, num_pseudogenes='auto', pseudogene_size='auto', ctrl_label='control'):
+def generatePseudoGeneAnnData(adata, num_pseudogenes='auto', pseudogene_size='auto', ctrl_label='negative_control'):
     """Generate pseudogenes from negative control elements in the library.
 
     Args:
         adata (AnnData): AnnData object
         num_pseudogenes (int): number of pseudogenes to generate
         pseudogene_size (int): number of sgRNA elements in each pseudogene
-        ctrl_label (str): control label, default is 'control'
+        ctrl_label (str): control label, default is 'negative_control'
     
     Returns:
         AnnData: AnnData object with pseudogenes
@@ -70,7 +70,7 @@ def generatePseudoGeneAnnData(adata, num_pseudogenes='auto', pseudogene_size='au
 
 def runPhenoScore(adata, cond1, cond2, transformation, score_level, test,
                   growth_rate=1, n_reps=2, keep_top_n = None,num_pseudogenes='auto', pseudogene_size='auto',
-                  count_layer=None, ctrl_label='control'):
+                  count_layer=None, ctrl_label='negative_control'):
     """Calculate phenotype score and p-values when comparing `cond2` vs `cond1`.
 
     Args:
@@ -86,7 +86,7 @@ def runPhenoScore(adata, cond1, cond2, transformation, score_level, test,
         num_pseudogenes (int): number of pseudogenes to generate
         pseudogene_size (int): number of sgRNA elements in each pseudogene
         count_layer (str): count layer to use for calculating score, default is None (use default count layer in adata.X)
-        ctrl_label (str): control label
+        ctrl_label (str): control label, default is 'negative_control'
     
     Returns:
         str: result name
@@ -218,7 +218,7 @@ def runPhenoScore(adata, cond1, cond2, transformation, score_level, test,
     return result_name, result
 
 
-def runPhenoScoreForReplicate(adata, x_label, y_label, score, growth_factor_table, transformation, ctrl_label='control'):
+def runPhenoScoreForReplicate(adata, x_label, y_label, score, growth_factor_table, transformation, ctrl_label='negative_control'):
     """Calculate phenotype score for each pair of replicates.
 
     Args:
@@ -228,7 +228,7 @@ def runPhenoScoreForReplicate(adata, x_label, y_label, score, growth_factor_tabl
         score: score to use for calculating phenotype score, i.e. 'gamma', 'tau', or 'rho'
         growth_factor_table: dataframe of growth factors, i.e. output from `getGrowthFactors` function
         transformation (str): transformation to use for calculating score
-        ctrl_label: string to identify labels of negative control elements in sgRNA library (default is 'control')
+        ctrl_label: string to identify labels of negative control elements in sgRNA library (default is 'negative_control')
 
     Returns:
         pd.DataFrame: dataframe of phenotype scores
