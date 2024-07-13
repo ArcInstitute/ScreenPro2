@@ -246,7 +246,7 @@ class PooledScreens(object):
         # save phenotype name for reference
         self._add_phenotype_results(f'delta:{delta_name}')
 
-    def getPhenotypeScores(self, score_name, threshold, run_name='auto', ctrl_label='control', target_col='target',pvalue_column='ttest pvalue', score_column='score'):
+    def getPhenotypeScores(self, score_name, threshold, run_name='auto', ctrl_label='control', target_col='target',pvalue_col='ttest pvalue', score_col='score'):
         """
         Get phenotype scores for a given score level
 
@@ -273,7 +273,7 @@ class PooledScreens(object):
         if score_name not in self.phenotype_names:
             raise ValueError(f"Phenotype '{score_name}' not found in self.phenotype_names")
 
-        keep_col = [target_col, score_column, pvalue_column]
+        keep_col = [target_col, score_col, pvalue_col]
         score_tag = score_name.split(':')[0]
         out = annotateScoreTable(
             self.phenotypes[run_name][score_name].loc[:,keep_col],
@@ -285,7 +285,7 @@ class PooledScreens(object):
 
         return out
 
-    def getAnnotatedTable(self, threshold, run_name='auto', ctrl_label='control', target_col='target', pvalue_column='ttest pvalue', score_column='score'):
+    def getAnnotatedTable(self, threshold, run_name='auto', ctrl_label='control', target_col='target', pvalue_col='ttest pvalue', score_col='score'):
         """
         Returns an annotated table with scores, labels, and replicate phenotypes.
 
@@ -310,7 +310,7 @@ class PooledScreens(object):
                     '' + ', '.join(self.phenotypes.keys())
                 )
 
-        keep_col = [target_col, score_column, pvalue_column]
+        keep_col = [target_col, score_col, pvalue_col]
 
         score_names = {s for s, col in self.phenotypes[run_name].columns}
         sort_var = self.adata.var.sort_values(['targetType','target']).index.to_list()
@@ -323,6 +323,8 @@ class PooledScreens(object):
                 self.phenotypes[run_name][score_name].loc[:,keep_col],
                 up_hit=hit_dict[score_tag]['up_hit'],
                 down_hit=hit_dict[score_tag]['down_hit'],
+                score_col=score_col,
+                pvalue_col=pvalue_col,
                 ctrl_label=ctrl_label,
                 threshold=threshold
             )['label']
