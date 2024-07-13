@@ -246,7 +246,7 @@ class PooledScreens(object):
         # save phenotype name for reference
         self._add_phenotype_results(f'delta:{delta_name}')
 
-    def getPhenotypeScores(self, score_name, threshold, run_name='auto', ctrl_label='control', target_col='target',pvalue_col='ttest pvalue', score_col='score'):
+    def getPhenotypeScores(self, score_name, threshold, run_name='auto', ctrl_label='negative_control', target_col='target',pvalue_col='ttest pvalue', score_col='score'):
         """
         Get phenotype scores for a given score level
 
@@ -254,7 +254,7 @@ class PooledScreens(object):
             score_name (str): name of the score to retrieve, e.g. 'gamma', 'tau', 'rho', 'delta'
             threshold (float): threshold for filtering significant hits, default is 5
             run_name (str): name of the phenotype calculation run to retrieve
-            ctrl_label (str): label for the negative control, default is 'control'
+            ctrl_label (str): label for the negative control, default is 'negative_control'
             target_col (str): column name for the target gene, default is 'target'
             pvalue_column (str): column name for the p-value, default is 'ttest pvalue'
             score_column (str): column name for the score, default is 'score'
@@ -287,14 +287,14 @@ class PooledScreens(object):
 
         return out
 
-    def getAnnotatedTable(self, threshold, run_name='auto', ctrl_label='control', target_col='target', pvalue_col='ttest pvalue', score_col='score'):
+    def getAnnotatedTable(self, threshold, run_name='auto', ctrl_label='negative_control', target_col='target', pvalue_col='ttest pvalue', score_col='score'):
         """
         Returns an annotated table with scores, labels, and replicate phenotypes.
 
         Args:
             threshold (int, optional): The threshold value for determining hits. Defaults to 5.
             run_name (str, optional): The name of the phenotype calculation run. Defaults to 'auto'.
-            ctrl_label (str, optional): The label for the control group. Defaults to 'control'.
+            ctrl_label (str, optional): The label for the control group. Defaults to 'negative_control'.
             target_col (str, optional): The column name for the target. Defaults to 'target'.
             pvalue_column (str, optional): The column name for the p-value. Defaults to 'ttest pvalue'.
             score_column (str, optional): The column name for the score. Defaults to 'score'.
