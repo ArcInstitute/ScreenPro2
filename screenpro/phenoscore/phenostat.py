@@ -56,7 +56,7 @@ def multipleTestsCorrection(p_values, method='fdr_bh'):
     Returns:
         np.array: array of adjusted p-values
     """
-    if method != 'fdr_bh':
+    if method == 'fdr_bh':
         # fill na with 1
         p_values[np.isnan(p_values)] = 1
         # Calculate the adjusted p-values using the Benjamini-Hochberg method
