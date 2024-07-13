@@ -2,11 +2,17 @@
 History
 =======
 
-0.4.0 (coming soon)
-~~~~~~~~~~~~~~~~~~~
-* add command line interface
+1.0.0
+~~~~~
+* coming soon!
 
-0.2.11 - 0.3.0 (Apr 2024 - May 2024)
+0.4.0 - after (June 2024 - July 2024)
+~~~~~~~~~~~~~~~~~~~
+* add command line interface, i.e. `screenpro --help`
+* rename `Counter` class to `GuideCounter` for code clarity
+* major bug fixes and improvements in code formatting
+
+0.2.11 - 0.3.5 (Apr 2024 - June 2024)
 ~~~~~~~~~~~~~~~~~
 * introduce `Counter` class as wrapper for `ngs` module
 * improve core functionalities for CLI

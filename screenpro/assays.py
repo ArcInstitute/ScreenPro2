@@ -1,5 +1,10 @@
-"""
-Assays module
+## Copyright (c) 2022-2024 ScreenPro2 Development Team.
+## All rights reserved.
+## Gilbart Lab, UCSF / Arc Institute.
+## Multi-Omics Tech Center, Arc Insititue.
+
+"""Assays module
+
 """
 
 import numpy as np
@@ -8,8 +13,9 @@ import anndata as ad
 import scanpy as sc
 
 from pydeseq2 import preprocessing
+from .phenoscore.deseq import runDESeq, extractDESeqResults
 from .phenoscore import runPhenoScore, runPhenoScoreForReplicate
-from .utils import ann_score_df
+from .phenoscore.annotate import ann_score_df
 from copy import copy
 
 
@@ -18,14 +24,14 @@ class PooledScreens(object):
     pooledScreens class for processing CRISPR screen datasets
     """
 
-    def __init__(self, adata, fc_transformation='log2(x+1)', test='ttest', n_reps=3):
+    def __init__(self, adata, fc_transformation='log2', test='ttest', n_reps=3):
         """
         Args:
             adata (AnnData): AnnData object with adata.X as a matrix of sgRNA counts
             fc_transformation (str): fold change transformation to apply for calculating phenotype scores
             test (str): statistical test to use for calculating phenotype scores
         """
-        self.adata = adata
+        self.adata = adata.copy()
         self.pdata = None
         self.fc_transformation = fc_transformation
         self.test = test
@@ -90,6 +96,36 @@ class PooledScreens(object):
         self.adata.layers['seq_depth_norm'] = norm_counts
         self.adata.X = self.adata.layers['seq_depth_norm']
     
+    def calculateDrugScreenDESeq(self, t0, untreated, treated, run_name=None, **kwargs):
+        """
+        Calculate DESeq2 results for a given drug screen dataset.
+
+        Args:
+            design (str): design matrix for DESeq2
+            run_name (str): name for the DESeq2 calculation run
+            **kwargs: additional arguments to pass to runDESeq
+        """
+        dds = runDESeq(self.adata, 'condition', **kwargs)
+        
+        # Calculate `gamma`, `rho`, and `tau` phenotype scores
+        gamma_name, gamma = extractDESeqResults(
+            dds, 'condition', t0, untreated, **kwargs
+        )
+
+        tau_name, tau = extractDESeqResults(
+            dds, 'condition', t0, treated, **kwargs
+        )
+
+        rho_name, rho = extractDESeqResults(
+            dds, 'condition', untreated, treated, **kwargs
+        )
+
+        if not run_name: run_name = 'pyDESeq2'
+
+        self.phenotypes[run_name] = pd.concat({
+            f'gamma:{gamma_name}': gamma, f'tau:{tau_name}': tau, f'rho:{rho_name}': rho
+        }, axis=1)        
+
     def calculateDrugScreen(self, t0, untreated, treated, db_untreated, db_treated, score_level, db_rate_col='pop_doublings', run_name=None, **kwargs):
         """
         Calculate `gamma`, `rho`, and `tau` phenotype scores for a drug screen dataset in a given `score_level`.

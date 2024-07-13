@@ -8,6 +8,7 @@ from simple_colors import green
 from .__init__ import __version__
 from . import ngs
 
+
 def add_counter_parser(parent_subparsers, parent):
     name = "guidecounter"
     desc = "Process FASTQ files to count sgRNA sequences."
