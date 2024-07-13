@@ -37,17 +37,18 @@ def findLowCounts(adata, filter_type='either', minimum_reads=50, verbose=True):
     adata.var['low_count'] = ~adata.var.index.isin(out.var.index.to_list())
 
 
-def addPseudoCount(counts, behavior, value):
+def addPseudoCount(adata, behavior, value, inplace=True):
     """
     Add pseudocounts to the given counts based on the specified behavior.
 
     Args:
-        counts (DataFrame): The counts to which pseudocounts will be added.
+        adata (AnnData): AnnData object containing the counts to which pseudocounts will be added.
         behavior (str): The behavior for adding pseudocounts. Possible values are:
             - 'default' or 'zeros_only': Add pseudocounts only to rows with at least one zero value.
             - 'all_values': Add pseudocounts to all rows.
             - 'filter_out': Set rows with at least one zero value to NaN.
         value (float): The value of the pseudocount to be added.
+        inplace (bool): If True, the pseudocounts will replace the original counts in the AnnData object.
 
     Returns:
         DataFrame: The counts DataFrame with pseudocounts added based on the specified behavior.
@@ -63,26 +64,24 @@ def addPseudoCount(counts, behavior, value):
     # Source:
     # https://github.com/mhorlbeck/ScreenProcessing/blob/0ee5192ecc17348665bd1387ddfa9037efb7964f/process_experiments.py#L485
     
+    counts = adata.X.to_df()
+    
     # pseudocount
     if behavior == 'default' or behavior == 'zeros_only':
-        counts_pseudo = counts.apply(
-            lambda row: row if min(row) != 0 else row + value,
-            axis=1
-        )
+        counts_pseudo = counts.replace(0, value)
+
     elif behavior == 'all_values':
-        counts_pseudo = counts.apply(
-            lambda row: row + value,
-            axis=1
-        )
+        counts_pseudo = counts + value
     elif behavior == 'filter_out':
-        counts_pseudo = counts.copy()
-        zero_rows = counts.apply(lambda row: min(row) <= 0, axis=1)
-        counts_pseudo.loc[zero_rows, :] = np.nan
+        counts_pseudo = counts.replace(0, np.nan)
     else:
         raise ValueError(
             'Pseudocount behavior not recognized or not implemented')
 
-    return counts_pseudo
+    if inplace:
+        adata.X = counts_pseudo
+    else:
+        return counts_pseudo
 
 
 def normalizeSeqDepth(adata):

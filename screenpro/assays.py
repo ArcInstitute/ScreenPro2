@@ -106,7 +106,7 @@ class PooledScreens(object):
         self.adata.layers['raw_counts'] = self.adata.X.copy()
         
         # add pseudocount
-        addPseudoCount(self.adata.X, behavior='default', value=pseudo_count_value)
+        addPseudoCount(self.adata, behavior='default', value=pseudo_count_value)
         
         if self.verbose: print('Counts normalized by sequencing depth.')
         
