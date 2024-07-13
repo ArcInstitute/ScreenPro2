@@ -8,20 +8,20 @@ History
 
 0.4.0 - after (June 2024 - July 2024)
 ~~~~~~~~~~~~~~~~~~~
-* add command line interface, i.e. `screenpro --help`
-* rename `Counter` class to `GuideCounter` for code clarity
+* add command line interface, i.e. ``screenpro --help``
+* rename ``Counter`` class to ``GuideCounter`` for code clarity
 * major bug fixes and improvements in code formatting
 
 0.2.11 - 0.3.5 (Apr 2024 - June 2024)
 ~~~~~~~~~~~~~~~~~
-* introduce `Counter` class as wrapper for `ngs` module
+* introduce ``Counter`` class as wrapper for ``ngs`` module
 * improve core functionalities for CLI
 * major bug fixes
 
 0.2.7 - 0.2.10 (Mar 2024 - Apr 2024)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 * major reformatting and introduce alpha version of CLI
-* introduce `ngs` module – process fastq files from single, dual, or multiplexed Cas9 and Cas12 screens
+* introduce ``ngs`` module – process fastq files from single, dual, or multiplexed Cas9 and Cas12 screens
 
   * Support both single-guide and dual-guide Cas9 library design `#37`_
     (i.e. V2 and V3 genome-scale dCas9 screen platforms)
@@ -43,8 +43,8 @@ History
 0.2.1 - 0.2.4 (July 2023 - Nov 2023)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 * Included PyPi package installation.
-* Introduced `ScreenPro` class.
-* Introduced a method in `ScreenPro` class for common drug screen analysis.
+* Introduced ``ScreenPro`` class.
+* Introduced a method in ``ScreenPro`` class for common drug screen analysis.
 
 0.2.0 (May 2022)
 ~~~~~~~~~~~~~~~~
