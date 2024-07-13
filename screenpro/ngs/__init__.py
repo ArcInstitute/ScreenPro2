@@ -299,9 +299,9 @@ class GuideCounter:
         var_table['targetType'] = ''
         var_table['target'] = ''
 
-        ### assign target types: control
+        ### assign target types: negative_control
         control_targets = (var_table.target_A.eq(ctrl_label)) & (var_table.target_B.eq(ctrl_label))
-        var_table.loc[control_targets,'targetType']  = 'control'
+        var_table.loc[control_targets,'targetType']  = 'negative_control'
         var_table.loc[control_targets,'target']  = ctrl_label
 
         ### assign target types: gene
@@ -309,24 +309,28 @@ class GuideCounter:
         var_table.loc[same_gene_targets,'targetType']  = 'gene'
         var_table.loc[same_gene_targets,'target']  = var_table.target_A # or target_B
 
-        ### assign target types: gene-control
+        ### assign target types: gene-negative_control
         gene_control_targets = ~(var_table.target_A.eq(ctrl_label)) & (var_table.target_B.eq(ctrl_label))
-        var_table.loc[gene_control_targets,'targetType']  = 'gene-control'
+        var_table.loc[gene_control_targets,'targetType']  = 'gene--negative_control'
         var_table.loc[gene_control_targets,'target']  = var_table.target_A + '|' + var_table.target_B
 
-        ### assign target types: control-gene
+        ### assign target types: negative_control-gene
         control_gene_targets = (var_table.target_A.eq(ctrl_label)) & ~(var_table.target_B.eq(ctrl_label))
-        var_table.loc[control_gene_targets,'targetType']  = 'control-gene'
+        var_table.loc[control_gene_targets,'targetType']  = 'negative_control--negative_control'
         var_table.loc[control_gene_targets,'target']  = var_table.target_A + '|' + var_table.target_B
 
         ### assign target types: gene-gene
         gene_gene_targets = (var_table.target_A != var_table.target_B) & ~(var_table.target_A.eq(ctrl_label)) & ~(var_table.target_B.eq(ctrl_label))
-        var_table.loc[gene_gene_targets,'targetType']  = 'gene-gene'
+        var_table.loc[gene_gene_targets,'targetType']  = 'gene--gene'
         var_table.loc[gene_gene_targets,'target']  = var_table.target_A + '|' + var_table.target_B
 
         var_table.index.name = None
         var_table.targetType = pd.Categorical(
-            var_table.targetType, categories=['gene','gene-gene','gene-control','control-gene','control']
+            var_table.targetType, categories=[
+                'gene','gene--gene',
+                'gene--negative_control','negative_control--gene',
+                'negative_control'
+            ]
         ).remove_unused_categories()
 
         var_table['sequence'] = var_table['protospacer_A'] + ';' + var_table['protospacer_B']
