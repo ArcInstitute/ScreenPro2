@@ -2,11 +2,13 @@
 
 Log ratio of {math}`y` vs {math}`x`:
 
-{math}`\Delta =
+```{math}
+\Delta =
 \log(\frac
     {\begin{bmatrix}{N_{y}}\end{bmatrix}_{(a,b)} + 1}
     {\begin{bmatrix}{N_{x}}\end{bmatrix}_{(a,b)} + 1}
-)`
+)
+```
 
 -   {math}`y \rightarrow` condition {math}`x` (e.g. treated samples)
 -   {math}`x \rightarrow` condition {math}`y` (e.g. {math}`t_{0}` samples)
