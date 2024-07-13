@@ -98,9 +98,9 @@ class DrugScreenPlotter:
             df[f'-log10({pvalue_col})'] = np.log10(df[pvalue_col]) * -1
 
         if xlims == 'auto':
-            xlims = (df[score_col].min(), df[score_col].max())
+            xlims = (df[score_col].min() - 0.1, df[score_col].max() + 0.1)
         if ylims == 'auto':
-            ylims = (df[f'-log10({pvalue_col})'].min(), df[f'-log10({pvalue_col})'].max())
+            ylims = (df[f'-log10({pvalue_col})'].min() - 0.1, df[f'-log10({pvalue_col})'].max() + 0.1)
         
         # Scatter plot for each category
         ax.scatter( df.loc[df['label'] == 'target_non_hit', score_col],
