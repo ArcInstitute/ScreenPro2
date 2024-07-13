@@ -1,7 +1,8 @@
-# Load module
+# Data loading module
 
 Set of python functions to read, write, and integrate CRISPR screening
-datasets from different platforms. 
+resources (e.g. guide RNA libraries) and datasets from different platforms 
+and analysis tools.
 
 ___
 
