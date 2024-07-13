@@ -89,14 +89,19 @@ class DrugScreenPlotter:
             xlabel='phenotype score',
             ylabel='-log10(pvalue)',
             dot_size=1,
-            xlims=(-5, 5),
-            ylims=(0.1,6),
+            xlims='auto',
+            ylims='auto',
             **args
             ):
         
         if f'-log10({pvalue_col})' not in df.columns:
             df[f'-log10({pvalue_col})'] = np.log10(df[pvalue_col]) * -1
 
+        if xlims == 'auto':
+            xlims = (df[score_col].min(), df[score_col].max())
+        if ylims == 'auto':
+            ylims = (df[f'-log10({pvalue_col})'].min(), df[f'-log10({pvalue_col})'].max())
+        
         # Scatter plot for each category
         ax.scatter( df.loc[df['label'] == 'target_non_hit', score_col],
                     df.loc[df['label'] == 'target_non_hit', f'-log10({pvalue_col})'],
@@ -139,8 +144,8 @@ class DrugScreenPlotter:
             pvalue_col='pvalue',
             xlabel='auto',
             ylabel='-log10(pvalue)',
-            xlims=(-5, 5),
-            ylims=(0.1, 6),
+            xlims='auto',
+            ylims='auto',
             **args
             ):
         if rho_df is None:
@@ -163,8 +168,8 @@ class DrugScreenPlotter:
             pvalue_col='pvalue',
             xlabel='auto',
             ylabel='-log10(pvalue)',
-            xlims=(-5, 5),
-            ylims=(0.1, 6),
+            xlims='auto',
+            ylims='auto',
             **args
             ):
         if gamma_df is None:
@@ -187,8 +192,8 @@ class DrugScreenPlotter:
             pvalue_col='pvalue',
             xlabel='auto',
             ylabel='-log10(pvalue)',
-            xlims=(-5, 5),
-            ylims=(0.1, 6),
+            xlims='auto',
+            ylims='auto',
             **args
             ):
         if tau_df is None:
@@ -210,8 +215,8 @@ class DrugScreenPlotter:
             score_col='score',
             xlabel='auto',
             ylabel='auto',
-            xlims=(-5, 5),
-            ylims=(-5, 5),
+            xlims='auto',
+            ylims='auto',
             **args
             ):
         #TODO: fix by making a single dataframe with both rho and gamma scores
