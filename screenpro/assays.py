@@ -313,15 +313,16 @@ class PooledScreens(object):
                 )
 
         keep_col = [target_col, score_col, pvalue_col]
-
+        
         score_names = {s for s, col in self.phenotypes[run_name].columns}
         sort_var = self.adata.var.sort_values(['targetType','target']).index.to_list()
 
         df_list = {}
         for score_name in score_names:
             score_tag = score_name.split(':')[0]
-            # get label
-            df_label = annotateScoreTable(
+            
+            # get annotated table
+            df_ann = annotateScoreTable(
                 self.phenotypes[run_name][score_name].loc[:,keep_col],
                 up_hit=hit_dict[score_tag]['up_hit'],
                 down_hit=hit_dict[score_tag]['down_hit'],
@@ -329,13 +330,16 @@ class PooledScreens(object):
                 pvalue_col=pvalue_col,
                 ctrl_label=ctrl_label,
                 threshold=threshold
-            )['label']
+            )
+
             # get replicate phe
             df_phe_reps = self.pdata[self.pdata.obs.score.eq(score_tag)].to_df().T
 
             # make table
             df = pd.concat([
-                self.phenotypes['compare_reps'][score_name], df_phe_reps, df_label
+                df_ann.drop(columns=['label']),
+                df_phe_reps, 
+                df_ann['label']
             ],axis=1).loc[sort_var,:]
 
             df_list.update({score_name:df})
