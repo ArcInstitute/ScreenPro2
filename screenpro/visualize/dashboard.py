@@ -59,7 +59,8 @@ class DrugScreenDashboard(DataDashboard):
             threshold=self.threshold,
             ctrl_label=self.ctrl_label,
             score_col=score_col,
-            pvalue_col=pvalue_col        )
+            pvalue_col=pvalue_col
+        )
 
         df = pd.DataFrame({
             'target': rho['target'],

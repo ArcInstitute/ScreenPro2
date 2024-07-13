@@ -88,31 +88,38 @@ class DrugScreenPlotter:
                 ax.annotate(txt, (target_data[x_col].iloc[i] + t_x, target_data[y_col].iloc[i] + t_y),
                             color=textcolor, size=size_txt)
 
-    def _prep_data(self):
+    def _prep_data(self,screen, score_col='score', pvalue_col='pvalue'):
 
-        gamma = self.screen.getPhenotypeScores(
+        gamma = screen.getPhenotypeScores(
             run_name=self.run_name,
             score_name=self.gamma_score_name,
-            ctrl_label=self.ctrl_label,
             threshold=self.threshold,
+            ctrl_label=self.ctrl_label,
+            score_col=score_col,
+            pvalue_col=pvalue_col
         )
-        gamma['-log10(pvalue)'] = np.log10(gamma.pvalue) * -1
+
+        gamma[f'-log10({pvalue_col})'] = np.log10(gamma[pvalue_col]) * -1
 
         tau = self.screen.getPhenotypeScores(
             run_name=self.run_name,
             score_name=self.tau_score_name,
+            threshold=self.threshold,
             ctrl_label=self.ctrl_label,
-            threshold=self.threshold
+            score_col=score_col,
+            pvalue_col=pvalue_col
         )
-        tau['-log10(pvalue)'] = np.log10(tau.pvalue) * -1
+        tau[f'-log10({pvalue_col})'] = np.log10(tau[pvalue_col]) * -1
 
         rho = self.screen.getPhenotypeScores(
             run_name=self.run_name,
             score_name=self.rho_score_name,
+            threshold=self.threshold,
             ctrl_label=self.ctrl_label,
-            threshold=self.threshold
+            score_col=score_col,
+            pvalue_col=pvalue_col
         )
-        rho['-log10(pvalue)'] = np.log10(rho.pvalue) * -1
+        rho[f'-log10({pvalue_col})'] = np.log10(rho[pvalue_col]) * -1
 
         return gamma, tau, rho
     
