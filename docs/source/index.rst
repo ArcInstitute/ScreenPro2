@@ -15,7 +15,7 @@ Welcome to ScreenPro2's documentation!
    assays
    ngs
    phenotype
-   visulize
+   visualize
    load
 
 .. toctree::
