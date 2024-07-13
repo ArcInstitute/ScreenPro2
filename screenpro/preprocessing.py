@@ -64,7 +64,7 @@ def addPseudoCount(adata, behavior, value, inplace=True):
     # Source:
     # https://github.com/mhorlbeck/ScreenProcessing/blob/0ee5192ecc17348665bd1387ddfa9037efb7964f/process_experiments.py#L485
     
-    counts = adata.X.to_df()
+    counts = adata.to_df()
     
     # pseudocount
     if behavior == 'default' or behavior == 'zeros_only':
@@ -79,7 +79,7 @@ def addPseudoCount(adata, behavior, value, inplace=True):
             'Pseudocount behavior not recognized or not implemented')
 
     if inplace:
-        adata.X = counts_pseudo
+        adata.X = counts_pseudo.to_numpy()
     else:
         return counts_pseudo
 
