@@ -16,7 +16,7 @@ import pandas as pd
 from .delta import calculatePhenotypeScore, matrixTest
 from .deseq import runDESeq, extractDESeqResults
 from .annotate import annotateScoreTable
-from .phenostat import getFDR
+from .phenostat import multipleTestsCorrection
 
 
 def generatePseudoGeneAnnData(adata, num_pseudogenes='auto', pseudogene_size='auto', ctrl_label='negative_control'):
@@ -131,7 +131,7 @@ def runPhenoScore(adata, cond1, cond2, transformation, score_level, test,
             growth_rate=growth_rate
         )
         # get adjusted p-values
-        adj_p_values = getFDR(p_values)
+        adj_p_values = multipleTestsCorrection(p_values)
                 
         # get targets
         targets = adata.var['target'].to_list()
@@ -203,7 +203,7 @@ def runPhenoScore(adata, cond1, cond2, transformation, score_level, test,
         p_values = [np.mean(p) for p in p_values]
 
         # get adjusted p-values
-        adj_p_values = getFDR(p_values)
+        adj_p_values = multipleTestsCorrection(p_values)
         
         # combine results into a dataframe
         result = pd.concat([
