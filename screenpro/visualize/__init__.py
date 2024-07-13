@@ -5,7 +5,9 @@
 
 import numpy as np
 import scanpy as sc
-from .qc_plots import *
+from .qc_plots import plotReplicateScatter
+from .rank import rankPlot
+
 
 ## Phenotype plotting functions
 class DrugScreenPlotter:
