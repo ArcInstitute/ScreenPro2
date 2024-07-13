@@ -145,22 +145,26 @@ class PooledScreens(object):
             f'gamma:{gamma_name}': gamma, f'tau:{tau_name}': tau, f'rho:{rho_name}': rho
         }, axis=1)        
 
-    def calculateDrugScreen(self, t0, untreated, treated, db_untreated, db_treated, score_level, db_rate_col='pop_doublings', run_name=None, **kwargs):
+    def calculateDrugScreen(self, t0, untreated, treated, score_level, db_rate_col='pop_doublings', run_name=None, **kwargs):
         """
         Calculate `gamma`, `rho`, and `tau` phenotype scores for a drug screen dataset in a given `score_level`.
-        To normalize by growth rate, the doubling rate of the untreated and treated conditions are required.
 
         Args:
             t0 (str): name of the untreated condition
             untreated (str): name of the untreated condition
             treated (str): name of the treated condition
-            db_untreated (float): doubling rate of the untreated condition
-            db_treated (float): doubling rate of the treated condition
             score_level (str): name of the score level
             db_rate_col (str): column name for the doubling rate, default is 'pop_doublings'
             run_name (str): name for the phenotype calculation run
             **kwargs: additional arguments to pass to runPhenoScore
         """
+        growth_factor_table = self._calculateGrowthFactor(
+            untreated = untreated, treated = treated, db_rate_col = db_rate_col
+        )
+
+        db_untreated=growth_factor_table.query(f'score=="gamma"')['growth_factor'].mean()
+        db_treated=growth_factor_table.query(f'score=="tau"')['growth_factor'].mean()
+
         # calculate phenotype scores: gamma, tau, rho
         gamma_name, gamma = runPhenoScore(
             self.adata, cond1=t0, cond2=untreated, growth_rate=db_untreated,
@@ -192,10 +196,6 @@ class PooledScreens(object):
         self._add_phenotype_results(f'gamma:{gamma_name}')
         self._add_phenotype_results(f'tau:{tau_name}')
         self._add_phenotype_results(f'rho:{rho_name}')
-
-        growth_factor_table = self._calculateGrowthFactor(
-            untreated = untreated, treated = treated, db_rate_col = db_rate_col
-        )
 
         # get replicate level phenotype scores
         pdata_df = pd.concat([
