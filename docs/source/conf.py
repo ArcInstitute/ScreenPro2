@@ -78,9 +78,10 @@ extensions = [
     'sphinx.ext.autodoc', 
     'sphinx.ext.napoleon',
     'sphinx.ext.intersphinx',
-    "sphinx.ext.extlinks",
+    'sphinx.ext.extlinks',
     'sphinx.ext.viewcode', 
-    "sphinxcontrib.bibtex",
+    'sphinx.ext.mathjax'
+    'sphinxcontrib.bibtex',
     'myst_parser',
 ]
 
