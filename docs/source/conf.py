@@ -84,6 +84,8 @@ extensions = [
     'myst_parser',
 ]
 
+suppress_warnings = ["myst.header"]
+
 # -- Options for HTML output -------------------------------------------
 # Activate the theme.
 html_theme = 'sphinx_rtd_theme'
