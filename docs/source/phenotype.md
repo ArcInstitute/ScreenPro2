@@ -2,7 +2,11 @@
 
 Log ratio of $y$ vs $x$:
 
-$$\Delta=\log(\frac{\begin{bmatrix}{N_{y}}\end{bmatrix}_{(a,b)} + 1}{\begin{bmatrix}{N_{x}}\end{bmatrix}_{(a,b)} + 1})$$
+$$\Delta =
+\log(\frac
+    {\begin{bmatrix}{N_{y}}\end{bmatrix}_{(a,b)} + 1}
+    {\begin{bmatrix}{N_{x}}\end{bmatrix}_{(a,b)} + 1}
+)$$
 
 -   $y \rightarrow$ condition $x$ (e.g. treated samples)
 -   $x \rightarrow$ condition $y$ (e.g. $t_{0}$ samples)
