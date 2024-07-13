@@ -80,7 +80,6 @@ extensions = [
     'sphinx.ext.intersphinx',
     'sphinx.ext.extlinks',
     'sphinx.ext.viewcode', 
-    'sphinx.ext.mathjax'
     'sphinxcontrib.bibtex',
     'myst_parser',
 ]
