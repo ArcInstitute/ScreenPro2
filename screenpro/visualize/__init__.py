@@ -85,6 +85,7 @@ class DrugScreenPlotter:
     
     def _volcano(
             self, ax, df, up_hit, down_hit,
+            score_col='score', pvalue_col='pvalue',
             xlabel='phenotype score',
             ylabel='-log10(pvalue)',
             dot_size=1,
@@ -93,24 +94,27 @@ class DrugScreenPlotter:
             **args
             ):
         
+        if f'-log10({pvalue_col})' not in df.columns:
+            df[f'-log10({pvalue_col})'] = np.log10(df[pvalue_col]) * -1
+
         # Scatter plot for each category
-        ax.scatter( df.loc[df['label'] == 'target_non_hit', 'score'],
-                    df.loc[df['label'] == 'target_non_hit', '-log10(pvalue)'],
+        ax.scatter( df.loc[df['label'] == 'target_non_hit', score_col],
+                    df.loc[df['label'] == 'target_non_hit', f'-log10({pvalue_col})'],
                     alpha=0.1, s=dot_size, c='black', label='target_non_hit',
                     **args)
         
-        ax.scatter( df.loc[df['label'] == up_hit, 'score'], 
-                    df.loc[df['label'] == up_hit, '-log10(pvalue)'],
+        ax.scatter( df.loc[df['label'] == up_hit, score_col], 
+                    df.loc[df['label'] == up_hit, f'-log10({pvalue_col})'],
                     alpha=0.9, s=dot_size, c='#fcae91', label=up_hit,
                     **args)
         
-        ax.scatter( df.loc[df['label'] == down_hit, 'score'], 
-                    df.loc[df['label'] == down_hit, '-log10(pvalue)'],
+        ax.scatter( df.loc[df['label'] == down_hit, score_col], 
+                    df.loc[df['label'] == down_hit, f'-log10({pvalue_col})'],
                     alpha=0.9, s=dot_size, c='#bdd7e7', label=down_hit,
                     **args)
         
-        ax.scatter( df.loc[df['label'] == self.ctrl_label, 'score'],
-                    df.loc[df['label'] == self.ctrl_label, '-log10(pvalue)'],
+        ax.scatter( df.loc[df['label'] == self.ctrl_label, score_col],
+                    df.loc[df['label'] == self.ctrl_label, f'-log10({pvalue_col})'],
                     alpha=0.1, s=dot_size, c='gray', label=self.ctrl_label,
                     **args)
 
@@ -131,6 +135,8 @@ class DrugScreenPlotter:
             self, ax,
             rho_df=None,
             dot_size=1,
+            score_col='score', 
+            pvalue_col='pvalue',
             xlabel='auto',
             ylabel='-log10(pvalue)',
             xlims=(-5, 5),
@@ -144,6 +150,7 @@ class DrugScreenPlotter:
         
         self._volcano(ax, rho_df, 
                       up_hit='resistance_hit', down_hit='sensitivity_hit',
+                      score_col=score_col, pvalue_col=pvalue_col,
                       xlabel=xlabel, ylabel=ylabel,
                       dot_size=dot_size, xlims=xlims, ylims=ylims,
                       **args)
@@ -152,6 +159,8 @@ class DrugScreenPlotter:
             self, ax,
             gamma_df=None,
             dot_size=1,
+            score_col='score', 
+            pvalue_col='pvalue',
             xlabel='auto',
             ylabel='-log10(pvalue)',
             xlims=(-5, 5),
@@ -165,6 +174,7 @@ class DrugScreenPlotter:
         
         self._volcano(ax, gamma_df, 
                       up_hit='up_hit', down_hit='essential_hit',
+                      score_col=score_col, pvalue_col=pvalue_col,
                       xlabel=xlabel, ylabel=ylabel,
                       dot_size=dot_size, xlims=xlims, ylims=ylims,
                       **args)
@@ -173,6 +183,8 @@ class DrugScreenPlotter:
             self, ax,
             tau_df=None,
             dot_size=1,
+            score_col='score', 
+            pvalue_col='pvalue',
             xlabel='auto',
             ylabel='-log10(pvalue)',
             xlims=(-5, 5),
@@ -186,6 +198,7 @@ class DrugScreenPlotter:
         
         self._volcano(ax, tau_df, 
                       up_hit='up_hit', down_hit='down_hit',
+                      score_col=score_col, pvalue_col=pvalue_col,
                       xlabel=xlabel, ylabel=ylabel,
                       dot_size=dot_size, xlims=xlims, ylims=ylims,
                       **args)
@@ -194,6 +207,7 @@ class DrugScreenPlotter:
             self, ax,
             rho_df=None, gamma_df=None,
             dot_size=1,
+            score_col='score',
             xlabel='auto',
             ylabel='auto',
             xlims=(-5, 5),
@@ -216,23 +230,23 @@ class DrugScreenPlotter:
         down_hit = 'sensitivity_hit'
 
         # Scatter plot for each category
-        ax.scatter( rho_df.loc[rho_df['label'] == 'target_non_hit', 'score'],
-                    gamma_df.loc[rho_df['label'] == 'target_non_hit', 'score'],
+        ax.scatter( rho_df.loc[rho_df['label'] == 'target_non_hit', score_col],
+                    gamma_df.loc[rho_df['label'] == 'target_non_hit', score_col],
                     alpha=0.1, s=dot_size, c='black', label='target_non_hit',
                     **args)
         
-        ax.scatter( rho_df.loc[rho_df['label'] == up_hit, 'score'],
-                    gamma_df.loc[rho_df['label'] == up_hit, 'score'],
+        ax.scatter( rho_df.loc[rho_df['label'] == up_hit, score_col],
+                    gamma_df.loc[rho_df['label'] == up_hit, score_col],
                     alpha=0.9, s=dot_size, c='#fcae91', label=up_hit,
                     **args)
         
-        ax.scatter( rho_df.loc[rho_df['label'] == down_hit, 'score'],
-                    gamma_df.loc[rho_df['label'] == down_hit, 'score'],
+        ax.scatter( rho_df.loc[rho_df['label'] == down_hit, score_col],
+                    gamma_df.loc[rho_df['label'] == down_hit, score_col],
                     alpha=0.9, s=dot_size, c='#bdd7e7', label=down_hit,
                     **args)
         
-        ax.scatter( rho_df.loc[rho_df['label'] == self.ctrl_label, 'score'],
-                    gamma_df.loc[rho_df['label'] == self.ctrl_label, 'score'],
+        ax.scatter( rho_df.loc[rho_df['label'] == self.ctrl_label, score_col],
+                    gamma_df.loc[rho_df['label'] == self.ctrl_label, score_col],
                     alpha=0.1, s=dot_size, c='gray', label=self.ctrl_label,
                     **args)
         
