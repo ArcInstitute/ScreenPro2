@@ -277,10 +277,12 @@ class PooledScreens(object):
         score_tag = score_name.split(':')[0]
         out = annotateScoreTable(
             self.phenotypes[run_name][score_name].loc[:,keep_col],
-            ctrl_label=ctrl_label, 
+            threshold=threshold,
             up_hit=hit_dict[score_tag]['up_hit'],
             down_hit=hit_dict[score_tag]['down_hit'],
-            threshold=threshold
+            ctrl_label=ctrl_label, 
+            score_col=score_col,
+            pvalue_col=pvalue_col
         )
 
         return out
