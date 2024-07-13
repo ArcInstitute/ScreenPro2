@@ -12,10 +12,10 @@ import pandas as pd
 import anndata as ad
 import scanpy as sc
 
-from pydeseq2 import preprocessing
-from .phenoscore.deseq import runDESeq, extractDESeqResults
+from .phenoscore import runDESeq, extractDESeqResults
 from .phenoscore import runPhenoScore, runPhenoScoreForReplicate
-from .phenoscore.annotate import ann_score_df
+from .phenoscore import annotateScoreTable, hit_dict
+from .preprocessing import addPseudoCount, findLowCounts, normalizeSeqDepth
 from copy import copy
 
 
@@ -24,12 +24,14 @@ class PooledScreens(object):
     pooledScreens class for processing CRISPR screen datasets
     """
 
-    def __init__(self, adata, fc_transformation='log2', test='ttest', n_reps=3):
+    def __init__(self, adata, fc_transformation='log2', test='ttest', n_reps=3, verbose=False):
         """
         Args:
             adata (AnnData): AnnData object with adata.X as a matrix of sgRNA counts
             fc_transformation (str): fold change transformation to apply for calculating phenotype scores
             test (str): statistical test to use for calculating phenotype scores
+            n_reps (int): number of replicates to use for calculating phenotype scores
+            verbose (bool): whether to print verbose output
         """
         self.adata = adata.copy()
         self.pdata = None
@@ -38,6 +40,7 @@ class PooledScreens(object):
         self.n_reps = n_reps
         self.phenotypes = {}
         self.phenotype_names = []
+        self.verbose = verbose
 
     # def __repr__(self):
     #     descriptions = ''
@@ -83,18 +86,34 @@ class PooledScreens(object):
 
         return out
 
-    def countNormalization(self):
+    def filterLowCounts(self, filter_type='either', minimum_reads=50):
+        """
+        Filter low counts in adata.X
+        """
+        findLowCounts(
+            self.adata, 
+            filter_type=filter_type, 
+            minimum_reads=minimum_reads,
+            verbose=self.verbose
+        )
+
+        self.adata = self.adata[:,~self.adata.var.low_count].copy()
+
+    def countNormalization(self, pseudo_count_value=0.5):
         """
         Normalize the counts data in adata.X
         """
         self.adata.layers['raw_counts'] = self.adata.X.copy()
         
+        # add pseudocount
+        addPseudoCount(self.adata.X, behavior='default', value=pseudo_count_value)
+        
+        if self.verbose: print('Counts normalized by sequencing depth.')
+        
         # normalize counts by sequencing depth
-        norm_counts, size_factors = preprocessing.deseq2_norm(self.adata.X)
-        # update adata object
-        self.adata.obs['size_factors'] = size_factors
-        self.adata.layers['seq_depth_norm'] = norm_counts
-        self.adata.X = self.adata.layers['seq_depth_norm']
+        normalizeSeqDepth(self.adata)
+
+        if self.verbose: print('Counts normalized by sequencing depth.')
     
     def calculateDrugScreenDESeq(self, t0, untreated, treated, run_name=None, **kwargs):
         """
@@ -227,33 +246,19 @@ class PooledScreens(object):
         # save phenotype name for reference
         self._add_phenotype_results(f'delta:{delta_name}')
 
-    def getPhenotypeScores(self, score_name, run_name='auto', threshold=5, ctrl_label='control', target_col='target',pvalue_column='ttest pvalue', score_column='score'):
+    def getPhenotypeScores(self, score_name, threshold, run_name='auto', ctrl_label='control', target_col='target',pvalue_column='ttest pvalue', score_column='score'):
         """
         Get phenotype scores for a given score level
 
         Args:
-            run_name (str): name of the phenotype calculation run to retrieve
             score_name (str): name of the score to retrieve, e.g. 'gamma', 'tau', 'rho', 'delta'
             threshold (float): threshold for filtering significant hits, default is 5
+            run_name (str): name of the phenotype calculation run to retrieve
             ctrl_label (str): label for the negative control, default is 'control'
             target_col (str): column name for the target gene, default is 'target'
             pvalue_column (str): column name for the p-value, default is 'ttest pvalue'
             score_column (str): column name for the score, default is 'score'
         """
-        hit_dict = {
-            'gamma':{
-                'up_hit':'up_hit',
-                'down_hit':'essential_hit'
-            },
-            'tau':{
-                'up_hit':'up_hit', 
-                'down_hit':'down_hit'
-            },
-            'rho':{
-                'up_hit':'resistance_hit', 
-                'down_hit':'sensitivity_hit'
-            }
-        }
 
         if run_name == 'auto':
             if len(list(self.phenotypes.keys())) == 1:
@@ -270,7 +275,7 @@ class PooledScreens(object):
 
         keep_col = [target_col, score_column, pvalue_column]
         score_tag = score_name.split(':')[0]
-        out = ann_score_df(
+        out = annotateScoreTable(
             self.phenotypes[run_name][score_name].loc[:,keep_col],
             ctrl_label=ctrl_label, 
             up_hit=hit_dict[score_tag]['up_hit'],
@@ -280,22 +285,21 @@ class PooledScreens(object):
 
         return out
 
-    def getAnnotatedTable(self, run_name='auto', threshold=5, ctrl_label='control', target_col='target',pvalue_column='ttest pvalue', score_column='score'):
-        hit_dict = {
-            'gamma':{
-                'up_hit':'up_hit',
-                'down_hit':'essential_hit'
-            },
-            'tau':{
-                'up_hit':'up_hit', 
-                'down_hit':'down_hit'
-            },
-            'rho':{
-                'up_hit':'resistance_hit', 
-                'down_hit':'sensitivity_hit'
-            }
-        }
-        
+    def getAnnotatedTable(self, threshold, run_name='auto', ctrl_label='control', target_col='target', pvalue_column='ttest pvalue', score_column='score'):
+        """
+        Returns an annotated table with scores, labels, and replicate phenotypes.
+
+        Args:
+            threshold (int, optional): The threshold value for determining hits. Defaults to 5.
+            run_name (str, optional): The name of the phenotype calculation run. Defaults to 'auto'.
+            ctrl_label (str, optional): The label for the control group. Defaults to 'control'.
+            target_col (str, optional): The column name for the target. Defaults to 'target'.
+            pvalue_column (str, optional): The column name for the p-value. Defaults to 'ttest pvalue'.
+            score_column (str, optional): The column name for the score. Defaults to 'score'.
+
+        Returns:
+            pandas.DataFrame: An annotated table with scores, labels, and replicate phenotypes.
+        """
         if run_name == 'auto':
             if len(list(self.phenotypes.keys())) == 1:
                 run_name = list(self.phenotypes.keys())[0]
@@ -310,12 +314,12 @@ class PooledScreens(object):
 
         score_names = {s for s, col in self.phenotypes[run_name].columns}
         sort_var = self.adata.var.sort_values(['targetType','target']).index.to_list()
-        
+
         df_list = {}
         for score_name in score_names:
             score_tag = score_name.split(':')[0]
             # get label
-            df_label = ann_score_df(
+            df_label = annotateScoreTable(
                 self.phenotypes[run_name][score_name].loc[:,keep_col],
                 up_hit=hit_dict[score_tag]['up_hit'],
                 down_hit=hit_dict[score_tag]['down_hit'],
@@ -324,16 +328,16 @@ class PooledScreens(object):
             )['label']
             # get replicate phe
             df_phe_reps = self.pdata[self.pdata.obs.score.eq(score_tag)].to_df().T
-            
+
             # make table
             df = pd.concat([
                 self.phenotypes['compare_reps'][score_name], df_phe_reps, df_label
             ],axis=1).loc[sort_var,:]
-            
+
             df_list.update({score_name:df})
-        
+
         out = pd.concat(df_list,axis=1)
-        
+
         return out
 
 

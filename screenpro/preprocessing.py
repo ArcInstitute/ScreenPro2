@@ -1,8 +1,9 @@
 import pandas as pd
 import numpy as np
+from pydeseq2 import preprocessing
 
 
-def find_low_counts(adata, filter_type='either', minimum_reads=50):
+def findLowCounts(adata, filter_type='either', minimum_reads=50, verbose=True):
     """
     Label variables with low counts in either or all samples.
 
@@ -10,11 +11,13 @@ def find_low_counts(adata, filter_type='either', minimum_reads=50):
         adata (AnnData): AnnData object
         filter_type (str): either or all
         minimum_reads (int): minimum number of reads
+        verbose (bool): print the number of removed variables
 
     Returns:
         None
     """
     count_bin = adata.X >= minimum_reads
+ 
     if filter_type == 'either':
         out = adata[:, ~(~count_bin.all(axis=0))].copy()
     elif filter_type == 'all':
@@ -24,16 +27,17 @@ def find_low_counts(adata, filter_type='either', minimum_reads=50):
     else:
         raise ValueError(f'filter_type "{filter_type}" not recognized. Use "either", "all", or "sum".')
     
-    # print the number of removed variables
-    n_removed = adata.shape[1] - out.shape[1]
-    print(
-        f"{n_removed} variables with less than {minimum_reads} reads (filter_type: '{filter_type}')"
-    )
+    if verbose:
+        n_removed = adata.shape[1] - out.shape[1]
+        # print the number of removed variables
+        print(
+            f"{n_removed} variables with less than {minimum_reads} reads (filter_type: '{filter_type}')"
+        )
 
     adata.var['low_count'] = ~adata.var.index.isin(out.var.index.to_list())
 
 
-def add_pseudo_count(counts, behavior, value):
+def addPseudoCount(counts, behavior, value):
     """
     Add pseudocounts to the given counts based on the specified behavior.
 
@@ -79,3 +83,19 @@ def add_pseudo_count(counts, behavior, value):
             'Pseudocount behavior not recognized or not implemented')
 
     return counts_pseudo
+
+
+def normalizeSeqDepth(adata):
+    """
+    Normalize counts by sequencing depth and update the adata object.
+    This function uses the PyDESeq2 normalization method.
+
+    Args:
+        adata (AnnData): AnnData object containing the counts to be normalized.
+    """
+    # normalize counts by sequencing depth
+    norm_counts, size_factors = preprocessing.deseq2_norm(adata.X)
+    # update adata object
+    adata.obs['size_factors'] = size_factors
+    adata.layers['seq_depth_norm'] = norm_counts
+    adata.X = adata.layers['seq_depth_norm']
