@@ -50,7 +50,7 @@ def getCombinedScore(df, score_col='score', pvalue_col='pvalue', ctrl_label='con
     return df[score_col]/pseudo_sd * -np.log10(df[pvalue_col])
 
 
-def annotateScoreTable(df_in, up_hit, down_hit, threshold, score_col='score', pvalue_col='pvalue', ctrl_label='control'):
+def annotateScoreTable(df_in, up_hit, down_hit, threshold, score_col=None, pvalue_col=None, ctrl_label='control'):
     """
     Annotate the given score tabel 
     
@@ -67,11 +67,17 @@ def annotateScoreTable(df_in, up_hit, down_hit, threshold, score_col='score', pv
     Returns:
         pd.DataFrame: annotated score dataframe
     """
-    if 'target' not in df_in.columns:
-        raise ValueError('Column "target" not found in the input DataFrame.')
+    if score_col is None: score_col = 'score'
+    if pvalue_col is None: pvalue_col = 'pvalue'
+
+    sel = ['target',score_col, pvalue_col]
+    
+    for col in sel:
+        if col not in df_in.columns:
+            raise ValueError('Column "target" not found in the input DataFrame.')
     
     # make a copy of input dataframe
-    df = df_in[['target', score_col, pvalue_col]].copy()
+    df = df_in[sel].copy()
     # # rename/reformat columns
     # df.columns = ['target', 'score', 'pvalue']
     df[score_col] = df[score_col].astype(float)
