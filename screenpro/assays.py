@@ -14,8 +14,8 @@ import scanpy as sc
 
 from .phenoscore import runDESeq, extractDESeqResults
 from .phenoscore import runPhenoScore, runPhenoScoreForReplicate
-from .phenoscore import annotateScoreTable, hit_dict
 from .preprocessing import addPseudoCount, findLowCounts, normalizeSeqDepth
+from .phenoscore.annotate import annotateScoreTable, hit_dict
 from copy import copy
 
 
