@@ -55,12 +55,12 @@ class GuideCounter:
         self.counts_mat = None
         self.recombinants = None
 
-    def load_library(self, library_path, sep='\t', index_col=0, protospacer_length=19, verbose=False):
+    def load_library(self, library_path, sep='\t', index_col=0, protospacer_length=19, verbose=False, **args):
         '''Load library file
         '''
         if self.cas_type == 'cas9':
 
-            library = load_cas9_sgRNA_library(library_path, library_type=self.library_type, sep=sep, index_col=index_col, protospacer_length=protospacer_length, verbose=verbose)
+            library = load_cas9_sgRNA_library(library_path, library_type=self.library_type, sep=sep, index_col=index_col, protospacer_length=protospacer_length, verbose=verbose, **args)
 
             # Check if the library has duplicate sequences and remove them
             if library.duplicated('sequence').any():
