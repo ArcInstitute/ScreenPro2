@@ -74,7 +74,7 @@ def annotateScoreTable(df_in, up_hit, down_hit, threshold, score_col=None, pvalu
     
     for col in sel:
         if col not in df_in.columns:
-            raise ValueError('Column "target" not found in the input DataFrame.')
+            raise ValueError(f'Column "{col}" not found in the input DataFrame.')
     
     # make a copy of input dataframe
     df = df_in[sel].copy()
