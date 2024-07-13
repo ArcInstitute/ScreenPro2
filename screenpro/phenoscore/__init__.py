@@ -252,7 +252,7 @@ def runPhenoScoreForReplicate(adata, x_label, y_label, score, growth_factor_tabl
             level='row'  # there is only one column so `row` option here is equivalent to the value before averaging.
         )
 
-        results.update({f'replicate_{replicate}': res})
+        results.update({f'replicate_{replicate}': res.reshape(-1)})
 
     out = pd.DataFrame(
         results,
