@@ -40,7 +40,6 @@ import os
 
 from . import cas9
 from . import cas12
-from .utils import find_low_counts, addPseudoCount
 from ..load import load_cas9_sgRNA_library
 from simple_colors import green
 

@@ -19,7 +19,7 @@ This package contains several modules, including:
 '''
 
 from . import phenoscore as ps
-
+from . import preprocessing as pp
 from . import ngs
 from . import assays
 from . import load
