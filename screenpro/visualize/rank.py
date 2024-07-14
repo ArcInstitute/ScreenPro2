@@ -28,7 +28,7 @@ def rankPlot(df, rank_col, color_col=None, name_col='target', highlight_values_d
     """
     # Create a new DataFrame with the values and their corresponding ranks
     rank_df = df.copy()
-    rank_df['Rank'] = rank_df[rank_col].rank(ascending=False)
+    rank_df['Rank'] = rank_df[rank_col].rank()
     rank_df.sort_values('Rank', inplace=True)
 
     # Use a color that is suitable for publications
