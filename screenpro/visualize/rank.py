@@ -2,7 +2,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 
 
-def rankPlot(series, ax=None, highlight_values_dict=None, xlabel='Rank', ylabel='Values', title='Rank Plot', dot_size=3, highlight_size_factor=100):
+def rankPlot(series, ax=None, highlight_values_dict=None, xlabel='Rank', ylabel='Values', title='Rank Plot', dot_size=1.5, highlight_size_factor=100):
     # Create a copy of the series and sort it
     sorted_series = series.sort_values(ascending=True)
 
@@ -17,7 +17,7 @@ def rankPlot(series, ax=None, highlight_values_dict=None, xlabel='Rank', ylabel=
         _, ax = plt.subplots()
 
     # Plot the ranks against their values with specified color
-    ax.plot(rank_df['Rank'], rank_df['Values'], marker='o', linestyle='dashed', linewidth=.1, color=plot_color, markersize=dot_size)
+    ax.plot(rank_df['Rank'], rank_df['Values'], marker='o', linestyle='dashed', linewidth=.5, color=plot_color, markersize=dot_size)
 
     if highlight_values_dict is not None:
         for highlight_color, highlight_values in highlight_values_dict.items():
