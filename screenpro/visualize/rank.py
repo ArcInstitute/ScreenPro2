@@ -43,6 +43,7 @@ def rankPlot(df, rank_col, color_col=None, name_col='target', highlight_values_d
     rank_df.plot.scatter(
         'Rank', rank_col, marker='o',
         colormap=yellow_blue,
+        s=dot_size,
         c=color_col, ax=ax,
     )
 
