@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 from .utils import yellow_blue
 
 
-def rankPlot(df, rank_col, color_col=None, name_col='target', highlight_values_dict=None, xlabel='Rank', ylabel='Values', title='Rank Plot', ax=None, dot_size=1.5, highlight_size_factor=100):
+def rankPlot(df, rank_col, color_col=None, name_col='target', highlight_values_dict=None, xlabel='Rank', ylabel='Values', title='Rank Plot', ax=None, dot_size=1.5, highlight_size_factor=100, **args):
     """
     Plot the ranks against their values with specified color.
 
@@ -22,6 +22,7 @@ def rankPlot(df, rank_col, color_col=None, name_col='target', highlight_values_d
         ax (matplotlib.axes.Axes, optional): The axis object to plot on. If not provided, a new axis will be created.
         dot_size (float, optional): The size of the dots in the scatter plot. Default is 1.5.
         highlight_size_factor (int, optional): The size factor for the highlighted dots. Default is 100.
+        **args: Additional keyword arguments to be passed to the scatter plot.
 
     Returns:
         matplotlib.axes.Axes: The axis object containing the plot.
@@ -45,6 +46,8 @@ def rankPlot(df, rank_col, color_col=None, name_col='target', highlight_values_d
         colormap=yellow_blue,
         s=dot_size,
         c=color_col, ax=ax,
+        colorbar=False,
+        **args
     )
 
     if highlight_values_dict is not None:
