@@ -14,10 +14,10 @@ def rankPlot(series, ax=None, highlight_values_dict=None, xlabel='Rank', ylabel=
 
     # If no axis is provided, create one
     if ax is None:
-        fig, ax = plt.subplots()
+        _, ax = plt.subplots()
 
     # Plot the ranks against their values with specified color
-    ax.plot(rank_df['Rank'], rank_df['Values'], marker='o', linestyle='-', color=plot_color, markersize=dot_size)
+    ax.plot(rank_df['Rank'], rank_df['Values'], marker='o', linestyle='dashed', linewidth=.1, color=plot_color, markersize=dot_size)
 
     if highlight_values_dict is not None:
         for highlight_color, highlight_values in highlight_values_dict.items():
