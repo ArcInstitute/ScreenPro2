@@ -45,22 +45,26 @@ def matrixStat(x, y, test, level):
         raise ValueError(f'Test "{test}" not recognized')
 
 
-def getFDR(p_values, method='fdr_bh'):
+def multipleTestsCorrection(p_values, method='fdr_bh'):
     """
-    Calculate FDR.
+    Calculate adjusted p-values using multiple testing correction.
 
     Parameters:
         p_values (np.array): array of p-values
-        method (str): method to use for calculating FDR
+        method (str): method to use for multiple testing correction
     
     Returns:
         np.array: array of adjusted p-values
     """
-    # fill na with 1
-    p_values[np.isnan(p_values)] = 1
-    # Calculate the adjusted p-values using the Benjamini-Hochberg method
-    if p_values is None:
-        raise ValueError('p_values is None')
-    _, adj_p_values, _, _ = multipletests(p_values, alpha=0.05, method='fdr_bh')
+    if method == 'fdr_bh':
+        # fill na with 1
+        p_values[np.isnan(p_values)] = 1
+        # Calculate the adjusted p-values using the Benjamini-Hochberg method
+        if p_values is None:
+            raise ValueError('p_values is None')
+        _, adj_p_values, _, _ = multipletests(p_values, alpha=0.05, method='fdr_bh')
+    
+    else:
+        raise ValueError(f'Method "{method}" not recognized')
 
     return adj_p_values

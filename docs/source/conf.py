@@ -78,11 +78,13 @@ extensions = [
     'sphinx.ext.autodoc', 
     'sphinx.ext.napoleon',
     'sphinx.ext.intersphinx',
-    "sphinx.ext.extlinks",
+    'sphinx.ext.extlinks',
     'sphinx.ext.viewcode', 
-    "sphinxcontrib.bibtex",
+    'sphinxcontrib.bibtex',
     'myst_parser',
 ]
+
+suppress_warnings = ["myst.header"]
 
 # -- Options for HTML output -------------------------------------------
 # Activate the theme.
