@@ -59,3 +59,9 @@ module](https://docs.scipy.org/doc/scipy/reference/generated/scipy.stats.ttest_r
 > samples have identical average (expected) values).
 
 ___
+
+```{eval-rst}
+.. automodule:: screenpro.phenoscore
+   :members:
+   :show-inheritance:
+```
