@@ -86,7 +86,7 @@ class PooledScreens(object):
 
         return out
 
-    def filterLowCounts(self, filter_type='either', minimum_reads=50):
+    def filterLowCounts(self, filter_type='sum', minimum_reads=50):
         """
         Filter low counts in adata.X
         """

@@ -3,15 +3,15 @@ import numpy as np
 from pydeseq2 import preprocessing
 
 
-def findLowCounts(adata, filter_type='either', minimum_reads=50, verbose=True):
+def findLowCounts(adata, filter_type, minimum_reads, verbose=True):
     """
     Label variables with low counts in either or all samples.
 
     Parameters:
-        adata (AnnData): AnnData object
-        filter_type (str): either or all
-        minimum_reads (int): minimum number of reads
-        verbose (bool): print the number of removed variables
+        adata (AnnData): AnnData object containing the counts to be filtered.
+        filter_type (str): specify the filter type. Possible values are: 'either', 'all', or 'sum'.
+        minimum_reads (int): minimum number of reads.
+        verbose (bool): print the number of removed variables. Default is True.
 
     Returns:
         None
