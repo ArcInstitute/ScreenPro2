@@ -28,6 +28,6 @@ from . import visualize as viz
 from .ngs import GuideCounter
 from .assays import PooledScreens, GImaps
 
-__version__ = "0.4.4"
+__version__ = "0.4.5"
 __author__ = "Abe Arab"
 __email__ = 'abea@arcinstitute.org' # "abarbiology@gmail.com"
