@@ -9,7 +9,7 @@ def findLowCounts(adata, filter_type, minimum_reads, verbose=True):
 
     Parameters:
         adata (AnnData): AnnData object containing the counts to be filtered.
-        filter_type (str): specify the filter type. Possible values are: 'either', 'all', or 'sum'.
+        filter_type (str): specify the filter type. Possible values are: 'all', or 'sum'.
         minimum_reads (int): minimum number of reads.
         verbose (bool): print the number of removed variables. Default is True.
 
@@ -18,14 +18,12 @@ def findLowCounts(adata, filter_type, minimum_reads, verbose=True):
     """
     count_bin = adata.X >= minimum_reads
  
-    if filter_type == 'either':
-        out = adata[:, ~(~count_bin.all(axis=0))].copy()
-    elif filter_type == 'all':
+    if filter_type == 'all':
         out = adata[:, count_bin.all(axis=0)].copy()
     elif filter_type == 'sum':
         out = adata[:, adata.to_df().sum(axis=0) >= minimum_reads].copy()
     else:
-        raise ValueError(f'filter_type "{filter_type}" not recognized. Use "either", "all", or "sum".')
+        raise ValueError(f'filter_type "{filter_type}" not recognized. Use "all", or "sum".')
     
     if verbose:
         n_removed = adata.shape[1] - out.shape[1]
