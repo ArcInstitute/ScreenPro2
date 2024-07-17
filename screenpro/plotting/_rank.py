@@ -67,4 +67,4 @@ def rank_plot(df, rank_col, color_col=None, name_col='target', highlight_values_
     # Customize the grid lines for a clean look
     ax.grid(False)
 
-    return ax
+    return rank_df, ax
