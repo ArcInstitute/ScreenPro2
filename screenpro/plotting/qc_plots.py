@@ -38,5 +38,3 @@ def plotReplicateScatter(ax, adat_in, x, y, title, min_val=None, max_val=None, l
     ax.get_legend().remove()
 
     ax.grid(False)
-
-

@@ -18,15 +18,18 @@ This package contains several modules, including:
 - datasets: API for accessing pre-processed datasets
 '''
 
-from . import phenoscore as ps
-from . import preprocessing as pp
 from . import ngs
-from . import assays
 from . import load
-from . import visualize as viz
+from . import preprocessing as pp
+from . import phenoscore as ps
+from . import assays
+from . import plotting as pl
+from . import dashboard
 
 from .ngs import GuideCounter
 from .assays import PooledScreens, GImaps
+from .dashboard import DrugScreenDashboard
+
 
 __version__ = "0.4.5"
 __author__ = "Abe Arab"
