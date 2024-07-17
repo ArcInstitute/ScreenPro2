@@ -1,6 +1,11 @@
 import numpy as np
 import scanpy as sc
-from .utils import almost_black
+from ._utils import almost_black
+
+
+## Histogram of guide counts distribution
+def plotCountDistribution(ax, adat, title, **args):
+    pass
 
 
 ## Scatter plot of replicates
