@@ -1,7 +1,7 @@
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
-from .utils import yellow_blue, up_hit_color, down_hit_color
+from .utils import yellow_blue
 
 
 class ScatterPlot:
@@ -30,12 +30,12 @@ class ScatterPlot:
         
         ax.scatter( df.loc[df['label'] == up_hit, score_col], 
                     df.loc[df['label'] == up_hit, f'-log10({pvalue_col})'],
-                    alpha=0.9, s=dot_size, c=up_hit_color, label=up_hit,
+                    alpha=0.9, s=dot_size, c='#fcae91', label=up_hit,
                     **args)
         
         ax.scatter( df.loc[df['label'] == down_hit, score_col], 
                     df.loc[df['label'] == down_hit, f'-log10({pvalue_col})'],
-                    alpha=0.9, s=dot_size, c=down_hit_color, label=down_hit,
+                    alpha=0.9, s=dot_size, c='#bdd7e7', label=down_hit,
                     **args)
         
         ax.scatter( df.loc[df['label'] == ctrl_label, score_col],
@@ -147,3 +147,4 @@ class VolcanoPlot(ScatterPlot):
                          dot_size=dot_size,
                          xlims=xlims, ylims=ylims,
                          **args)
+

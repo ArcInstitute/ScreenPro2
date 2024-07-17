@@ -20,8 +20,6 @@ yellow_blue = matplotlib.colors.LinearSegmentedColormap.from_list(
     'YlBu', [(0, '#0000ff'), (.49, '#000000'), (.51, '#000000'), (1, '#ffff00')])
 yellow_blue.set_bad('#999999', 1)
 
-up_hit_color = '#fcae91'
-down_hit_color = '#bdd7e7'
 
 # plt.rcParams['font.sans-serif'] = [
 #     'Helvetica', 'Arial', 'Verdana', 'Bitstream Vera Sans'

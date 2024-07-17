@@ -5,5 +5,5 @@
 
 import numpy as np
 import scanpy as sc
-from .qc_plots import plotReplicateScatter
-from .rank import rankPlot
+from .qc_plots import *
+from .pheno_plots import *
