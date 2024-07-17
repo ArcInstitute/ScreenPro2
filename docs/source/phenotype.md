@@ -1,21 +1,25 @@
 # Phenotype calculation modules
 
+## Phenotype score calculation
+
 Log ratio of {math}`y` vs {math}`x`:
 
 ```{math}
 \Delta =
 \log(\frac
-    {\begin{bmatrix}{N_{y}}\end{bmatrix}_{(a,b)} + 1}
-    {\begin{bmatrix}{N_{x}}\end{bmatrix}_{(a,b)} + 1}
+    {\begin{bmatrix}{N_{y}}\end{bmatrix}_{(a,b)}}
+    {\begin{bmatrix}{N_{x}}\end{bmatrix}_{(a,b)}}
 )
 ```
 
 -   {math}`y \rightarrow` condition {math}`x` (e.g. treated samples)
--   {math}`x \rightarrow` condition {math}`y` (e.g. {math}`t_{0}` samples)
+-   {math}`x \rightarrow` condition {math}`y` (e.g. {math}`t_{0}` samples, or untreated samples)
 -   {math}`a \rightarrow` number of library elements with sgRNAs targeting {math}`T`
 -   {math}`b \rightarrow` number of biological replicates, {math}`R` (e.g. 2 or 3)
 -   {math}`N_{x}` \| {math}`N_{y} \rightarrow` read counts normalized for sequencing
     depth in condition {math}`x` or {math}`y`
+
+___
 
 Here is a formula for V3 library with single library element per gene
 (i.e. dual sgRNAs in one construct targeting same gene).
@@ -39,6 +43,8 @@ Phenotype score for each {math}`T` comparing {math}`y` vs {math}`x`:
 -   {math}`T \rightarrow` library elements with sgRNAs targeting {math}`T`
 -   {math}`d_{growth} \rightarrow` growth factor to normalize the phenotype
     score.
+
+## Phenotype statistics calculation
 
 Statistical test comparing {math}`y` vs {math}`x` per each target, {math}`T`:
 
@@ -64,4 +70,21 @@ ___
 .. automodule:: screenpro.phenoscore
    :members:
    :show-inheritance:
+
+.. automodule:: screenpro.phenotype.phenostat
+   :members:
+   :show-inheritance:
+
+.. automodule:: screenpro.phenotype.delta
+    :members:
+    :show-inheritance:
+
+.. automodule:: screenpro.phenotype.deseq
+    :members:
+    :show-inheritance:
+
+.. automodule:: screenpro.phenotype.annotate
+    :members:
+    :show-inheritance:
+
 ```
