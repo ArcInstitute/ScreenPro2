@@ -177,20 +177,20 @@ class PooledScreens(object):
 
         # calculate phenotype scores: gamma, tau, rho
         gamma_name, gamma = runPhenoScore(
-            self.adata, cond1=t0, cond2=untreated, growth_rate=db_untreated,
+            self.adata, cond_ref=t0, cond_test=untreated, growth_rate=db_untreated,
             n_reps=self.n_reps,
             transformation=self.fc_transformation, test=self.test, score_level=score_level,
             **kwargs
         )
         tau_name, tau = runPhenoScore(
-            self.adata, cond1=t0, cond2=treated, growth_rate=db_treated,
+            self.adata, cond_ref=t0, cond_test=treated, growth_rate=db_treated,
             n_reps=self.n_reps,
             transformation=self.fc_transformation, test=self.test, score_level=score_level,
             **kwargs
         )
         # TO-DO: warning / error if db_untreated and db_treated are too close, i.e. growth_rate ~= 0.
         rho_name, rho = runPhenoScore(
-            self.adata, cond1=untreated, cond2=treated, growth_rate=db_treated_vs_untreated,
+            self.adata, cond_ref=untreated, cond_test=treated, growth_rate=db_treated_vs_untreated,
             n_reps=self.n_reps,
             transformation=self.fc_transformation, test=self.test, score_level=score_level,
             **kwargs
@@ -242,7 +242,7 @@ class PooledScreens(object):
         """
         # calculate phenotype scores
         delta_name, delta = runPhenoScore(
-            self.adata, cond1=low_bin, cond2=high_bin, n_reps=self.n_reps,
+            self.adata, cond_ref=low_bin, cond_test=high_bin, n_reps=self.n_reps,
             transformation=self.fc_transformation, test=self.test, score_level=score_level,
             **kwargs
         )
