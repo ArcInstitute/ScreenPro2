@@ -4,7 +4,7 @@ channels:
   - conda-forge
   - bioconda
 dependencies:
-  - python=3.9
+  - python=>3.9,<3.12
   - scanpy
   - python-igraph
   - leidenalg
@@ -14,7 +14,6 @@ dependencies:
   - scipy
   - matplotlib<3.7
   - seaborn
-  - pyarrow
   - bokeh
   - ipykernel
   - mscorefonts
