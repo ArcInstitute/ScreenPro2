@@ -75,8 +75,8 @@ def runPhenoScore(adata, cond_ref, cond_test, transformation, score_level, test,
 
     Args:
         adata (AnnData): AnnData object
-        cond_ref (str): condition 1
-        cond_test (str): condition 2
+        cond_ref (str): condition reference
+        cond_test (str): condition test
         transformation (str): transformation to use for calculating score
         test (str): test to use for calculating p-value ('MW': Mann-Whitney U rank; 'ttest' : t-test)
         score_level (str): score level
