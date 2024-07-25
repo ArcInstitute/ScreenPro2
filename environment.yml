@@ -21,6 +21,7 @@ dependencies:
   - pip
   - pip:
       - polars
+      - pyarrow<17.0
       - biobear
       - numba
       - pydeseq2
