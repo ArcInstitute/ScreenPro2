@@ -1,9 +1,9 @@
 import pandas as pd
 import matplotlib.pyplot as plt
-from .utils import yellow_blue
+from ._utils import yellow_blue
 
 
-def rankPlot(df, rank_col, color_col=None, name_col='target', highlight_values_dict=None, xlabel='Rank', ylabel='Values', title='Rank Plot', ax=None, dot_size=1.5, highlight_size_factor=100, **args):
+def rank_plot(df, rank_col, color_col=None, name_col='target', highlight_values_dict=None, xlabel='Rank', ylabel='Values', title='Rank Plot', ax=None, dot_size=1.5, highlight_size_factor=100, **args):
     """
     Plot the ranks against their values with specified color.
 
@@ -67,4 +67,4 @@ def rankPlot(df, rank_col, color_col=None, name_col='target', highlight_values_d
     # Customize the grid lines for a clean look
     ax.grid(False)
 
-    return ax
+    return rank_df, ax

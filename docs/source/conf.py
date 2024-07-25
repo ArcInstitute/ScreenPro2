@@ -36,15 +36,15 @@ autodoc_mock_imports = [
     "seaborn",
     "scanpy",
     "anndata",
-    "screenpro",
+    # "screenpro",
     "pyarrow",
     "biobear",
     "click",
     "polars",
     "biobear",
     "numba",
-    "bokeh",
-    "pydeseq2",
+    # "bokeh",
+    # "pydeseq2",
     "watermark"
 ]
 

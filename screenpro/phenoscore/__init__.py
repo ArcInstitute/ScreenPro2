@@ -19,7 +19,7 @@ from .annotate import annotateScoreTable
 from .phenostat import multipleTestsCorrection
 
 
-def generatePseudoGeneAnnData(adata, num_pseudogenes='auto', pseudogene_size='auto', ctrl_label='negative_control'):
+def _generatePseudoGeneAnnData(adata, num_pseudogenes='auto', pseudogene_size='auto', ctrl_label='negative_control'):
     """Generate pseudogenes from negative control elements in the library.
 
     Args:
@@ -68,15 +68,15 @@ def generatePseudoGeneAnnData(adata, num_pseudogenes='auto', pseudogene_size='au
     return out
 
 
-def runPhenoScore(adata, cond1, cond2, transformation, score_level, test,
-                  growth_rate=1, n_reps=2, keep_top_n = None,num_pseudogenes='auto', pseudogene_size='auto',
+def runPhenoScore(adata, cond_ref, cond_test, transformation, score_level, test,
+                  growth_rate=1, n_reps='auto', keep_top_n = None,num_pseudogenes='auto', pseudogene_size='auto',
                   count_layer=None, ctrl_label='negative_control'):
-    """Calculate phenotype score and p-values when comparing `cond2` vs `cond1`.
+    """Calculate phenotype score and p-values when comparing `cond_test` vs `cond_ref`.
 
     Args:
         adata (AnnData): AnnData object
-        cond1 (str): condition 1
-        cond2 (str): condition 2
+        cond_ref (str): condition reference
+        cond_test (str): condition test
         transformation (str): transformation to use for calculating score
         test (str): test to use for calculating p-value ('MW': Mann-Whitney U rank; 'ttest' : t-test)
         score_level (str): score level
@@ -93,8 +93,15 @@ def runPhenoScore(adata, cond1, cond2, transformation, score_level, test,
         pd.DataFrame: result dataframe
     """
     # format result name
-    result_name = f'{cond2}_vs_{cond1}'
-    print(f'\t{cond2} vs {cond1}')
+    result_name = f'{cond_test}_vs_{cond_ref}'
+    print(f'\t{cond_test} vs {cond_ref}')
+
+    # set n_reps if not provided
+    if n_reps == 'auto':
+        n_reps = min(
+            adata.obs.query(f'condition=="{cond_ref}"').shape[0], 
+            adata.obs.query(f'condition=="{cond_test}"').shape[0]
+        )
 
     # check if count_layer exists
     if count_layer is None:
@@ -105,7 +112,7 @@ def runPhenoScore(adata, cond1, cond2, transformation, score_level, test,
         adata.X = adata.layers[count_layer].copy()
     
     # evaluate library table to get targets and riase error if not present
-    required_columns = ['target', 'sequence']
+    required_columns = ['target'] #, 'sequence']
     missing_columns = list(set(required_columns) - set(adata.var.columns))
     if len(missing_columns) > 0:
         raise ValueError(f"Missing required columns in library table: {missing_columns}")
@@ -113,16 +120,16 @@ def runPhenoScore(adata, cond1, cond2, transformation, score_level, test,
     # calc phenotype score and p-value
     if score_level in ['compare_reps']:
         # prep counts for phenoScore calculation
-        df_cond1 = adata[adata.obs.query(f'condition=="{cond1}"').index[:n_reps],].to_df(count_layer).T
-        df_cond2 = adata[adata.obs.query(f'condition=="{cond2}"').index[:n_reps],].to_df(count_layer).T
+        df_cond_ref = adata[adata.obs.query(f'condition=="{cond_ref}"').index[:n_reps],].to_df(count_layer).T
+        df_cond_test = adata[adata.obs.query(f'condition=="{cond_test}"').index[:n_reps],].to_df(count_layer).T
 
         # convert to numpy arrays
-        x = df_cond1.to_numpy()
-        y = df_cond2.to_numpy()
+        x = df_cond_ref.to_numpy()
+        y = df_cond_test.to_numpy()
 
         # get control values
-        x_ctrl = df_cond1[adata.var.targetType.eq(ctrl_label)].to_numpy()
-        y_ctrl = df_cond2[adata.var.targetType.eq(ctrl_label)].to_numpy()
+        x_ctrl = df_cond_ref[adata.var.targetType.eq(ctrl_label)].to_numpy()
+        y_ctrl = df_cond_test[adata.var.targetType.eq(ctrl_label)].to_numpy()
 
         # calculate growth score and p_value
         scores, p_values = matrixTest(
@@ -151,20 +158,20 @@ def runPhenoScore(adata, cond1, cond2, transformation, score_level, test,
         adata0 = adata.copy()
 
         # prep counts for phenoScore calculation
-        df_cond1 = adata0[adata0.obs.query(f'condition=="{cond1}"').index].to_df().T
-        df_cond2 = adata0[adata0.obs.query(f'condition=="{cond2}"').index].to_df().T
+        df_cond_ref = adata0[adata0.obs.query(f'condition=="{cond_ref}"').index].to_df().T
+        df_cond_test = adata0[adata0.obs.query(f'condition=="{cond_test}"').index].to_df().T
         # get control values
-        x_ctrl = df_cond1[adata0.var.targetType.eq(ctrl_label)].to_numpy()
-        y_ctrl = df_cond2[adata0.var.targetType.eq(ctrl_label)].to_numpy()
-        del df_cond1, df_cond2
+        x_ctrl = df_cond_ref[adata0.var.targetType.eq(ctrl_label)].to_numpy()
+        y_ctrl = df_cond_test[adata0.var.targetType.eq(ctrl_label)].to_numpy()
+        del df_cond_ref, df_cond_test
         
-        adata_pseudo = generatePseudoGeneAnnData(adata0, num_pseudogenes=num_pseudogenes, pseudogene_size=pseudogene_size, ctrl_label=ctrl_label)
+        adata_pseudo = _generatePseudoGeneAnnData(adata0, num_pseudogenes=num_pseudogenes, pseudogene_size=pseudogene_size, ctrl_label=ctrl_label)
         adata = ad.concat([adata0[:,~adata0.var.targetType.eq(ctrl_label)], adata_pseudo], axis=1)
         adata.obs = adata0.obs.copy()
 
         # prep counts for phenoScore calculation
-        df_cond1 = adata[adata.obs.query(f'condition=="{cond1}"').index].to_df().T
-        df_cond2 = adata[adata.obs.query(f'condition=="{cond2}"').index].to_df().T
+        df_cond_ref = adata[adata.obs.query(f'condition=="{cond_ref}"').index].to_df().T
+        df_cond_test = adata[adata.obs.query(f'condition=="{cond_test}"').index].to_df().T
         
         targets = []
         scores = []
@@ -173,8 +180,8 @@ def runPhenoScore(adata, cond1, cond2, transformation, score_level, test,
         # group by target genes or pseudogenes to aggregate counts for score calculation
         for target_name, target_group in adata.var.groupby('target'):
             # convert to numpy arrays
-            x = df_cond1.loc[target_group.index,:]
-            y = df_cond2.loc[target_group.index,:]
+            x = df_cond_ref.loc[target_group.index,:]
+            y = df_cond_test.loc[target_group.index,:]
             # Sort and find top n guide per target, see #18
             if keep_top_n:
                 x = x.sort_values(x.columns.to_list(), ascending=False)
@@ -197,20 +204,21 @@ def runPhenoScore(adata, cond1, cond2, transformation, score_level, test,
             scores.append(target_scores)
             p_values.append(target_p_values)
             targets.append(target_name)
-        
-        # get mean scores and p-values across replicates
-        scores = [np.mean(s) for s in scores]
-        p_values = [np.mean(p) for p in p_values]
 
         # get adjusted p-values
-        adj_p_values = multipleTestsCorrection(p_values)
+        adj_p_values = multipleTestsCorrection(np.array(p_values))
         
         # combine results into a dataframe
         result = pd.concat([
+            pd.Series(targets, index=targets, name='target'),
             pd.Series(scores, index=targets, name='score'),
             pd.Series(p_values, index=targets, name=f'{test} pvalue'),
             pd.Series(adj_p_values, index=targets, name='BH adj_pvalue'),
         ], axis=1)
+
+        # rename pseudo genes in target column to `ctrl_label`
+        result['target'] = result['target'].apply(lambda x: ctrl_label if 'pseudo' in x else x)
+
     
     else:
         raise ValueError(f'score_level "{score_level}" not recognized. Currently, "compare_reps" and "compare_guides" are supported.')
