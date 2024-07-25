@@ -112,7 +112,7 @@ def runPhenoScore(adata, cond_ref, cond_test, transformation, score_level, test,
         adata.X = adata.layers[count_layer].copy()
     
     # evaluate library table to get targets and riase error if not present
-    required_columns = ['target', 'sequence']
+    required_columns = ['target'] #, 'sequence']
     missing_columns = list(set(required_columns) - set(adata.var.columns))
     if len(missing_columns) > 0:
         raise ValueError(f"Missing required columns in library table: {missing_columns}")
@@ -210,10 +210,15 @@ def runPhenoScore(adata, cond_ref, cond_test, transformation, score_level, test,
         
         # combine results into a dataframe
         result = pd.concat([
+            pd.Series(targets, index=targets, name='target'),
             pd.Series(scores, index=targets, name='score'),
             pd.Series(p_values, index=targets, name=f'{test} pvalue'),
             pd.Series(adj_p_values, index=targets, name='BH adj_pvalue'),
         ], axis=1)
+
+        # rename pseudo genes in target column to `ctrl_label`
+        result['target'] = result['target'].apply(lambda x: ctrl_label if 'pseudo' in x else x)
+
     
     else:
         raise ValueError(f'score_level "{score_level}" not recognized. Currently, "compare_reps" and "compare_guides" are supported.')
