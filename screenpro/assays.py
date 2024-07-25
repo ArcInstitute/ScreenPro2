@@ -16,6 +16,8 @@ from .phenoscore import runDESeq, extractDESeqResults
 from .phenoscore import runPhenoScore, runPhenoScoreForReplicate
 from .preprocessing import addPseudoCount, findLowCounts, normalizeSeqDepth
 from .phenoscore.annotate import annotateScoreTable, hit_dict
+
+import warnings
 from copy import copy
 
 
@@ -158,12 +160,20 @@ class PooledScreens(object):
             run_name (str): name for the phenotype calculation run
             **kwargs: additional arguments to pass to runPhenoScore
         """
-        growth_factor_table = self._calculateGrowthFactor(
-            untreated = untreated, treated = treated, db_rate_col = db_rate_col
-        )
+        if 'pop_doublings' not in self.adata.obs.columns or db_rate_col == None:
+            warnings.warn('No doubling rate information provided.')
+            db_untreated = 1
+            db_treated = 1
+            db_treated_vs_untreated = 1
+        
+        else:
+            growth_factor_table = self._calculateGrowthFactor(
+                untreated = untreated, treated = treated, db_rate_col = db_rate_col
+            )
 
-        db_untreated=growth_factor_table.query(f'score=="gamma"')['growth_factor'].mean()
-        db_treated=growth_factor_table.query(f'score=="tau"')['growth_factor'].mean()
+            db_untreated=growth_factor_table.query(f'score=="gamma"')['growth_factor'].mean()
+            db_treated=growth_factor_table.query(f'score=="tau"')['growth_factor'].mean()
+            db_treated_vs_untreated = np.abs(db_untreated - db_treated)
 
         # calculate phenotype scores: gamma, tau, rho
         gamma_name, gamma = runPhenoScore(
@@ -180,7 +190,7 @@ class PooledScreens(object):
         )
         # TO-DO: warning / error if db_untreated and db_treated are too close, i.e. growth_rate ~= 0.
         rho_name, rho = runPhenoScore(
-            self.adata, cond1=untreated, cond2=treated, growth_rate=np.abs(db_untreated - db_treated),
+            self.adata, cond1=untreated, cond2=treated, growth_rate=db_treated_vs_untreated,
             n_reps=self.n_reps,
             transformation=self.fc_transformation, test=self.test, score_level=score_level,
             **kwargs
