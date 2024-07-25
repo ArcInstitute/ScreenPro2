@@ -212,7 +212,7 @@ def runPhenoScore(adata, cond_ref, cond_test, transformation, score_level, test,
         result = pd.concat([
             pd.Series(scores, index=targets, name='score'),
             pd.Series(p_values, index=targets, name=f'{test} pvalue'),
-            pd.Series(adj_p_values, index=targets, name='BH adj_pvalue'),
+            # pd.Series(adj_p_values, index=targets, name='BH adj_pvalue'),
         ], axis=1)
     
     else:
