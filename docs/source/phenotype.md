@@ -64,6 +64,12 @@ module](https://docs.scipy.org/doc/scipy/reference/generated/scipy.stats.ttest_r
 > This is a test for the null hypothesis that two related or repeated
 > samples have identical average (expected) values).
 
+#
+
+```{math}
+\text{combined score} = \left( \dfrac{T_{\text{phenotype score}}}{\sigma{\text{(negative controls)}}} \right) \times -\log_{10}(\text{pvalue})$
+```
+
 ___
 
 ```{eval-rst}
@@ -71,19 +77,19 @@ ___
    :members:
    :show-inheritance:
 
-.. automodule:: screenpro.phenotype.phenostat
+.. automodule:: screenpro.phenoscore.phenostat
    :members:
    :show-inheritance:
 
-.. automodule:: screenpro.phenotype.delta
+.. automodule:: screenpro.phenoscore.delta
     :members:
     :show-inheritance:
 
-.. automodule:: screenpro.phenotype.deseq
+.. automodule:: screenpro.phenoscore.deseq
     :members:
     :show-inheritance:
 
-.. automodule:: screenpro.phenotype.annotate
+.. automodule:: screenpro.phenoscore.annotate
     :members:
     :show-inheritance:
 
