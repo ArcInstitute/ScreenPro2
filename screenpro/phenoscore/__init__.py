@@ -205,14 +205,14 @@ def runPhenoScore(adata, cond_ref, cond_test, transformation, score_level, test,
             p_values.append(target_p_values)
             targets.append(target_name)
         
-        # # get adjusted p-values
-        # adj_p_values = multipleTestsCorrection(p_values)
+        # get adjusted p-values
+        adj_p_values = multipleTestsCorrection(p_values)
         
         # combine results into a dataframe
         result = pd.concat([
             pd.Series(scores, index=targets, name='score'),
             pd.Series(p_values, index=targets, name=f'{test} pvalue'),
-            # pd.Series(adj_p_values, index=targets, name='BH adj_pvalue'),
+            pd.Series(adj_p_values, index=targets, name='BH adj_pvalue'),
         ], axis=1)
     
     else:

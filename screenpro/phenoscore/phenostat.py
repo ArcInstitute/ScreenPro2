@@ -37,7 +37,7 @@ def matrixStat(x, y, test, level):
             p_value = ttest_rel(y, x, axis=0)[1]
         elif level == 'all':
             # average across all values
-            p_value = ttest_rel(y, x)[1]
+            p_value = ttest_rel(y, x, axis=None)[1]
         else:
             raise ValueError(f'Level "{level}" not recognized')
         return p_value
