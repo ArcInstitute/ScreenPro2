@@ -45,9 +45,9 @@ def test_runPhenoScore():
     # run function
     result_name, result = runPhenoScore(
         adata=adat,
-        cond1='A',
-        cond2='B',
-        transformation='log2(x+1)',
+        cond_ref='A',
+        cond_test='B',
+        transformation='log2',
         test='ttest',
         score_level='compare_reps',
         growth_rate=1,
