@@ -109,35 +109,56 @@ class PooledScreens(object):
 
         if self.verbose: print('Counts normalized by sequencing depth.')
     
-    def calculateDrugScreenDESeq(self, t0, untreated, treated, run_name=None, **kwargs):
+    def calculateDrugScreenDESeq(self, untreated, treated, t0=None, run_name='pyDESeq2', **kwargs):
         """
         Calculate DESeq2 results for a given drug screen dataset.
 
         Args:
-            design (str): design matrix for DESeq2
-            run_name (str): name for the DESeq2 calculation run
+            design (str): design matrix for DESeq2-based analysis
+            untreated (str): name of the untreated condition
+            treated (str): name of the treated condition
+            t0 (str): name of the untreated condition
+            run_name (str): name for the phenotype calculation run
             **kwargs: additional arguments to pass to runDESeq
         """
-        dds = runDESeq(self.adata, 'condition', **kwargs)
+        if run_name in self.phenotypes.keys():
+            raise ValueError(f"Phenotype calculation run '{run_name}' already exists in self.phenoypes!")
+
+        self.phenotypes[run_name] = {}
         
-        # Calculate `gamma`, `rho`, and `tau` phenotype scores
-        gamma_name, gamma = extractDESeqResults(
-            dds, 'condition', t0, untreated, **kwargs
-        )
+        self.phenotypes[run_name]['config'] = {
+                'phenoscore_method':'pyDESeq2',
+                'untreated':untreated,
+                'treated':treated,
+                't0':t0,
+                'n_reps':self.n_reps,
+        }
+        self.phenotypes[run_name]['results'] = {}
 
-        tau_name, tau = extractDESeqResults(
-            dds, 'condition', t0, treated, **kwargs
-        )
+        if type(treated) != list: treated = [treated]
 
-        rho_name, rho = extractDESeqResults(
-            dds, 'condition', untreated, treated, **kwargs
-        )
+        # run pyDESeq2 analysis
+        dds = runDESeq(self.adata, 'condition', **kwargs)
 
-        if not run_name: run_name = 'pyDESeq2'
+        # extract comparison results
+        if t0:
+            # Calculate `gamma`, `rho`, and `tau` phenotype scores
+            gamma_name, gamma = extractDESeqResults(
+                dds, 'condition', t0, untreated, **kwargs
+            )
+            self.phenotypes[run_name]['results'][gamma_name] = gamma
 
-        self.phenotypes[run_name] = pd.concat({
-            f'gamma:{gamma_name}': gamma, f'tau:{tau_name}': tau, f'rho:{rho_name}': rho
-        }, axis=1)        
+            for tr in treated:
+                tau_name, tau = extractDESeqResults(
+                    dds, 'condition', t0, treated, **kwargs
+                )
+                self.phenotypes[run_name]['results'][tau_name] = tau
+
+        for tr in treated:
+            rho_name, rho = extractDESeqResults(
+                dds, 'condition', untreated, tr, **kwargs
+            )
+            self.phenotypes[run_name]['results'][rho_name] = rho
 
     def calculateDrugScreen(self, t0, untreated, treated, score_level, db_rate_col='pop_doublings', run_name=None, **kwargs):
         """
