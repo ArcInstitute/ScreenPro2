@@ -44,14 +44,6 @@ class PooledScreens(object):
         self.phenotype_names = []
         self.verbose = verbose
 
-    # def __repr__(self):
-    #     descriptions = ''
-    #     for score_level in self.phenotypes.keys():
-    #         scores = "', '".join(self.phenotypes[score_level].columns.get_level_values(0).unique().to_list())
-    #         descriptions += f"Phenotypes in score_level = '{score_level}':\n    scores: '{scores}'\n"
-
-    #     return f'obs->samples\nvar->elementss\n\n{self.__repr__()}\n\n{descriptions}'
-
     def copy(self):
         return copy(self)
     
@@ -189,7 +181,7 @@ class PooledScreens(object):
             transformation=self.fc_transformation, test=self.test, score_level=score_level,
             **kwargs
         )
-        # TO-DO: warning / error if db_untreated and db_treated are too close, i.e. growth_rate ~= 0.
+        #TODO: warning / error if db_untreated and db_treated are too close, i.e. growth_rate ~= 0.
         rho_name, rho = runPhenoScore(
             self.adata, cond_ref=untreated, cond_test=treated, growth_rate=db_treated_vs_untreated,
             n_reps=self.n_reps,
@@ -209,12 +201,13 @@ class PooledScreens(object):
         self._add_phenotype_results(f'rho:{rho_name}')
 
         # get replicate level phenotype scores
+        #TODO: move this to a separate function / method
         pdata_df = pd.concat([
             runPhenoScoreForReplicate(
                 self.adata, x_label = x_label, y_label = y_label, score = score_label,
                 transformation=self.fc_transformation, 
                 growth_factor_table=growth_factor_table,
-                **kwargs
+                # **kwargs
             ).add_prefix(f'{score_label}_')
 
             for x_label, y_label, score_label in [
