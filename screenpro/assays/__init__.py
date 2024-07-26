@@ -46,10 +46,10 @@ class PooledScreens(object):
     def copy(self):
         return copy(self)
     
-    def _add_phenotype_results(self, phenotype_name, phenotype_table):
-        if phenotype_name in self.phenotypes['results'].keys():
+    def _add_phenotype_results(self, run_name, phenotype_name, phenotype_table):
+        if phenotype_name in self.phenotypes[run_name]['results'].keys():
             raise ValueError(f"Phenotype '{phenotype_name}' already exists in self.phenotypes['results']!")
-        self.phenotypes['results'][phenotype_name] = phenotype_table
+        self.phenotypes[run_name]['results'][phenotype_name] = phenotype_table
 
     def _calculateGrowthFactor(self, untreated, treated, db_rate_col):
         """
@@ -164,19 +164,19 @@ class PooledScreens(object):
             gamma_name, gamma = extractDESeqResults(
                 dds, 'condition', t0, untreated, **kwargs
             )
-            self._add_phenotype_results(f'gamma:{gamma_name}', gamma)
+            self._add_phenotype_results(run_name, f'gamma:{gamma_name}', gamma)
 
             for tr in treated:
                 tau_name, tau = extractDESeqResults(
                     dds, 'condition', t0, treated, **kwargs
                 )
-                self._add_phenotype_results(f'tau:{tau_name}', tau)
+                self._add_phenotype_results(run_name, f'tau:{tau_name}', tau)
 
         for tr in treated:
             rho_name, rho = extractDESeqResults(
                 dds, 'condition', untreated, tr, **kwargs
             )
-            self._add_phenotype_results(f'rho:{rho_name}', rho)
+            self._add_phenotype_results(run_name, f'rho:{rho_name}', rho)
 
     def calculateDrugScreen(self, score_level, untreated, treated, t0=None, db_rate_col='pop_doublings', run_name=None, **kwargs):
         """
@@ -218,7 +218,7 @@ class PooledScreens(object):
                 transformation=self.fc_transformation, test=self.test, score_level=score_level,
                 **kwargs
             )
-            self._add_phenotype_results(f'gamma:{gamma_name}', gamma)
+            self._add_phenotype_results(run_name, f'gamma:{gamma_name}', gamma)
 
         for tr in treated:
             _, db_tr, db_diff = self._getTreatmentDoublingRate(untreated, tr, db_rate_col)
@@ -230,7 +230,7 @@ class PooledScreens(object):
                     transformation=self.fc_transformation, test=self.test, score_level=score_level,
                     **kwargs
                 )
-                self._add_phenotype_results(f'tau:{tau_name}', tau)
+                self._add_phenotype_results(run_name, f'tau:{tau_name}', tau)
             
             #TODO: warning / error if db_untreated and db_treated are too close, i.e. growth_rate ~= 0.
             rho_name, rho = runPhenoScore(
@@ -239,7 +239,7 @@ class PooledScreens(object):
                 transformation=self.fc_transformation, test=self.test, score_level=score_level,
                 **kwargs
             )
-            self._add_phenotype_results(f'rho:{rho_name}', rho)
+            self._add_phenotype_results(run_name, f'rho:{rho_name}', rho)
 
         # #TODO: move this to a separate function / method
         # # get replicate level phenotype scores
