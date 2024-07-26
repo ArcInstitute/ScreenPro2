@@ -208,28 +208,27 @@ class PooledScreens(object):
         self._add_phenotype_results(f'tau:{tau_name}')
         self._add_phenotype_results(f'rho:{rho_name}')
 
-        if growth_factor_table:
-            # get replicate level phenotype scores
-            pdata_df = pd.concat([
-                runPhenoScoreForReplicate(
-                    self.adata, x_label = x_label, y_label = y_label, score = score_label,
-                    transformation=self.fc_transformation, 
-                    growth_factor_table=growth_factor_table,
-                    **kwargs
-                ).add_prefix(f'{score_label}_')
+        # get replicate level phenotype scores
+        pdata_df = pd.concat([
+            runPhenoScoreForReplicate(
+                self.adata, x_label = x_label, y_label = y_label, score = score_label,
+                transformation=self.fc_transformation, 
+                growth_factor_table=growth_factor_table,
+                **kwargs
+            ).add_prefix(f'{score_label}_')
 
-                for x_label, y_label, score_label in [
-                    ('T0', untreated, 'gamma'),
-                    ('T0', treated, 'tau'),
-                    (untreated, treated, 'rho')
-                ]
-            ],axis=1).T
-            # add .pdata
-            self.pdata = ad.AnnData(
-                X = pdata_df,
-                obs = growth_factor_table.loc[pdata_df.index,:],
-                var=self.adata.var
-            )
+            for x_label, y_label, score_label in [
+                ('T0', untreated, 'gamma'),
+                ('T0', treated, 'tau'),
+                (untreated, treated, 'rho')
+            ]
+        ],axis=1).T
+        # add .pdata
+        self.pdata = ad.AnnData(
+            X = pdata_df,
+            obs = growth_factor_table.loc[pdata_df.index,:],
+            var=self.adata.var
+        )
         
     def calculateFlowBasedScreen(self, low_bin, high_bin, score_level, run_name=None, **kwargs):
         """
