@@ -210,7 +210,7 @@ class PooledScreens(object):
         if type(treated) != list: treated = [treated]
 
         if t0 != None and type(treated) == str:
-            db_untreated,_,_ = self._getTreatmentDoublingRate(self, untreated, treated, db_rate_col)            
+            db_untreated,_,_ = self._getTreatmentDoublingRate(self, untreated, treated[0], db_rate_col)
             # calculate phenotype scores: gamma, tau, rho
             gamma_name, gamma = runPhenoScore(
                 self.adata, cond_ref=t0, cond_test=untreated, growth_rate=db_untreated,
