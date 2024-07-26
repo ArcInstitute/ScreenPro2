@@ -159,7 +159,7 @@ class PooledScreens(object):
         dds = runDESeq(self.adata, 'condition', **kwargs)
 
         # extract comparison results
-        if t0 != None and type(treated) == str:
+        if t0 != None and type(t0) == str:
             # Calculate `gamma`, `rho`, and `tau` phenotype scores
             gamma_name, gamma = extractDESeqResults(
                 dds, 'condition', t0, untreated, **kwargs
@@ -209,7 +209,7 @@ class PooledScreens(object):
 
         if type(treated) != list: treated = [treated]
 
-        if t0 != None and type(treated) == str:
+        if t0 != None and type(t0) == str:
             db_untreated,_,_ = self._getTreatmentDoublingRate(self, untreated, treated[0], db_rate_col)
             # calculate phenotype scores: gamma, tau, rho
             gamma_name, gamma = runPhenoScore(
@@ -223,7 +223,7 @@ class PooledScreens(object):
         for tr in treated:
             _, db_tr, db_diff = self._getTreatmentDoublingRate(untreated, tr, db_rate_col)
 
-            if t0 != None and type(treated) == str:
+            if t0 != None and type(t0) == str:
                 tau_name, tau = runPhenoScore(
                     self.adata, cond_ref=t0, cond_test=tr, growth_rate=db_tr,
                     n_reps=self.n_reps,
@@ -234,7 +234,7 @@ class PooledScreens(object):
             
             #TODO: warning / error if db_untreated and db_treated are too close, i.e. growth_rate ~= 0.
             rho_name, rho = runPhenoScore(
-                self.adata, cond_ref=untreated, cond_test=treated, growth_rate=db_diff,
+                self.adata, cond_ref=untreated, cond_test=tr, growth_rate=db_diff,
                 n_reps=self.n_reps,
                 transformation=self.fc_transformation, test=self.test, score_level=score_level,
                 **kwargs
