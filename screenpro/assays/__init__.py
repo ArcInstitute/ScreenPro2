@@ -41,16 +41,15 @@ class PooledScreens(object):
         self.test = test
         self.n_reps = n_reps
         self.phenotypes = {}
-        self.phenotype_names = []
         self.verbose = verbose
 
     def copy(self):
         return copy(self)
     
-    def _add_phenotype_results(self, phenotype_name):
-        if phenotype_name in self.phenotype_names:
-            raise ValueError(f"Phenotype '{phenotype_name}' already exists in self.phenotype_names!")
-        self.phenotype_names.append(phenotype_name)
+    def _add_phenotype_results(self, phenotype_name, phenotype_table):
+        if phenotype_name in self.phenotypes['results'].keys():
+            raise ValueError(f"Phenotype '{phenotype_name}' already exists in self.phenotypes['results']!")
+        self.phenotypes['results'][phenotype_name] = phenotype_table
 
     def _calculateGrowthFactor(self, untreated, treated, db_rate_col):
         """
@@ -79,6 +78,25 @@ class PooledScreens(object):
         out.index.name = None
 
         return out
+
+    def _getTreatmentDoublingRate(self, untreated, treated, db_rate_col):
+        if 'pop_doublings' not in self.adata.obs.columns or db_rate_col == None:
+            warnings.warn('No doubling rate information provided.')
+            db_untreated = 1
+            db_treated = 1
+            db_diff = 1
+            growth_factor_table = None
+        
+        else:
+            growth_factor_table = self._calculateGrowthFactor(
+                untreated = untreated, treated = treated, db_rate_col = db_rate_col
+            )
+
+            db_untreated=growth_factor_table.query(f'score=="gamma"')['growth_factor'].mean()
+            db_treated=growth_factor_table.query(f'score=="tau"')['growth_factor'].mean()
+            db_diff = np.abs(db_untreated - db_treated)
+        
+        return db_untreated, db_treated, db_diff
 
     def filterLowCounts(self, filter_type='all', minimum_reads=50):
         """
@@ -123,17 +141,17 @@ class PooledScreens(object):
         """
         if run_name in self.phenotypes.keys():
             raise ValueError(f"Phenotype calculation run '{run_name}' already exists in self.phenoypes!")
-
-        self.phenotypes[run_name] = {}
-        
-        self.phenotypes[run_name]['config'] = {
-                'phenoscore_method':'pyDESeq2',
-                'untreated':untreated,
-                'treated':treated,
-                't0':t0,
-                'n_reps':self.n_reps,
-        }
-        self.phenotypes[run_name]['results'] = {}
+        else:
+            self.phenotypes[run_name] = {}
+            
+            self.phenotypes[run_name]['config'] = {
+                    'method':'pyDESeq2',
+                    'untreated':untreated,
+                    'treated':treated,
+                    't0':t0,
+                    'n_reps':self.n_reps,
+            }
+            self.phenotypes[run_name]['results'] = {}
 
         if type(treated) != list: treated = [treated]
 
@@ -141,108 +159,110 @@ class PooledScreens(object):
         dds = runDESeq(self.adata, 'condition', **kwargs)
 
         # extract comparison results
-        if t0:
+        if t0 != None and type(treated) == str:
             # Calculate `gamma`, `rho`, and `tau` phenotype scores
             gamma_name, gamma = extractDESeqResults(
                 dds, 'condition', t0, untreated, **kwargs
             )
-            self.phenotypes[run_name]['results'][gamma_name] = gamma
+            self._add_phenotype_results(f'gamma:{gamma_name}', gamma)
 
             for tr in treated:
                 tau_name, tau = extractDESeqResults(
                     dds, 'condition', t0, treated, **kwargs
                 )
-                self.phenotypes[run_name]['results'][tau_name] = tau
+                self._add_phenotype_results(f'tau:{tau_name}', tau)
 
         for tr in treated:
             rho_name, rho = extractDESeqResults(
                 dds, 'condition', untreated, tr, **kwargs
             )
-            self.phenotypes[run_name]['results'][rho_name] = rho
+            self._add_phenotype_results(f'rho:{rho_name}', rho)
 
-    def calculateDrugScreen(self, t0, untreated, treated, score_level, db_rate_col='pop_doublings', run_name=None, **kwargs):
+    def calculateDrugScreen(self, score_level, untreated, treated, t0=None, db_rate_col='pop_doublings', run_name=None, **kwargs):
         """
         Calculate `gamma`, `rho`, and `tau` phenotype scores for a drug screen dataset in a given `score_level`.
 
         Args:
-            t0 (str): name of the untreated condition
+            score_level (str): name of the score level
             untreated (str): name of the untreated condition
             treated (str): name of the treated condition
-            score_level (str): name of the score level
+            t0 (str): name of the untreated condition
             db_rate_col (str): column name for the doubling rate, default is 'pop_doublings'
             run_name (str): name for the phenotype calculation run
             **kwargs: additional arguments to pass to runPhenoScore
         """
-        if 'pop_doublings' not in self.adata.obs.columns or db_rate_col == None:
-            warnings.warn('No doubling rate information provided.')
-            db_untreated = 1
-            db_treated = 1
-            db_treated_vs_untreated = 1
-            growth_factor_table = None
-        
-        else:
-            growth_factor_table = self._calculateGrowthFactor(
-                untreated = untreated, treated = treated, db_rate_col = db_rate_col
-            )
-
-            db_untreated=growth_factor_table.query(f'score=="gamma"')['growth_factor'].mean()
-            db_treated=growth_factor_table.query(f'score=="tau"')['growth_factor'].mean()
-            db_treated_vs_untreated = np.abs(db_untreated - db_treated)
-
-        # calculate phenotype scores: gamma, tau, rho
-        gamma_name, gamma = runPhenoScore(
-            self.adata, cond_ref=t0, cond_test=untreated, growth_rate=db_untreated,
-            n_reps=self.n_reps,
-            transformation=self.fc_transformation, test=self.test, score_level=score_level,
-            **kwargs
-        )
-        tau_name, tau = runPhenoScore(
-            self.adata, cond_ref=t0, cond_test=treated, growth_rate=db_treated,
-            n_reps=self.n_reps,
-            transformation=self.fc_transformation, test=self.test, score_level=score_level,
-            **kwargs
-        )
-        #TODO: warning / error if db_untreated and db_treated are too close, i.e. growth_rate ~= 0.
-        rho_name, rho = runPhenoScore(
-            self.adata, cond_ref=untreated, cond_test=treated, growth_rate=db_treated_vs_untreated,
-            n_reps=self.n_reps,
-            transformation=self.fc_transformation, test=self.test, score_level=score_level,
-            **kwargs
-        )
-
         if not run_name: run_name = score_level
-        # save all results into a multi-index dataframe
-        self.phenotypes[run_name] = pd.concat({
-            f'gamma:{gamma_name}': gamma, f'tau:{tau_name}': tau, f'rho:{rho_name}': rho
-        }, axis=1)
+        if run_name in self.phenotypes.keys():
+            raise ValueError(f"Phenotype calculation run '{run_name}' already exists in self.phenoypes!")
+        else:
+            self.phenotypes[run_name] = {}
+            self.phenotypes[run_name]['config'] = {
+                'method':'ScreenPro2 - phenoscore',
+                'untreated':untreated,
+                'treated':treated,
+                't0':t0,
+                'n_reps':self.n_reps,
+                'test':self.test,
+                'score_level':score_level,
+            }
+            self.phenotypes[run_name]['results'] = {}
 
-        # save phenotype name for reference
-        self._add_phenotype_results(f'gamma:{gamma_name}')
-        self._add_phenotype_results(f'tau:{tau_name}')
-        self._add_phenotype_results(f'rho:{rho_name}')
+        if type(treated) != list: treated = [treated]
 
-        # get replicate level phenotype scores
-        #TODO: move this to a separate function / method
-        pdata_df = pd.concat([
-            runPhenoScoreForReplicate(
-                self.adata, x_label = x_label, y_label = y_label, score = score_label,
-                transformation=self.fc_transformation, 
-                growth_factor_table=growth_factor_table,
-                # **kwargs
-            ).add_prefix(f'{score_label}_')
+        if t0 != None and type(treated) == str:
+            db_untreated,_,_ = self._getTreatmentDoublingRate(self, untreated, treated, db_rate_col)            
+            # calculate phenotype scores: gamma, tau, rho
+            gamma_name, gamma = runPhenoScore(
+                self.adata, cond_ref=t0, cond_test=untreated, growth_rate=db_untreated,
+                n_reps=self.n_reps,
+                transformation=self.fc_transformation, test=self.test, score_level=score_level,
+                **kwargs
+            )
+            self._add_phenotype_results(f'gamma:{gamma_name}', gamma)
 
-            for x_label, y_label, score_label in [
-                ('T0', untreated, 'gamma'),
-                ('T0', treated, 'tau'),
-                (untreated, treated, 'rho')
-            ]
-        ],axis=1).T
-        # add .pdata
-        self.pdata = ad.AnnData(
-            X = pdata_df,
-            obs = growth_factor_table.loc[pdata_df.index,:],
-            var=self.adata.var
-        )
+        for tr in treated:
+            _, db_tr, db_diff = self._getTreatmentDoublingRate(untreated, tr, db_rate_col)
+            
+            if t0 != None and type(treated) == str:
+                tau_name, tau = runPhenoScore(
+                    self.adata, cond_ref=t0, cond_test=tr, growth_rate=db_tr,
+                    n_reps=self.n_reps,
+                    transformation=self.fc_transformation, test=self.test, score_level=score_level,
+                    **kwargs
+                )
+                self._add_phenotype_results(f'tau:{tau_name}', tau)
+            
+            #TODO: warning / error if db_untreated and db_treated are too close, i.e. growth_rate ~= 0.
+            rho_name, rho = runPhenoScore(
+                self.adata, cond_ref=untreated, cond_test=treated, growth_rate=db_diff,
+                n_reps=self.n_reps,
+                transformation=self.fc_transformation, test=self.test, score_level=score_level,
+                **kwargs
+            )
+            self._add_phenotype_results(f'rho:{rho_name}', rho)
+
+        # # get replicate level phenotype scores
+        # #TODO: move this to a separate function / method
+        # pdata_df = pd.concat([
+        #     runPhenoScoreForReplicate(
+        #         self.adata, x_label = x_label, y_label = y_label, score = score_label,
+        #         transformation=self.fc_transformation, 
+        #         growth_factor_table=growth_factor_table,
+        #         # **kwargs
+        #     ).add_prefix(f'{score_label}_')
+
+        #     for x_label, y_label, score_label in [
+        #         ('T0', untreated, 'gamma'),
+        #         ('T0', treated, 'tau'),
+        #         (untreated, treated, 'rho')
+        #     ]
+        # ],axis=1).T
+        # # add .pdata
+        # self.pdata = ad.AnnData(
+        #     X = pdata_df,
+        #     obs = growth_factor_table.loc[pdata_df.index,:],
+        #     var=self.adata.var
+        # )
         
     def calculateFlowBasedScreen(self, low_bin, high_bin, score_level, run_name=None, **kwargs):
         """
@@ -339,6 +359,10 @@ class PooledScreens(object):
 
         keep_col = [target_col, score_col, pvalue_col]
         
+        # self.phenotypes[run_name] = pd.concat({
+        #     f'gamma:{gamma_name}': gamma, f'tau:{tau_name}': tau, f'rho:{rho_name}': rho
+        # }, axis=1)
+
         score_names = {s for s, col in self.phenotypes[run_name].columns}
         sort_var = self.adata.var.sort_values(['targetType','target']).index.to_list()
 
