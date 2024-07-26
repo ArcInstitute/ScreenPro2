@@ -12,10 +12,10 @@ import pandas as pd
 import anndata as ad
 import scanpy as sc
 
-from .phenoscore import runDESeq, extractDESeqResults
-from .phenoscore import runPhenoScore, runPhenoScoreForReplicate
-from .preprocessing import addPseudoCount, findLowCounts, normalizeSeqDepth
-from .phenoscore.annotate import annotateScoreTable, hit_dict
+from ..phenoscore import runDESeq, extractDESeqResults
+from ..phenoscore import runPhenoScore, runPhenoScoreForReplicate
+from ..preprocessing import addPseudoCount, findLowCounts, normalizeSeqDepth
+from ..phenoscore.annotate import annotateScoreTable, hit_dict
 
 import warnings
 from copy import copy
