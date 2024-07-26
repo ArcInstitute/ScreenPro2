@@ -222,7 +222,7 @@ class PooledScreens(object):
 
         for tr in treated:
             _, db_tr, db_diff = self._getTreatmentDoublingRate(untreated, tr, db_rate_col)
-            
+
             if t0 != None and type(treated) == str:
                 tau_name, tau = runPhenoScore(
                     self.adata, cond_ref=t0, cond_test=tr, growth_rate=db_tr,
@@ -241,8 +241,8 @@ class PooledScreens(object):
             )
             self._add_phenotype_results(f'rho:{rho_name}', rho)
 
-        # # get replicate level phenotype scores
         # #TODO: move this to a separate function / method
+        # # get replicate level phenotype scores
         # pdata_df = pd.concat([
         #     runPhenoScoreForReplicate(
         #         self.adata, x_label = x_label, y_label = y_label, score = score_label,
