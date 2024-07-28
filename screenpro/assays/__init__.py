@@ -300,149 +300,37 @@ class PooledScreens(object):
 
         return out
     
-    def getPhenotypeScoresPerReplicate(self, phenotype_names, **kwargs):
-        pass
-        
-        # pdata_dict = {}
-
-        # for score_name in phenotype_names:
-        #     _, comparison = score_name.split(':')
-        #     y_label, x_label = comparison.split('_vs_')
-
-        #     #TODO: get growth rates for replicate level scores
-
-        #     pdata_dict.update({
-        #     score_name: runPhenoScoreForReplicate(
-        #         self.adata, x_label = x_label, y_label = y_label,
-        #         transformation=self.fc_transformation, 
-        #         **kwargs
-        #     ).add_prefix(f'{score_name}_').T # transpose to match pdata format
-        #     })
-        
-        # self._getPhenotypeScoresPerReplicate(
-        #     phenotype_names = [f'gamma:{gamma_name}', f'tau:{tau_name}', f'rho:{rho_name}'],
-        #     growth_factor_reps=
-        #     **kwargs
-        # )
-
-        # pdata_df = pd.concat(pdata_dict, axis=0)
-
-        # #TODO: fix `_calculateGrowthFactor` and `_getTreatmentDoublingRate` to maintain same format
-        # # add .pdata
-        # self.pdata = ad.AnnData(
-        #     X = pdata_df,
-        #     # obs = growth_factor_table.loc[pdata_df.index,:],
-        #     var=self.adata.var
-        # )
-        # return pdata_dict
-
-
-
-    def getPhenotypeScores(self, score_name, threshold, run_name='auto', ctrl_label='negative_control', target_col='target',pvalue_col='ttest pvalue', score_col='score'):
+    def buildPhenotypeData(self, phenotype_names, run_name='auto', **kwargs):
         """
-        Get phenotype scores for a given score level
-
-        Args:
-            score_name (str): name of the score to retrieve, e.g. 'gamma', 'tau', 'rho', 'delta'
-            threshold (float): threshold for filtering significant hits, default is 5
-            run_name (str): name of the phenotype calculation run to retrieve
-            ctrl_label (str): label for the negative control, default is 'negative_control'
-            target_col (str): column name for the target gene, default is 'target'
-            pvalue_column (str): column name for the p-value, default is 'ttest pvalue'
-            score_column (str): column name for the score, default is 'score'
+        Build phenotype data table for a given list of phenotype names
         """
+        #TODO: fix `_calculateGrowthFactor` and `_getTreatmentDoublingRate` to maintain same format
 
-        if run_name == 'auto':
-            if len(list(self.phenotypes.keys())) == 1:
-                run_name = list(self.phenotypes.keys())[0]
-            else:
-                raise ValueError(
-                    'Multiple phenotype calculation runs found.'
-                    'Please specify run_name. Available runs: '
-                    '' + ', '.join(self.phenotypes.keys())
-                )
-        
-        if score_name not in self.phenotype_names:
-            raise ValueError(f"Phenotype '{score_name}' not found in self.phenotype_names")
+        pdata_list = []
 
-        keep_col = [target_col, score_col, pvalue_col]
-        score_tag = score_name.split(':')[0]
-        out = annotateScoreTable(
-            self.phenotypes[run_name][score_name].loc[:,keep_col],
-            threshold=threshold,
-            up_hit=hit_dict[score_tag]['up_hit'],
-            down_hit=hit_dict[score_tag]['down_hit'],
-            ctrl_label=ctrl_label, 
-            score_col=score_col,
-            pvalue_col=pvalue_col
-        )
+        for score_name in phenotype_names:
+            _, comparison = score_name.split(':')
+            y_label, x_label = comparison.split('_vs_')
 
-        return out
+            #TODO: get growth rates for replicate level scores
 
-    def getAnnotatedTable(self, threshold, run_name='auto', ctrl_label='negative_control', target_col='target', pvalue_col='ttest pvalue', score_col='score'):
-        """
-        Returns an annotated table with scores, labels, and replicate phenotypes.
-
-        Args:
-            threshold (int, optional): The threshold value for determining hits. Defaults to 5.
-            run_name (str, optional): The name of the phenotype calculation run. Defaults to 'auto'.
-            ctrl_label (str, optional): The label for the control group. Defaults to 'negative_control'.
-            target_col (str, optional): The column name for the target. Defaults to 'target'.
-            pvalue_column (str, optional): The column name for the p-value. Defaults to 'ttest pvalue'.
-            score_column (str, optional): The column name for the score. Defaults to 'score'.
-
-        Returns:
-            pandas.DataFrame: An annotated table with scores, labels, and replicate phenotypes.
-        """
-        if run_name == 'auto':
-            if len(list(self.phenotypes.keys())) == 1:
-                run_name = list(self.phenotypes.keys())[0]
-            else:
-                raise ValueError(
-                    'Multiple phenotype calculation runs found.'
-                    'Please specify run_name. Available runs: '
-                    '' + ', '.join(self.phenotypes.keys())
-                )
-
-        keep_col = [target_col, score_col, pvalue_col]
-        
-        # self.phenotypes[run_name] = pd.concat({
-        #     f'gamma:{gamma_name}': gamma, f'tau:{tau_name}': tau, f'rho:{rho_name}': rho
-        # }, axis=1)
-
-        score_names = set(self.phenotypes[run_name]['results'].keys())
-        sort_var = self.adata.var.sort_values(['targetType','target']).index.to_list()
-
-        df_list = {}
-        for score_name in score_names:
-            score_tag = score_name.split(':')[0]
-            
-            # get annotated table
-            df_ann = annotateScoreTable(
-                self.phenotypes[run_name][score_name].loc[:,keep_col],
-                up_hit=hit_dict[score_tag]['up_hit'],
-                down_hit=hit_dict[score_tag]['down_hit'],
-                score_col=score_col,
-                pvalue_col=pvalue_col,
-                ctrl_label=ctrl_label,
-                threshold=threshold
+            pdata_list.append(
+                runPhenoScoreForReplicate(
+                    self.adata, x_label = x_label, y_label = y_label,
+                    transformation=self.fc_transformation, 
+                    # growth_factor_reps=
+                    **kwargs
+                ).add_prefix(f'{score_name}_').T # transpose to match pdata format
             )
+        
+        pdata_df = pd.concat(pdata_list, axis=0)
 
-            # get replicate phe
-            df_phe_reps = self.pdata[self.pdata.obs.score.eq(score_tag)].to_df().T
-
-            # make table
-            df = pd.concat([
-                df_ann.drop(columns=['label']),
-                df_phe_reps, 
-                df_ann['label']
-            ],axis=1).loc[sort_var,:]
-
-            df_list.update({score_name:df})
-
-        out = pd.concat(df_list,axis=1)
-
-        return out
+        # add .pdata
+        self.pdata = ad.AnnData(
+            X = pdata_df,
+            # obs = growth_factor_table.loc[pdata_df.index,:],
+            var=self.adata.var
+        )
 
 
 class GImaps(object):
