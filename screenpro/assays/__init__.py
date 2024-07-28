@@ -126,7 +126,12 @@ class PooledScreens(object):
         normalizeSeqDepth(self.adata)
 
         if self.verbose: print('Counts normalized by sequencing depth.')
-    
+
+        # log scale the counts
+        self.adata.X = np.log10(self.adata.X)
+        if self.verbose: print('`log10` transformation applied to counts.')
+
+
     def calculateDrugScreenDESeq(self, untreated, treated, t0=None, run_name='pyDESeq2', **kwargs):
         """
         Calculate DESeq2 results for a given drug screen dataset.
