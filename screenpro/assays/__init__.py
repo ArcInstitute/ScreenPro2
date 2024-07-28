@@ -113,7 +113,13 @@ class PooledScreens(object):
 
     def countNormalization(self, pseudo_count_value=0.5):
         """
-        Normalize the counts data in adata.X
+        Preprocess and normalize the counts data in adata.X
+
+        Steps:
+            1. Add pseudocount to counts
+            2. Normalize counts by sequencing depth
+            3. Log10 transformation
+        
         """
         self.adata.layers['raw_counts'] = self.adata.X.copy()
         
@@ -129,6 +135,7 @@ class PooledScreens(object):
 
         # log scale the counts
         self.adata.X = np.log10(self.adata.X)
+        
         if self.verbose: print('`log10` transformation applied to counts.')
 
     def calculateDrugScreenDESeq(self, untreated, treated, t0=None, run_name='pyDESeq2', **kwargs):
