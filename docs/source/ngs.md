@@ -17,14 +17,14 @@ used for the screen, the functions are divided into two classes:
 
 ### Cas9 CRISPR-Cas system (single or dual sgRNA libraries)
 ```{eval-rst}  
-.. automodule:: screenpro.cas9
+.. automodule:: screenpro.ngs.cas9
    :members:
    :show-inheritance:
 ```
 
 ### Cas12 CRISPR-Cas system (multiplexed crRNA libraries)
 ```{eval-rst}  
-.. automodule:: screenpro.cas12
+.. automodule:: screenpro.ngs.cas12
    :members:
    :show-inheritance:
 ```
