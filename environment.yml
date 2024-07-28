@@ -21,8 +21,8 @@ dependencies:
   - pip
   - pip:
       - polars
-      - pyarrow<17.0
-      - biobear>=0.20.3,<0.21
+      - pyarrow
+      - biobear
       - numba
       - pydeseq2
       - simple_colors
