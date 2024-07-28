@@ -319,7 +319,9 @@ class PooledScreens(object):
                     '' + ', '.join(self.phenotypes.keys())
                 )
 
-        return list(self.phenotypes[run_name]['results'].keys)
+        out = list(self.phenotypes[run_name]['results'].keys())
+
+        return out
     
     def getPhenotypeScores(self, score_name, threshold, run_name='auto', ctrl_label='negative_control', target_col='target',pvalue_col='ttest pvalue', score_col='score'):
         """
