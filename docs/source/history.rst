@@ -10,6 +10,7 @@ History
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 * add command line interface, i.e. ``screenpro --help``
 * rename ``Counter`` class to ``GuideCounter`` for code clarity
+* key bug fixes and improvements in phenotype calculation, normalization, and statistics
 * major bug fixes and improvements in code formatting
 
 0.2.11 - 0.3.5 (Apr 2024 - June 2024)
