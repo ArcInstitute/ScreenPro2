@@ -302,6 +302,25 @@ class PooledScreens(object):
         # save phenotype name for reference
         self._add_phenotype_results(f'delta:{delta_name}')
 
+    def listPhenotypeScores(self, run_name='auto'):
+        """
+        List available phenotype scores for a given run_name
+
+        Args:
+            run_name (str): name of the phenotype calculation run to retrieve
+        """
+        if run_name == 'auto':
+            if len(list(self.phenotypes.keys())) == 1:
+                run_name = list(self.phenotypes.keys())[0]
+            else:
+                raise ValueError(
+                    'Multiple phenotype calculation runs found.'
+                    'Please specify run_name. Available runs: '
+                    '' + ', '.join(self.phenotypes.keys())
+                )
+
+        return list(self.phenotypes[run_name]['results'].keys)
+    
     def getPhenotypeScores(self, score_name, threshold, run_name='auto', ctrl_label='negative_control', target_col='target',pvalue_col='ttest pvalue', score_col='score'):
         """
         Get phenotype scores for a given score level
