@@ -226,14 +226,14 @@ def runPhenoScore(adata, cond_ref, cond_test, score_level, test, transformation=
     return result_name, result
 
 
-def runPhenoScoreForReplicate(adata, x_label, y_label, growth_factor_reps=None, transformation='log2', ctrl_label='negative_control'):
+def runPhenoScoreForReplicate(adata, x_label, y_label, growth_rate_reps=None, transformation='log2', ctrl_label='negative_control'):
     """Calculate phenotype score for each pair of replicates.
 
     Args:
         adata (AnnData): AnnData object
         x_label: name of the first condition in column `condition` of `screen.adata.obs`
         y_label: name of the second condition in column `condition` of `screen.adata.obs`
-        growth_factor_reps (dict): dictionary of growth factors for each replicate
+        growth_rate_reps (dict): dictionary of growth rates for each replicate
         transformation (str): transformation to use for calculating score
         ctrl_label: string to identify labels of negative control elements in sgRNA library (default is 'negative_control')
 
@@ -246,10 +246,8 @@ def runPhenoScoreForReplicate(adata, x_label, y_label, growth_factor_reps=None, 
 
     results = {}
 
-    if growth_factor_reps is not None:
-        growth_rate_reps = growth_factor_reps[replicate]
-    else:
-        growth_factor_reps = dict([(replicate, 1) for replicate in adat.obs.replicate.unique()])
+    if growth_rate_reps is None:
+        growth_rate_reps = dict([(replicate, 1) for replicate in adat.obs.replicate.unique()])
 
     for replicate in adat.obs.replicate.unique():
 
