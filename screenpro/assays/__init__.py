@@ -251,34 +251,6 @@ class PooledScreens(object):
                 **kwargs
             )
             self._add_phenotype_results(run_name, f'rho:{rho_name}', rho)
-
-        # gnerate replicate level phenotype scores
-        pdata_dict = {}
-        for score_name in self.phenotypes[score_level]['results'].keys():
-            score_label, comparison = score_name.split(':')
-            y_label, x_label = comparison.split('_vs_')
-            
-            #TODO: get growth rates for replicate level scores
-            
-        
-            pdata_dict.update({
-                score_name: runPhenoScoreForReplicate(
-                    self.adata, x_label = x_label, y_label = y_label,
-                    transformation=self.fc_transformation, 
-                    # growth_factor_reps=
-                    # **kwargs
-                ).add_prefix(f'{score_label}_').T # transpose to match pdata format
-            })
-
-        pdata_df = pd.concat(pdata_dict, axis=0)
-
-        #TODO: fix `_calculateGrowthFactor` and `_getTreatmentDoublingRate` to maintain same format
-        # add .pdata
-        self.pdata = ad.AnnData(
-            X = pdata_df,
-            # obs = growth_factor_table.loc[pdata_df.index,:],
-            var=self.adata.var
-        )
         
     def calculateFlowBasedScreen(self, low_bin, high_bin, score_level, run_name=None, **kwargs):
         """
@@ -328,6 +300,44 @@ class PooledScreens(object):
 
         return out
     
+    def getPhenotypeScoresPerReplicate(self, phenotype_names, **kwargs):
+        pass
+        
+        # pdata_dict = {}
+
+        # for score_name in phenotype_names:
+        #     _, comparison = score_name.split(':')
+        #     y_label, x_label = comparison.split('_vs_')
+
+        #     #TODO: get growth rates for replicate level scores
+
+        #     pdata_dict.update({
+        #     score_name: runPhenoScoreForReplicate(
+        #         self.adata, x_label = x_label, y_label = y_label,
+        #         transformation=self.fc_transformation, 
+        #         **kwargs
+        #     ).add_prefix(f'{score_name}_').T # transpose to match pdata format
+        #     })
+        
+        # self._getPhenotypeScoresPerReplicate(
+        #     phenotype_names = [f'gamma:{gamma_name}', f'tau:{tau_name}', f'rho:{rho_name}'],
+        #     growth_factor_reps=
+        #     **kwargs
+        # )
+
+        # pdata_df = pd.concat(pdata_dict, axis=0)
+
+        # #TODO: fix `_calculateGrowthFactor` and `_getTreatmentDoublingRate` to maintain same format
+        # # add .pdata
+        # self.pdata = ad.AnnData(
+        #     X = pdata_df,
+        #     # obs = growth_factor_table.loc[pdata_df.index,:],
+        #     var=self.adata.var
+        # )
+        # return pdata_dict
+
+
+
     def getPhenotypeScores(self, score_name, threshold, run_name='auto', ctrl_label='negative_control', target_col='target',pvalue_col='ttest pvalue', score_col='score'):
         """
         Get phenotype scores for a given score level
