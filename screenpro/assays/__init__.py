@@ -220,9 +220,9 @@ class PooledScreens(object):
 
         if type(treated) != list: treated = [treated]
 
+        # calculate phenotype scores: gamma, tau, rho
         if t0 != None and type(t0) == str:
             db_untreated,_,_ = self._getTreatmentDoublingRate(untreated, treated[0], db_rate_col)
-            # calculate phenotype scores: gamma, tau, rho
             gamma_name, gamma = runPhenoScore(
                 self.adata, cond_ref=t0, cond_test=untreated, growth_rate=db_untreated,
                 n_reps=self.n_reps,
@@ -252,28 +252,33 @@ class PooledScreens(object):
             )
             self._add_phenotype_results(run_name, f'rho:{rho_name}', rho)
 
-        # #TODO: move this to a separate function / method
-        # # get replicate level phenotype scores
-        # pdata_df = pd.concat([
-        #     runPhenoScoreForReplicate(
-        #         self.adata, x_label = x_label, y_label = y_label, score = score_label,
-        #         transformation=self.fc_transformation, 
-        #         growth_factor_table=growth_factor_table,
-        #         # **kwargs
-        #     ).add_prefix(f'{score_label}_')
+        # gnerate replicate level phenotype scores
+        pdata_dict = {}
+        for score_name in self.phenotypes[score_level]['results'].keys():
+            score_label, comparison = score_name.split(':')
+            y_label, x_label = comparison.split('_vs_')
+            
+            #TODO: get growth rates for replicate level scores
+            
+        
+            pdata_dict.update({
+                score_name: runPhenoScoreForReplicate(
+                    self.adata, x_label = x_label, y_label = y_label,
+                    transformation=self.fc_transformation, 
+                    # growth_factor_reps=
+                    # **kwargs
+                ).add_prefix(f'{score_label}_').T # transpose to match pdata format
+            })
 
-        #     for x_label, y_label, score_label in [
-        #         ('T0', untreated, 'gamma'),
-        #         ('T0', treated, 'tau'),
-        #         (untreated, treated, 'rho')
-        #     ]
-        # ],axis=1).T
-        # # add .pdata
-        # self.pdata = ad.AnnData(
-        #     X = pdata_df,
-        #     obs = growth_factor_table.loc[pdata_df.index,:],
-        #     var=self.adata.var
-        # )
+        pdata_df = pd.concat(pdata_dict, axis=0)
+
+        #TODO: fix `_calculateGrowthFactor` and `_getTreatmentDoublingRate` to maintain same format
+        # add .pdata
+        self.pdata = ad.AnnData(
+            X = pdata_df,
+            # obs = growth_factor_table.loc[pdata_df.index,:],
+            var=self.adata.var
+        )
         
     def calculateFlowBasedScreen(self, low_bin, high_bin, score_level, run_name=None, **kwargs):
         """
@@ -395,7 +400,7 @@ class PooledScreens(object):
         #     f'gamma:{gamma_name}': gamma, f'tau:{tau_name}': tau, f'rho:{rho_name}': rho
         # }, axis=1)
 
-        score_names = {s for s, col in self.phenotypes[run_name].columns}
+        score_names = set(self.phenotypes[run_name]['results'].keys())
         sort_var = self.adata.var.sort_values(['targetType','target']).index.to_list()
 
         df_list = {}

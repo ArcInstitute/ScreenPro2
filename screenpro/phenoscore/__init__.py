@@ -226,15 +226,14 @@ def runPhenoScore(adata, cond_ref, cond_test, score_level, test, transformation=
     return result_name, result
 
 
-def runPhenoScoreForReplicate(adata, x_label, y_label, score, growth_factor_table=None, transformation='log2', ctrl_label='negative_control'):
+def runPhenoScoreForReplicate(adata, x_label, y_label, growth_factor_reps=None, transformation='log2', ctrl_label='negative_control'):
     """Calculate phenotype score for each pair of replicates.
 
     Args:
         adata (AnnData): AnnData object
         x_label: name of the first condition in column `condition` of `screen.adata.obs`
         y_label: name of the second condition in column `condition` of `screen.adata.obs`
-        score: score to use for calculating phenotype score, i.e. 'gamma', 'tau', or 'rho'
-        growth_factor_table: dataframe of growth factors, i.e. output from `getGrowthFactors` function
+        growth_factor_reps (dict): dictionary of growth factors for each replicate
         transformation (str): transformation to use for calculating score
         ctrl_label: string to identify labels of negative control elements in sgRNA library (default is 'negative_control')
 
@@ -247,21 +246,19 @@ def runPhenoScoreForReplicate(adata, x_label, y_label, score, growth_factor_tabl
 
     results = {}
 
-    for replicate in adat.obs.replicate.unique():
+    if growth_factor_reps is not None:
+        growth_rate_reps = growth_factor_reps[replicate]
+    else:
+        growth_factor_reps = dict([(replicate, 1) for replicate in adat.obs.replicate.unique()])
 
-        if growth_factor_table: 
-            growth_rate = growth_factor_table.query(
-                f'score=="{score}" & replicate=={replicate}'
-            )['growth_factor'].values[0]
-        else:
-            growth_rate = 1
+    for replicate in adat.obs.replicate.unique():
 
         res = calculatePhenotypeScore(
             x=adat[adat.obs.query(f'condition == "{x_label}" & replicate == {str(replicate)}').index].X,
             y=adat[adat.obs.query(f'condition == "{y_label}" & replicate == {str(replicate)}').index].X,
             x_ctrl=adat_ctrl[adat_ctrl.obs.query(f'condition == "{x_label}" & replicate == {str(replicate)}').index].X,
             y_ctrl=adat_ctrl[adat_ctrl.obs.query(f'condition == "{y_label}" & replicate == {str(replicate)}').index].X,
-            growth_rate=growth_rate,
+            growth_rate=growth_rate_reps[replicate],
             transformation=transformation,
             level='row'  # there is only one column so `row` option here is equivalent to the value before averaging.
         )
