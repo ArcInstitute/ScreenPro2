@@ -68,7 +68,7 @@ def _generatePseudoGeneAnnData(adata, num_pseudogenes='auto', pseudogene_size='a
     return out
 
 
-def runPhenoScore(adata, cond_ref, cond_test, transformation, score_level, test,
+def runPhenoScore(adata, cond_ref, cond_test, score_level, test, transformation='log2',
                   growth_rate=1, n_reps='auto', keep_top_n = None,num_pseudogenes='auto', pseudogene_size='auto',
                   count_layer=None, ctrl_label='negative_control'):
     """Calculate phenotype score and p-values when comparing `cond_test` vs `cond_ref`.
@@ -77,9 +77,9 @@ def runPhenoScore(adata, cond_ref, cond_test, transformation, score_level, test,
         adata (AnnData): AnnData object
         cond_ref (str): condition reference
         cond_test (str): condition test
-        transformation (str): transformation to use for calculating score
-        test (str): test to use for calculating p-value ('MW': Mann-Whitney U rank; 'ttest' : t-test)
         score_level (str): score level
+        test (str): test to use for calculating p-value ('MW': Mann-Whitney U rank; 'ttest' : t-test)
+        transformation (str): transformation to use for calculating score
         growth_rate (int): growth rate
         n_reps (int): number of replicates
         keep_top_n (int): number of top guides to keep per target
@@ -226,15 +226,14 @@ def runPhenoScore(adata, cond_ref, cond_test, transformation, score_level, test,
     return result_name, result
 
 
-def runPhenoScoreForReplicate(adata, x_label, y_label, score, growth_factor_table, transformation, ctrl_label='negative_control'):
+def runPhenoScoreForReplicate(adata, x_label, y_label, growth_rate_reps=None, transformation='log2', ctrl_label='negative_control'):
     """Calculate phenotype score for each pair of replicates.
 
     Args:
         adata (AnnData): AnnData object
         x_label: name of the first condition in column `condition` of `screen.adata.obs`
         y_label: name of the second condition in column `condition` of `screen.adata.obs`
-        score: score to use for calculating phenotype score, i.e. 'gamma', 'tau', or 'rho'
-        growth_factor_table: dataframe of growth factors, i.e. output from `getGrowthFactors` function
+        growth_rate_reps (dict): dictionary of growth rates for each replicate
         transformation (str): transformation to use for calculating score
         ctrl_label: string to identify labels of negative control elements in sgRNA library (default is 'negative_control')
 
@@ -247,15 +246,17 @@ def runPhenoScoreForReplicate(adata, x_label, y_label, score, growth_factor_tabl
 
     results = {}
 
+    if growth_rate_reps is None:
+        growth_rate_reps = dict([(replicate, 1) for replicate in adat.obs.replicate.unique()])
+
     for replicate in adat.obs.replicate.unique():
+
         res = calculatePhenotypeScore(
             x=adat[adat.obs.query(f'condition == "{x_label}" & replicate == {str(replicate)}').index].X,
             y=adat[adat.obs.query(f'condition == "{y_label}" & replicate == {str(replicate)}').index].X,
-
             x_ctrl=adat_ctrl[adat_ctrl.obs.query(f'condition == "{x_label}" & replicate == {str(replicate)}').index].X,
             y_ctrl=adat_ctrl[adat_ctrl.obs.query(f'condition == "{y_label}" & replicate == {str(replicate)}').index].X,
-
-            growth_rate=growth_factor_table.query(f'score=="{score}" & replicate=={replicate}')['growth_factor'].values[0],
+            growth_rate=growth_rate_reps[replicate],
             transformation=transformation,
             level='row'  # there is only one column so `row` option here is equivalent to the value before averaging.
         )
