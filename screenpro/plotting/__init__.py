@@ -7,4 +7,3 @@ import numpy as np
 import scanpy as sc
 from .qc_plots import plotReplicateScatter, plotCountDistribution
 from .pheno_plots import volcano_plot, label_by_color
-from .pheno_plots import DrugScreenPlotter

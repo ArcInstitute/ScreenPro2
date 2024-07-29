@@ -16,6 +16,7 @@ from ..phenoscore import runDESeq, extractDESeqResults
 from ..phenoscore import runPhenoScore, runPhenoScoreForReplicate
 from ..preprocessing import addPseudoCount, findLowCounts, normalizeSeqDepth
 from ..phenoscore.annotate import annotateScoreTable, hit_dict
+from ..plotting import volcano_plot
 
 import warnings
 from copy import copy
@@ -300,37 +301,44 @@ class PooledScreens(object):
 
         return out
     
-    def buildPhenotypeData(self, phenotype_names, run_name='auto', **kwargs):
-        """
-        Build phenotype data table for a given list of phenotype names
-        """
-        #TODO: fix `_calculateGrowthFactor` and `_getTreatmentDoublingRate` to maintain same format
-
-        pdata_list = []
-
-        for score_name in phenotype_names:
-            _, comparison = score_name.split(':')
-            y_label, x_label = comparison.split('_vs_')
-
-            #TODO: get growth rates for replicate level scores
-
-            pdata_list.append(
-                runPhenoScoreForReplicate(
-                    self.adata, x_label = x_label, y_label = y_label,
-                    transformation=self.fc_transformation, 
-                    # growth_factor_reps=
-                    **kwargs
-                ).add_prefix(f'{score_name}_').T # transpose to match pdata format
-            )
+    def drawVolcano(
+            self, ax,
+            phenotype_name,
+            dot_size=1,
+            run_name='auto',
+            score_col='score', 
+            pvalue_col='pvalue',
+            xlabel='auto',
+            ylabel='-log10(pvalue)',
+            xlims='auto',
+            ylims='auto',
+            **args
+            ):
+        if run_name == 'auto':
+            if len(list(self.phenotypes.keys())) == 1:
+                run_name = list(self.phenotypes.keys())[0]
+            else:
+                raise ValueError(
+                    'Multiple phenotype calculation runs found.'
+                    'Please specify run_name. Available runs: '
+                    '' + ', '.join(self.phenotypes.keys())
+                )
         
-        pdata_df = pd.concat(pdata_list, axis=0)
+        score_tag, _ = phenotype_name.split(':')
+        df = self.phenotypes[run_name]['results'][phenotype_name]
+        df['-log10(pvalue)'] = -np.log10(df[pvalue_col])
 
-        # add .pdata
-        self.pdata = ad.AnnData(
-            X = pdata_df,
-            # obs = growth_factor_table.loc[pdata_df.index,:],
-            var=self.adata.var
-        )
+        if xlabel == 'auto':
+            xlabel = phenotype_name.replace(':', ': ').replace('_', ' ')
+        
+        volcano_plot(ax, df, 
+                      up_hit=hit_dict[score_tag]['up_hit'], 
+                      down_hit=hit_dict[score_tag]['down_hit'],
+                      score_col=score_col, pvalue_col=pvalue_col,
+                      xlabel=xlabel, ylabel=ylabel,
+                      dot_size=dot_size, xlims=xlims, ylims=ylims,
+                      ctrl_label=self.ctrl_label,
+                      **args)
 
 
 class GImaps(object):
