@@ -313,6 +313,7 @@ class PooledScreens(object):
             ylabel='-log10(pvalue)',
             xlims='auto',
             ylims='auto',
+            ctrl_label='negative_control',
             **args
             ):
         if run_name == 'auto':
@@ -334,7 +335,8 @@ class PooledScreens(object):
             up_hit=hit_dict[score_tag]['up_hit'], 
             down_hit=hit_dict[score_tag]['down_hit'],
             score_col=score_col, pvalue_col=pvalue_col,
-            threshold=threshold
+            ctrl_label=ctrl_label,
+            threshold=threshold,
         )
 
         df['-log10(pvalue)'] = -np.log10(df[pvalue_col])
@@ -348,6 +350,7 @@ class PooledScreens(object):
                       score_col=score_col, pvalue_col=pvalue_col,
                       xlabel=xlabel, ylabel=ylabel,
                       dot_size=dot_size, xlims=xlims, ylims=ylims,
+                      ctrl_label=ctrl_label,
                       **args)
 
 
