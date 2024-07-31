@@ -337,7 +337,6 @@ class PooledScreens(object):
                       score_col=score_col, pvalue_col=pvalue_col,
                       xlabel=xlabel, ylabel=ylabel,
                       dot_size=dot_size, xlims=xlims, ylims=ylims,
-                      ctrl_label=self.ctrl_label,
                       **args)
 
 
