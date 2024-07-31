@@ -304,6 +304,7 @@ class PooledScreens(object):
     def drawVolcano(
             self, ax,
             phenotype_name,
+            threshold,
             dot_size=1,
             run_name='auto',
             score_col='score', 
@@ -325,7 +326,17 @@ class PooledScreens(object):
                 )
         
         score_tag, _ = phenotype_name.split(':')
+
         df = self.phenotypes[run_name]['results'][phenotype_name]
+
+        df = annotateScoreTable(
+            df, 
+            up_hit=hit_dict[score_tag]['up_hit'], 
+            down_hit=hit_dict[score_tag]['down_hit'],
+            score_col=score_col, pvalue_col=pvalue_col,
+            threshold=threshold
+        )
+
         df['-log10(pvalue)'] = -np.log10(df[pvalue_col])
 
         if xlabel == 'auto':
