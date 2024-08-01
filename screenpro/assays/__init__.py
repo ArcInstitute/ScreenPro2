@@ -360,7 +360,6 @@ class PooledScreens(object):
                 ax=ax, df_in=df, label=resistance_hits,
                 x_col=score_col,
                 y_col='-log10(pvalue)',
-                pvalue_col=pvalue_col,
                 size=dot_size * 2
             )
         
