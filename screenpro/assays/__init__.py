@@ -16,7 +16,7 @@ from ..phenoscore import runDESeq, extractDESeqResults
 from ..phenoscore import runPhenoScore, runPhenoScoreForReplicate
 from ..preprocessing import addPseudoCount, findLowCounts, normalizeSeqDepth
 from ..phenoscore.annotate import annotateScoreTable, hit_dict
-from ..plotting import volcano_plot
+from ..plotting import volcano_plot, label_resistance_hit, label_sensitivity_hit
 
 import warnings
 from copy import copy
@@ -314,6 +314,8 @@ class PooledScreens(object):
             xlims='auto',
             ylims='auto',
             ctrl_label='negative_control',
+            resistance_hits=None,
+            sensitivity_hits=None,
             **args
             ):
         if run_name == 'auto':
@@ -352,7 +354,25 @@ class PooledScreens(object):
                       dot_size=dot_size, xlims=xlims, ylims=ylims,
                       ctrl_label=ctrl_label,
                       **args)
-
+        
+        if resistance_hits != None:
+            label_resistance_hit(
+                ax=ax, df_in=df, label=resistance_hits,
+                x_col=score_col,
+                y_col='-log10(pvalue)',
+                pvalue_col=pvalue_col,
+                size=dot_size * 2
+            )
+        
+        if sensitivity_hits != None:
+            label_sensitivity_hit(
+                ax=ax, df_in=df, label=sensitivity_hits,
+                x_col=score_col,
+                y_col='-log10(pvalue)',
+                pvalue_col=pvalue_col,
+                size=dot_size * 2
+            )
+            
 
 class GImaps(object):
     pass
