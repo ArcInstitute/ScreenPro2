@@ -356,20 +356,24 @@ class PooledScreens(object):
                       **args)
         
         if resistance_hits != None:
-            label_resistance_hit(
-                ax=ax, df_in=df, label=resistance_hits,
-                x_col=score_col,
-                y_col='-log10(pvalue)',
-                size=dot_size * 2
-            )
+            if type(resistance_hits) != list: resistance_hits = [resistance_hits]
+            for hit in resistance_hits:
+                label_resistance_hit(
+                    ax=ax, df_in=df, label=hit,
+                    x_col=score_col,
+                    y_col='-log10(pvalue)',
+                    size=dot_size * 2
+                )
         
         if sensitivity_hits != None:
-            label_sensitivity_hit(
-                ax=ax, df_in=df, label=sensitivity_hits,
-                x_col=score_col,
-                y_col='-log10(pvalue)',
-                pvalue_col=pvalue_col,
-                size=dot_size * 2
+            if type(sensitivity_hits) != list: sensitivity_hits = [sensitivity_hits]
+            for hit in sensitivity_hits:
+                label_sensitivity_hit(
+                    ax=ax, df_in=df, label=hit,
+                    x_col=score_col,
+                    y_col='-log10(pvalue)',
+                    pvalue_col=pvalue_col,
+                    size=dot_size * 2
             )
             
 

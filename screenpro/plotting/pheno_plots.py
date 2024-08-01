@@ -67,6 +67,8 @@ def label_by_color(ax, df_in, label,
                    textcolor='black',
                    t_x=.5, t_y=-0.1, **args):
 
+    if size_txt == 'auto': size_txt = size * 2
+
     df = df_in.copy()
     target_data = df[df['target'] == label]
 
@@ -81,8 +83,6 @@ def label_by_color(ax, df_in, label,
 
     if size_txt == None:
         pass
-    elif size_txt == 'auto':
-        size_txt = size * 2
     else:
         # Annotate the points
         for i, _ in enumerate(target_data['target']):
