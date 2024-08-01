@@ -316,6 +316,7 @@ class PooledScreens(object):
             ctrl_label='negative_control',
             resistance_hits=None,
             sensitivity_hits=None,
+            size_txt=None,
             **args
             ):
         if run_name == 'auto':
@@ -362,7 +363,8 @@ class PooledScreens(object):
                     ax=ax, df_in=df, label=hit,
                     x_col=score_col,
                     y_col='-log10(pvalue)',
-                    size=dot_size * 2
+                    size=dot_size * 2,
+                    size_txt=size_txt
                 )
         
         if sensitivity_hits != None:
@@ -373,9 +375,10 @@ class PooledScreens(object):
                     x_col=score_col,
                     y_col='-log10(pvalue)',
                     pvalue_col=pvalue_col,
-                    size=dot_size * 2
+                    size=dot_size * 2,
+                    size_txt=size_txt
             )
-            
+
 
 class GImaps(object):
     pass
