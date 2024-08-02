@@ -317,6 +317,7 @@ class PooledScreens(object):
             resistance_hits=None,
             sensitivity_hits=None,
             size_txt=None,
+            t_x=0, t_y=0,
             **args
             ):
         if run_name == 'auto':
@@ -364,7 +365,8 @@ class PooledScreens(object):
                     x_col=score_col,
                     y_col='-log10(pvalue)',
                     size=dot_size * 2,
-                    size_txt=size_txt
+                    size_txt=size_txt,
+                    t_x=t_x, t_y=t_y
                 )
         
         if sensitivity_hits != None:
@@ -376,7 +378,8 @@ class PooledScreens(object):
                     y_col='-log10(pvalue)',
                     pvalue_col=pvalue_col,
                     size=dot_size * 2,
-                    size_txt=size_txt
+                    size_txt=size_txt,
+                    t_x=t_x, t_y=t_y
             )
 
 
