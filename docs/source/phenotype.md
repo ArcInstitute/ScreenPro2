@@ -29,11 +29,7 @@ Phenotype score for each {math}`T` comparing {math}`y` vs {math}`x`:
 ```{math}
 \text{PhenoScore}(T,x,y) =
 \left(
-\frac{
-\overline{\Delta_{(x,y)}}
-}{
-\text{median}( {\overline{\Delta_{(x_{ctrl},y_{ctrl})}}} )
-}
+\overline{\Delta_{(x,y)}} - \text{median}( {\overline{\Delta_{(x_{ctrl},y_{ctrl})}}} )
 \right)
 \times \frac{ 1 }{d_{growth}}
 ```
