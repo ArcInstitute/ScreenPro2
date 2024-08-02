@@ -50,7 +50,7 @@ def getCombinedScore(df, score_col='score', pvalue_col='pvalue', ctrl_label='con
     return df[score_col]/pseudo_sd * -np.log10(df[pvalue_col])
 
 
-def annotateScoreTable(df_in, up_hit, down_hit, threshold, score_col=None, pvalue_col=None, ctrl_label='control'):
+def annotateScoreTable(df_in, up_hit, down_hit, threshold, score_col=None, pvalue_col=None, ctrl_label='negative_control'):
     """
     Annotate the given score tabel 
     
