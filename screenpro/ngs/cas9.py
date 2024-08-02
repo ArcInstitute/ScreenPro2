@@ -8,6 +8,19 @@ def fastq_to_count_single_guide(
         fastq_file_path:str, 
         trim5p_start:int=None, trim5p_length:int=None, 
         verbose: bool=False) -> pl.DataFrame:
+    """
+    Count the occurrences of unique sequences in single-end FASTQ files to a DataFrame containing counts of unique sequences.
+    e.g. single-guide design R1: protospacer
+
+    Args:
+        fastq_file_path (str): The path to the FASTQ file.
+        trim5p_start (int, optional): The starting position for trimming the 5' end of the sequences. Defaults to None.
+        trim5p_length (int, optional): The length of the trimmed sequences. Defaults to None.
+        verbose (bool, optional): Whether to print verbose output. Defaults to False.
+
+    Returns:
+        pl.DataFrame: A DataFrame containing the unique sequences and their respective counts.
+    """
     
     if verbose: ('count unique sequences ...')
     t0 = time()
@@ -39,6 +52,25 @@ def fastq_to_count_dual_guide(
         trim5p_pos1_start:int=None, trim5p_pos1_length:int=None,
         trim5p_pos2_start:int=None, trim5p_pos2_length:int=None,
         verbose: bool=False) -> pl.DataFrame:
+    """
+    Count the occurrences of unique sequences in paired-end FASTQ files to a DataFrame containing counts of unique pairs of sequences.
+    e.g. dual-guide design R1: protospacer_A, R2: protospacer_B
+    
+    Args:
+        R1_fastq_file_path (str): File path of the R1 FASTQ file.
+        R2_fastq_file_path (str): File path of the R2 FASTQ file.
+        trim5p_pos1_start (int, optional): Start position for trimming the 5' end of the R1 sequences. Defaults to None.
+        trim5p_pos1_length (int, optional): Length of the trimmed R1 sequences. Defaults to None.
+        trim5p_pos2_start (int, optional): Start position for trimming the 5' end of the R2 sequences. Defaults to None.
+        trim5p_pos2_length (int, optional): Length of the trimmed R2 sequences. Defaults to None.
+        verbose (bool, optional): Whether to print verbose output. Defaults to False.
+    
+    Returns:
+        pl.DataFrame: DataFrame containing counts of unique sequences with columns 'protospacer_A', 'protospacer_B', and 'count'.
+    
+    Raises:
+        ValueError: If trim5p_pos1_start, trim5p_pos1_length, trim5p_pos2_start, and trim5p_pos2_length are not provided concurrently.
+    """
     
     if verbose: ('count unique sequences ...')
     t0 = time()
@@ -88,6 +120,22 @@ def fastq_to_count_dual_guide(
 
 
 def map_to_library_single_guide(df_count, library, return_type='all', verbose=False):
+    """
+    Map the counts of unique sequences to a library DataFrame containing sgRNA sequences.
+    User can choose to return mapped reads, unmapped reads, or both.
+
+    Args:
+        df_count (pandas.DataFrame): The input DataFrame containing counts.
+        library (pandas.DataFrame): The library DataFrame to map to.
+        return_type (str, optional): The type of result to return. Defaults to 'all'.
+        verbose (bool, optional): Whether to print verbose information. Defaults to False.
+
+    Returns:
+        dict or pandas.DataFrame: The mapped result based on the return_type parameter.
+
+    Raises:
+        ValueError: If the return_type parameter is invalid.
+    """
     # get counts for given input
     res = df_count.clone() #cheap deepcopy/clone
     res = res.sort('count', descending=True)
@@ -123,6 +171,26 @@ def map_to_library_single_guide(df_count, library, return_type='all', verbose=Fa
 
 
 def map_to_library_dual_guide(df_count, library, get_recombinant=False, return_type='all', verbose=False):
+    """
+    Map the counts of unique sequences to a library DataFrame containing dual-guide sgRNA sequences. 
+    Optionally, the function can capture recombinant events.
+    User can choose to return mapped reads, unmapped reads, recombinant events, or all.
+
+    Args:
+        df_count (pandas.DataFrame): The input DataFrame containing the counts.
+        library (pandas.DataFrame): The library of sequences to map against.
+        get_recombinant (bool, optional): Whether to calculate recombinant events. Defaults to False.
+        return_type (str, optional): The type of reads to return. Can be 'unmapped', 'mapped', 'recombinant', or 'all'. Defaults to 'all'.
+        verbose (bool, optional): Whether to print verbose output. Defaults to False.
+
+    Returns:
+        pandas.DataFrame or dict: The mapped reads based on the specified return_type.
+
+    Raises:
+        ValueError: If return_type is not one of 'unmapped', 'mapped', 'recombinant', or 'all'.
+        ValueError: If get_recombinant is False and return_type is 'recombinant'.
+
+    """
     # get counts for given input
     res = df_count.clone() #cheap deepcopy/clone
     res = res.rename(
