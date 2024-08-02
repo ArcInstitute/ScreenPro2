@@ -2,7 +2,7 @@
 name: Question template
 about: Describe this issue template's purpose here.
 title: ''
-labels: ''
+labels: question
 assignees: ''
 
 ---
