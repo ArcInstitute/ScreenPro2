@@ -168,19 +168,19 @@ class PooledScreens(object):
         if t0 != None and type(t0) == str:
             # Calculate `gamma`, `rho`, and `tau` phenotype scores
             gamma_name, gamma = extractDESeqResults(
-                dds, 'condition', t0, untreated, **kwargs
+                dds, design='condition', ref_level=t0, tested_level=untreated, **kwargs
             )
             self._add_phenotype_results(run_name, f'gamma:{gamma_name}', gamma)
 
             for tr in treated:
                 tau_name, tau = extractDESeqResults(
-                    dds, 'condition', t0, treated, **kwargs
+                    dds, design='condition', ref_level=t0, tested_level=tr, **kwargs
                 )
                 self._add_phenotype_results(run_name, f'tau:{tau_name}', tau)
 
         for tr in treated:
             rho_name, rho = extractDESeqResults(
-                dds, 'condition', untreated, tr, **kwargs
+                dds, design='condition', ref_level=untreated, tested_level=tr, **kwargs
             )
             self._add_phenotype_results(run_name, f'rho:{rho_name}', rho)
 
