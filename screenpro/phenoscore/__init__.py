@@ -214,7 +214,7 @@ def runPhenoScore(adata, cond_ref, cond_test, score_level, test, transformation=
             targets.append(target_name)
 
         # average scores across replicates
-        scores = pd.Series([np.mean(s) for s in scores], index=targets, name='score'),
+        scores = [np.mean(s) for s in scores]
 
         # get adjusted p-values
         adj_p_values = multipleTestsCorrection(np.array(p_values))
