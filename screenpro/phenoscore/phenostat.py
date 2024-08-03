@@ -7,7 +7,7 @@ import numpy as np
 from statsmodels.stats.multitest import multipletests
 
 
-def matrixStat(x, y, test, level):
+def matrixStat(x, y, test, level, transform='log10'):
     """
     Get p-values comparing `y` vs `x` matrices.
 
@@ -16,10 +16,20 @@ def matrixStat(x, y, test, level):
         y (np.array): array of values
         test (str): test to use for calculating p-value
         level (str): level at which to calculate p-value
+        transform (str): transformation to apply to values before running test
     
     Returns:
         np.array: array of p-values
     """
+    # log-transform values
+    if transform == None:
+        pass
+    elif transform == 'log10':
+        x = np.log10(x)
+        y = np.log10(y)
+    else:
+        raise ValueError(f'Transform "{transform}" not recognized')
+    
     # calculate p-values
     if test == 'MW':
         # run Mann-Whitney U rank test
