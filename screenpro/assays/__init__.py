@@ -162,7 +162,9 @@ class PooledScreens(object):
         if type(treated) != list: treated = [treated]
 
         # run pyDESeq2 analysis
-        dds = runDESeq(self.adata, 'condition', **kwargs)
+        adt = self.adata.copy()
+        adt.X = adt.layers['raw_counts']
+        dds = runDESeq(adt, 'condition', **kwargs)
 
         # extract comparison results
         if t0 != None and type(t0) == str:
