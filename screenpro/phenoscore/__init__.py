@@ -193,17 +193,28 @@ def runPhenoScore(adata, cond_ref, cond_test, score_level, test, transformation=
             y = y.to_numpy()
 
             # calculate growth score and p_value
-            target_scores, target_p_values = matrixTest(
+            target_scores, _ = matrixTest(
+                x=x, y=y, x_ctrl=x_ctrl, y_ctrl=y_ctrl,
+                transformation=transformation, 
+                level='row', # test across guides per target for each replicate
+                test=test,
+                growth_rate=growth_rate
+            )
+
+            _, target_p_values = matrixTest(
                 x=x, y=y, x_ctrl=x_ctrl, y_ctrl=y_ctrl,
                 transformation=transformation, 
                 level='all', # test across all guides and replicates per target
                 test=test,
                 growth_rate=growth_rate
             )
-            
+
             scores.append(target_scores)
             p_values.append(target_p_values)
             targets.append(target_name)
+
+        # average scores across replicates
+        scores = pd.Series([np.mean(s) for s in scores], index=targets, name='score'),
 
         # get adjusted p-values
         adj_p_values = multipleTestsCorrection(np.array(p_values))
