@@ -202,8 +202,8 @@ def runPhenoScore(adata, cond_ref, cond_test, score_level, test, transformation=
             # Sort and find top n guide per target, see #18
             x, y = _averageBestN(
                 target_group=target_group, 
-                df_cond_test=df_cond_test, 
                 df_cond_ref=df_cond_ref,
+                df_cond_test=df_cond_test, 
                 keep_top_n=keep_top_n
             )
             
