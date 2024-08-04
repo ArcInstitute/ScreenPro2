@@ -7,51 +7,10 @@ import pandas as pd
 from .phenostat import matrixStat
 
 
-def calculateDelta(x, y, transformation, level):
-    """Calculate log ratio of y / x.
-    `level` == 'all' (i.e. averaged across all values, sgRNA library elements and replicates)
-    `level` == 'col' (i.e. averaged across columns, replicates)
-
-    Args:
-        x (np.array): array of values
-        y (np.array): array of values
-        transformation (str): transformation to use for calculating score
-        level (str): level to use for calculating score
-    
-    Returns:
-        np.array: array of log ratio values
-    """
-    # check if transformation is implemented
-    if transformation not in ['log2', 'log10', 'log1p']:
-        raise ValueError(f'transformation "{transformation}" not recognized')
-    
-    if level == 'all':
-        # average across all values
-        if transformation == 'log2':
-            return np.mean(np.log2(y) - np.log2(x))
-        elif transformation == 'log10':
-            return np.mean(np.log10(y) - np.log10(x))
-        elif transformation == 'log1p':
-            return np.mean(np.log1p(y) - np.log1p(x))
-    elif level == 'row':
-        # average across rows
-        if transformation == 'log2':
-            return np.mean(np.log2(y) - np.log2(x), axis=0)
-        elif transformation == 'log10':
-            return np.mean(np.log10(y) - np.log10(x), axis=0)
-        elif transformation == 'log1p':
-            return np.mean(np.log1p(y) - np.log1p(x), axis=0)
-    elif level == 'col':
-        # average across columns
-        if transformation == 'log2':
-            return np.mean(np.log2(y) - np.log2(x), axis=1)
-        elif transformation == 'log10':
-            return np.mean(np.log10(y) - np.log10(x), axis=1)
-        elif transformation == 'log1p':
-            return np.mean(np.log1p(y) - np.log1p(x), axis=1)
+### Key functions for calculating delta phenotype score
 
 
-def calculatePhenotypeScore(x, y, x_ctrl, y_ctrl, growth_rate, transformation, level):
+def calculatePhenotypeScore(x, y, x_ctrl, y_ctrl, growth_rate, level):
     """Calculate phenotype score normalized by negative control and growth rate.
     
     Args:
@@ -60,23 +19,41 @@ def calculatePhenotypeScore(x, y, x_ctrl, y_ctrl, growth_rate, transformation, l
         x_ctrl (np.array): array of values
         y_ctrl (np.array): array of values
         growth_rate (int): growth rate
-        transformation (str): transformation to use for calculating score
-        level (str): level to use for calculating score
+        level (str): level to use for calculating averaged score
     
     Returns:
         np.array: array of scores
     """
-    # calculate control median and std
-    ctrl_median = np.median(calculateDelta(x=x_ctrl, y=y_ctrl, transformation=transformation, level=level))
+    # calculate control median and std 
+    ctrl_median = np.median(
+        calcLog2e(x=x_ctrl, y=y_ctrl), 
+        axis=0 # for each individual sample (i.e. replicate)
+    )
 
-    # calculate delta
-    delta = calculateDelta(x=x, y=y, transformation=transformation, level=level)
+    # calculate log2e (i.e. log2 fold change enrichment y / x)
+    log2e = calcLog2e(x=x, y=y)
 
-    # calculate score
-    return (delta - ctrl_median) / growth_rate
+    # calculate delta score normalized by control median and growth rate
+    delta = (log2e - ctrl_median) / growth_rate
+
+    # average delta score by given level (replicate or target)
+    if level == 'replicate' or level == 'col':
+        delta = np.mean(delta, axis=1)
+    elif level == 'target' or level == 'row':
+        delta = np.mean(delta, axis=0)
+    elif level == 'all':
+        delta = np.mean(delta)
+    else:
+        raise ValueError(f'Invalid level: {level}')
+    
+    return delta
 
 
-def matrixTest(x, y, x_ctrl, y_ctrl, transformation, level, test = 'ttest', growth_rate = 1):
+def calcLog2e(x, y):
+    return np.log2(y) - np.log2(x)
+
+
+def matrixTest(x, y, x_ctrl, y_ctrl, level, test = 'ttest', growth_rate = 1):
     """Calculate phenotype score and p-values comparing `y` vs `x` matrices.
 
     Args:
@@ -84,7 +61,6 @@ def matrixTest(x, y, x_ctrl, y_ctrl, transformation, level, test = 'ttest', grow
         y (np.array): array of values
         x_ctrl (np.array): array of values
         y_ctrl (np.array): array of values
-        transformation (str): transformation to use for calculating score
         level (str): level to use for calculating score and p-value
         test (str): test to use for calculating p-value
         growth_rate (int): growth rate
@@ -96,7 +72,7 @@ def matrixTest(x, y, x_ctrl, y_ctrl, transformation, level, test = 'ttest', grow
     # calculate growth score
     scores = calculatePhenotypeScore(
         x = x, y = y, x_ctrl = x_ctrl, y_ctrl = y_ctrl,
-        growth_rate = growth_rate, transformation = transformation,
+        growth_rate = growth_rate,
         level = level
     )
 
@@ -105,6 +81,8 @@ def matrixTest(x, y, x_ctrl, y_ctrl, transformation, level, test = 'ttest', grow
 
     return scores, p_values
 
+
+### Utility functions
 
 def generatePseudoGeneAnnData(adata, num_pseudogenes='auto', pseudogene_size='auto', ctrl_label='negative_control'):
     """Generate pseudogenes from negative control elements in the library.
