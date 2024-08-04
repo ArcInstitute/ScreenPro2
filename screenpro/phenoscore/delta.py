@@ -49,10 +49,6 @@ def calculatePhenotypeScore(x, y, x_ctrl, y_ctrl, growth_rate, level):
     return delta
 
 
-def calcLog2e(x, y):
-    return np.log2(y) - np.log2(x)
-
-
 def matrixTest(x, y, x_ctrl, y_ctrl, level, test = 'ttest', growth_rate = 1):
     """Calculate phenotype score and p-values comparing `y` vs `x` matrices.
 
@@ -83,6 +79,10 @@ def matrixTest(x, y, x_ctrl, y_ctrl, level, test = 'ttest', growth_rate = 1):
 
 
 ### Utility functions
+
+def calcLog2e(x, y):
+    return np.log2(y) - np.log2(x)
+
 
 def generatePseudoGeneAnnData(adata, num_pseudogenes='auto', pseudogene_size='auto', ctrl_label='negative_control'):
     """Generate pseudogenes from negative control elements in the library.
