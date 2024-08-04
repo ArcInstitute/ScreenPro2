@@ -20,8 +20,9 @@ from .annotate import annotateScoreTable
 from .phenostat import multipleTestsCorrection
 
 
-def runPhenoScore(adata, cond_ref, cond_test, score_level, test, transformation='log2',
-                  growth_rate=1, n_reps='auto', keep_top_n = None,num_pseudogenes='auto', pseudogene_size='auto',
+def runPhenoScore(adata, cond_ref, cond_test, score_level, test,
+                  growth_rate=1, n_reps='auto', keep_top_n = None,
+                  num_pseudogenes='auto', pseudogene_size='auto',
                   count_layer=None, ctrl_label='negative_control'):
     """Calculate phenotype score and p-values when comparing `cond_test` vs `cond_ref`.
 
@@ -31,7 +32,6 @@ def runPhenoScore(adata, cond_ref, cond_test, score_level, test, transformation=
         cond_test (str): condition test
         score_level (str): score level
         test (str): test to use for calculating p-value ('MW': Mann-Whitney U rank; 'ttest' : t-test)
-        transformation (str): transformation to use for calculating score
         growth_rate (int): growth rate
         n_reps (int): number of replicates
         keep_top_n (int): number of top guides to keep per target
@@ -86,7 +86,7 @@ def runPhenoScore(adata, cond_ref, cond_test, score_level, test, transformation=
         # calculate growth score and p_value
         scores, p_values = matrixTest(
             x=x, y=y, x_ctrl=x_ctrl, y_ctrl=y_ctrl,
-            transformation=transformation, level='col', test=test, 
+            level='col', test=test, 
             growth_rate=growth_rate
         )
         # get adjusted p-values
@@ -145,17 +145,8 @@ def runPhenoScore(adata, cond_ref, cond_test, score_level, test, transformation=
             y = y.to_numpy()
 
             # calculate growth score and p_value
-            target_scores, _ = matrixTest(
+            target_scores, target_p_values = matrixTest(
                 x=x, y=y, x_ctrl=x_ctrl, y_ctrl=y_ctrl,
-                transformation=transformation, 
-                level='row', # test across guides per target for each replicate
-                test=test,
-                growth_rate=growth_rate
-            )
-
-            _, target_p_values = matrixTest(
-                x=x, y=y, x_ctrl=x_ctrl, y_ctrl=y_ctrl,
-                transformation=transformation, 
                 level='all', # test across all guides and replicates per target
                 test=test,
                 growth_rate=growth_rate
@@ -189,7 +180,7 @@ def runPhenoScore(adata, cond_ref, cond_test, score_level, test, transformation=
     return result_name, result
 
 
-def runPhenoScoreForReplicate(adata, x_label, y_label, growth_rate_reps=None, transformation='log2', ctrl_label='negative_control'):
+def runPhenoScoreForReplicate(adata, x_label, y_label, growth_rate_reps=None, ctrl_label='negative_control'):
     """Calculate phenotype score for each pair of replicates.
 
     Args:
@@ -197,7 +188,6 @@ def runPhenoScoreForReplicate(adata, x_label, y_label, growth_rate_reps=None, tr
         x_label: name of the first condition in column `condition` of `screen.adata.obs`
         y_label: name of the second condition in column `condition` of `screen.adata.obs`
         growth_rate_reps (dict): dictionary of growth rates for each replicate
-        transformation (str): transformation to use for calculating score
         ctrl_label: string to identify labels of negative control elements in sgRNA library (default is 'negative_control')
 
     Returns:
@@ -220,7 +210,6 @@ def runPhenoScoreForReplicate(adata, x_label, y_label, growth_rate_reps=None, tr
             x_ctrl=adat_ctrl[adat_ctrl.obs.query(f'condition == "{x_label}" & replicate == {str(replicate)}').index].X,
             y_ctrl=adat_ctrl[adat_ctrl.obs.query(f'condition == "{y_label}" & replicate == {str(replicate)}').index].X,
             growth_rate=growth_rate_reps[replicate],
-            transformation=transformation,
             level='row'  # there is only one column so `row` option here is equivalent to the value before averaging.
         )
 
