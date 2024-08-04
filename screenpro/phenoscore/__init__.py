@@ -68,6 +68,25 @@ def _generatePseudoGeneAnnData(adata, num_pseudogenes='auto', pseudogene_size='a
     return out
 
 
+def _averageBestN(target_group, df_cond_test, df_cond_ref, keep_top_n):
+    if keep_top_n and keep_top_n>0:
+        df = pd.concat({
+            'test': df_cond_test.loc[target_group.index,:],
+            'ref':df_cond_ref.loc[target_group.index,:],
+        }, axis=1)
+        
+        # Sort and find top n guide per target, see #18
+        df = df.sort_values(df.columns.to_list(), ascending=False).iloc[:keep_top_n, :]
+
+        df_cond_test = df['test']
+        df_cond_ref = df['ref']
+    
+    else:
+        pass
+    
+    return df_cond_test, df_cond_ref
+
+
 def runPhenoScore(adata, cond_ref, cond_test, score_level, test, transformation='log2',
                   growth_rate=1, n_reps='auto', keep_top_n = None,num_pseudogenes='auto', pseudogene_size='auto',
                   count_layer=None, ctrl_label='negative_control'):
@@ -166,28 +185,28 @@ def runPhenoScore(adata, cond_ref, cond_test, score_level, test, transformation=
         del df_cond_ref, df_cond_test
         
         adata_pseudo = _generatePseudoGeneAnnData(adata0, num_pseudogenes=num_pseudogenes, pseudogene_size=pseudogene_size, ctrl_label=ctrl_label)
-        adata = ad.concat([adata0[:,~adata0.var.targetType.eq(ctrl_label)], adata_pseudo], axis=1)
-        adata.obs = adata0.obs.copy()
+        
+        adata_test = ad.concat([adata0[:,~adata0.var.targetType.eq(ctrl_label)], adata_pseudo], axis=1)
+        adata_test.obs = adata0.obs.copy()
 
         # prep counts for phenoScore calculation
-        df_cond_ref = adata[adata.obs.query(f'condition=="{cond_ref}"').index].to_df().T
-        df_cond_test = adata[adata.obs.query(f'condition=="{cond_test}"').index].to_df().T
+        df_cond_ref = adata_test[adata_test.obs.query(f'condition=="{cond_ref}"').index].to_df().T
+        df_cond_test = adata_test[adata_test.obs.query(f'condition=="{cond_test}"').index].to_df().T
         
         targets = []
         scores = []
         p_values = []
         
         # group by target genes or pseudogenes to aggregate counts for score calculation
-        for target_name, target_group in adata.var.groupby('target'):
-            # convert to numpy arrays
-            x = df_cond_ref.loc[target_group.index,:]
-            y = df_cond_test.loc[target_group.index,:]
+        for target_name, target_group in adata_test.var.groupby('target'):
             # Sort and find top n guide per target, see #18
-            if keep_top_n:
-                x = x.sort_values(x.columns.to_list(), ascending=False)
-                y = y.sort_values(y.columns.to_list(), ascending=False)
-                x = x.iloc[:keep_top_n, :]
-                y = y.iloc[:keep_top_n, :]
+            x, y = _averageBestN(
+                target_group=target_group, 
+                df_cond_test=df_cond_test, 
+                df_cond_ref=df_cond_ref,
+                keep_top_n=keep_top_n
+            )
+            
             # convert to numpy arrays
             x = x.to_numpy()
             y = y.to_numpy()
