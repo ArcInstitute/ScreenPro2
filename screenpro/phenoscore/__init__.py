@@ -68,11 +68,11 @@ def _generatePseudoGeneAnnData(adata, num_pseudogenes='auto', pseudogene_size='a
     return out
 
 
-def _averageBestN(target_group, df_cond_test, df_cond_ref, keep_top_n):
+def _averageBestN(target_group, df_cond_ref, df_cond_test, keep_top_n):
     if keep_top_n and keep_top_n>0:
         df = pd.concat({
-            'test': df_cond_test.loc[target_group.index,:],
             'ref':df_cond_ref.loc[target_group.index,:],
+            'test': df_cond_test.loc[target_group.index,:],
         }, axis=1)
         
         # Sort and find top n guide per target, see #18
@@ -84,7 +84,7 @@ def _averageBestN(target_group, df_cond_test, df_cond_ref, keep_top_n):
     else:
         pass
     
-    return df_cond_test, df_cond_ref
+    return df_cond_ref, df_cond_test
 
 
 def runPhenoScore(adata, cond_ref, cond_test, score_level, test, transformation='log2',
