@@ -78,8 +78,8 @@ def _averageBestN(target_group, df_cond_ref, df_cond_test, keep_top_n):
         # Sort and find top n guide per target, see #18
         df = df.sort_values(df.columns.to_list(), ascending=False).iloc[:keep_top_n, :]
 
+        df_cond_ref  = df['ref']
         df_cond_test = df['test']
-        df_cond_ref = df['ref']
     
     else:
         pass
