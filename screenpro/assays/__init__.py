@@ -27,18 +27,16 @@ class PooledScreens(object):
     pooledScreens class for processing CRISPR screen datasets
     """
 
-    def __init__(self, adata, fc_transformation='log2', test='ttest', n_reps=3, verbose=False):
+    def __init__(self, adata, test='ttest', n_reps=3, verbose=False):
         """
         Args:
             adata (AnnData): AnnData object with adata.X as a matrix of sgRNA counts
-            fc_transformation (str): fold change transformation to apply for calculating phenotype scores
             test (str): statistical test to use for calculating phenotype scores
             n_reps (int): number of replicates to use for calculating phenotype scores
             verbose (bool): whether to print verbose output
         """
         self.adata = adata.copy()
         self.pdata = None
-        self.fc_transformation = fc_transformation
         self.test = test
         self.n_reps = n_reps
         self.phenotypes = {}
@@ -223,7 +221,7 @@ class PooledScreens(object):
             gamma_name, gamma = runPhenoScore(
                 self.adata, cond_ref=t0, cond_test=untreated, growth_rate=db_untreated,
                 n_reps=self.n_reps,
-                transformation=self.fc_transformation, test=self.test, score_level=score_level,
+                test=self.test, score_level=score_level,
                 **kwargs
             )
             self._add_phenotype_results(run_name, f'gamma:{gamma_name}', gamma)
@@ -235,7 +233,7 @@ class PooledScreens(object):
                 tau_name, tau = runPhenoScore(
                     self.adata, cond_ref=t0, cond_test=tr, growth_rate=db_tr,
                     n_reps=self.n_reps,
-                    transformation=self.fc_transformation, test=self.test, score_level=score_level,
+                    test=self.test, score_level=score_level,
                     **kwargs
                 )
                 self._add_phenotype_results(run_name, f'tau:{tau_name}', tau)
@@ -244,7 +242,7 @@ class PooledScreens(object):
             rho_name, rho = runPhenoScore(
                 self.adata, cond_ref=untreated, cond_test=tr, growth_rate=db_diff,
                 n_reps=self.n_reps,
-                transformation=self.fc_transformation, test=self.test, score_level=score_level,
+                test=self.test, score_level=score_level,
                 **kwargs
             )
             self._add_phenotype_results(run_name, f'rho:{rho_name}', rho)
@@ -263,7 +261,7 @@ class PooledScreens(object):
         # calculate phenotype scores
         delta_name, delta = runPhenoScore(
             self.adata, cond_ref=low_bin, cond_test=high_bin, n_reps=self.n_reps,
-            transformation=self.fc_transformation, test=self.test, score_level=score_level,
+            test=self.test, score_level=score_level,
             **kwargs
         )
 
