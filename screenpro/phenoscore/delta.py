@@ -4,13 +4,11 @@ delta module
 import numpy as np
 import anndata as ad
 import pandas as pd
-from .phenostat import matrixStat
 
 
 ### Key functions for calculating delta phenotype score
 
-
-def calculatePhenotypeScore(x, y, x_ctrl, y_ctrl, growth_rate, level):
+def calculateDelta(x, y, x_ctrl, y_ctrl, growth_rate):
     """Calculate phenotype score normalized by negative control and growth rate.
     
     Args:
@@ -19,69 +17,50 @@ def calculatePhenotypeScore(x, y, x_ctrl, y_ctrl, growth_rate, level):
         x_ctrl (np.array): array of values
         y_ctrl (np.array): array of values
         growth_rate (int): growth rate
-        level (str): level to use for calculating averaged score
     
     Returns:
         np.array: array of scores
     """
     # calculate control median and std 
     ctrl_median = np.median(
-        calcLog2e(x=x_ctrl, y=y_ctrl), 
+        calculateLog2e(x=x_ctrl, y=y_ctrl), 
         axis=0 # for each individual sample (i.e. replicate)
     )
 
     # calculate log2e (i.e. log2 fold change enrichment y / x)
-    log2e = calcLog2e(x=x, y=y)
+    log2e = calculateLog2e(x=x, y=y)
 
     # calculate delta score normalized by control median and growth rate
     delta = (log2e - ctrl_median) / growth_rate
-
-    # average delta score by given level (replicate or target)
-    if level == 'replicate' or level == 'col':
-        delta = np.mean(delta, axis=1)
-    elif level == 'target' or level == 'row':
-        delta = np.mean(delta, axis=0)
-    elif level == 'all':
-        delta = np.mean(delta)
-    else:
-        raise ValueError(f'Invalid level: {level}')
     
     return delta
 
 
-def matrixTest(x, y, x_ctrl, y_ctrl, level, test = 'ttest', growth_rate = 1):
-    """Calculate phenotype score and p-values comparing `y` vs `x` matrices.
-
-    Args:
-        x (np.array): array of values
-        y (np.array): array of values
-        x_ctrl (np.array): array of values
-        y_ctrl (np.array): array of values
-        level (str): level to use for calculating score and p-value
-        test (str): test to use for calculating p-value
-        growth_rate (int): growth rate
-    
-    Returns:
-        np.array: array of scores
-        np.array: array of p-values
-    """
-    # calculate growth score
-    scores = calculatePhenotypeScore(
-        x = x, y = y, x_ctrl = x_ctrl, y_ctrl = y_ctrl,
-        growth_rate = growth_rate,
-        level = level
-    )
-
-    # compute p-value
-    p_values = matrixStat(x, y, test=test, level = level)
-
-    return scores, p_values
-
-
 ### Utility functions
 
-def calcLog2e(x, y):
+def calculateLog2e(x, y):
     return np.log2(y) - np.log2(x)
+
+
+def averageBestN(scores, numToAverage):
+    # Sort and find top n guide per target, see #18
+    return np.mean(sorted(scores, key=abs, reverse=True)[:numToAverage])
+
+
+def aggregatePhenotypeScore(scores, level=None):
+    # average delta score by given level (replicate or target)
+    if level == None:
+        pass
+    elif level == 'replicate' or level == 'col':
+        scores = np.mean(scores, axis=1)
+    elif level == 'target' or level == 'row':
+        scores = np.mean(scores, axis=0)
+    elif level == 'all':
+        scores = np.mean(scores)
+    else:
+        raise ValueError(f'Invalid level: {level}')
+
+    return scores
 
 
 def generatePseudoGeneAnnData(adata, num_pseudogenes='auto', pseudogene_size='auto', ctrl_label='negative_control'):
@@ -131,22 +110,3 @@ def generatePseudoGeneAnnData(adata, num_pseudogenes='auto', pseudogene_size='au
     out.obs = adata_ctrl.obs.copy()
     
     return out
-
-
-def averageBestN(target_group, df_cond_ref, df_cond_test, keep_top_n):
-    if keep_top_n and keep_top_n>0:
-        df = pd.concat({
-            'ref':df_cond_ref.loc[target_group.index,:],
-            'test': df_cond_test.loc[target_group.index,:],
-        }, axis=1)
-        
-        # Sort and find top n guide per target, see #18
-        df = df.sort_values(df.columns.to_list(), ascending=False).iloc[:keep_top_n, :]
-
-        df_cond_ref  = df['ref']
-        df_cond_test = df['test']
-    
-    else:
-        pass
-    
-    return df_cond_ref, df_cond_test

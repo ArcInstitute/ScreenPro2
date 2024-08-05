@@ -13,8 +13,8 @@ import numpy as np
 import anndata as ad
 import pandas as pd
 
-from .delta import calculatePhenotypeScore, matrixTest
-from .delta import generatePseudoGeneAnnData, averageBestN
+from .delta import calculateDelta, generatePseudoGeneAnnData, averageBestN
+from .phenostat import matrixStat
 from .deseq import runDESeq, extractDESeqResults
 from .annotate import annotateScoreTable
 from .phenostat import multipleTestsCorrection
@@ -85,12 +85,19 @@ def runPhenoScore(adata, cond_ref, cond_test, score_level, test,
         x_ctrl = df_cond_ref[adat.var.targetType.eq(ctrl_label)].to_numpy()
         y_ctrl = df_cond_test[adat.var.targetType.eq(ctrl_label)].to_numpy()
 
-        # calculate growth score and p_value
-        scores, p_values = matrixTest(
-            x=x, y=y, x_ctrl=x_ctrl, y_ctrl=y_ctrl,
-            level='col', test=test, 
-            growth_rate=growth_rate
+        # calculate phenotype scores
+        scores = calculateDelta(
+            x = x, y = y, 
+            x_ctrl = x_ctrl, y_ctrl = y_ctrl, 
+            growth_rate = growth_rate,
         )
+
+        # average scores across replicates
+        scores = [np.mean(s) for s in scores]
+        
+        # compute p-value
+        p_values = matrixStat(x, y, test=test, level = 'col')
+
         # get adjusted p-values
         adj_p_values = multipleTestsCorrection(p_values)
                 
@@ -132,25 +139,28 @@ def runPhenoScore(adata, cond_ref, cond_test, score_level, test,
         
         # group by target genes or pseudogenes to aggregate counts for score calculation
         for target_name, target_group in adat_test.var.groupby('target'):
-            # Sort and find top n guide per target, see #18
-            x, y = averageBestN(
-                target_group=target_group, 
-                df_cond_ref=df_cond_ref,
-                df_cond_test=df_cond_test, 
-                keep_top_n=keep_top_n
+            # select target group and convert to numpy arrays
+            x = df_cond_ref.loc[target_group.index,:].to_numpy()
+            y = df_cond_test.loc[target_group.index,:].to_numpy()
+
+            # calculate phenotype scores
+            target_scores = calculateDelta(
+                x = x, y = y, 
+                x_ctrl = x_ctrl, y_ctrl = y_ctrl, 
+                growth_rate = growth_rate,
             )
             
-            # convert to numpy arrays
-            x = x.to_numpy()
-            y = y.to_numpy()
+            # get top n scores
+            if keep_top_n is not None and keep_top_n > 0:
+                target_scores = averageBestN(target_scores, numToAverage=keep_top_n)
 
-            # calculate growth score and p_value
-            target_scores, target_p_values = matrixTest(
-                x=x, y=y, x_ctrl=x_ctrl, y_ctrl=y_ctrl,
-                level='all', # test across all guides and replicates per target
-                test=test,
-                growth_rate=growth_rate
-            )
+            # aggregate score by given level (replicate or target)
+
+            # compute p-value
+            target_p_values = matrixStat(x, y, test=test, level='all')
+            
+            if keep_top_n is not None:
+                target_scores[:keep_top_n]
 
             scores.append(target_scores)
             p_values.append(target_p_values)
