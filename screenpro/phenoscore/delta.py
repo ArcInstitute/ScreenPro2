@@ -5,8 +5,77 @@ import numpy as np
 import anndata as ad
 import pandas as pd
 
+from .phenostat import (
+    matrixStat, multipleTestsCorrection
+)
+
 
 ### Key functions for calculating delta phenotype score
+
+def compareByReplicates(adata, cond_ref, cond_test, n_reps='auto', count_layer=None, test='ttest', ctrl_label='negative_control', growth_rate=1):
+    """Calculate phenotype score and p-values comparing `cond_test` vs `cond_ref`.
+
+    Args:
+        adata (AnnData): AnnData object
+        cond_ref (str): condition reference
+        cond_test (str): condition test
+        n_reps (int): number of replicates
+        count_layer (str): count layer to use for calculating score, default is None (use default count layer in adata.X)
+        test (str): test to use for calculating p-value ('MW': Mann-Whitney U rank; 'ttest' : t-test)
+        ctrl_label (str): control label, default is 'negative_control'
+        growth_rate (int): growth rate
+    
+    Returns:
+        pd.DataFrame: result dataframe
+    """
+    adat = adata.copy()
+
+    if n_reps == 'auto':
+        n_reps = adat.obs['replicate'].unique().size
+    
+    # prep counts for phenoScore calculation
+    df_cond_ref = adat[adat.obs.query(f'condition=="{cond_ref}"').index[:n_reps],].to_df(count_layer).T
+    df_cond_test = adat[adat.obs.query(f'condition=="{cond_test}"').index[:n_reps],].to_df(count_layer).T
+
+    # convert to numpy arrays
+    x = df_cond_ref.to_numpy()
+    y = df_cond_test.to_numpy()
+
+    # get control values
+    x_ctrl = df_cond_ref[adat.var.targetType.eq(ctrl_label)].to_numpy()
+    y_ctrl = df_cond_test[adat.var.targetType.eq(ctrl_label)].to_numpy()
+
+    # calculate phenotype scores
+    scores = calculateDelta(
+        x = x, y = y, 
+        x_ctrl = x_ctrl, y_ctrl = y_ctrl, 
+        growth_rate = growth_rate,
+    )
+
+    # average scores across replicates
+    scores = [np.mean(s) for s in scores]
+    
+    # compute p-value
+    p_values = matrixStat(x, y, test=test, level = 'col')
+
+    # get adjusted p-values
+    adj_p_values = multipleTestsCorrection(p_values)
+            
+    # get targets
+    targets = adat.var['target'].to_list()
+
+    # combine results into a dataframe
+    result = pd.concat([
+        pd.Series(targets, index=adat.var.index, name='target'),
+        pd.Series(scores, index=adat.var.index, name='score'),
+    ], axis=1)
+    
+    # add p-values
+    result[f'{test} pvalue'] = p_values
+    result['BH adj_pvalue'] = adj_p_values
+
+    return result
+
 
 def getPhenotypeData(adata, score_tag, cond_ref, cond_test, growth_rate_reps=None, ctrl_label='negative_control'):
     """Calculate phenotype score for each pair of replicates
