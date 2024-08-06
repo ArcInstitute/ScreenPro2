@@ -13,7 +13,7 @@ import anndata as ad
 import scanpy as sc
 
 from ..phenoscore import (
-    runPhenoScore, buildPhenotypeData,
+    runPhenoScore, getPhenotypeData,
     runDESeq, extractDESeqResults
 )
 from ..preprocessing import addPseudoCount, findLowCounts, normalizeSeqDepth
@@ -98,6 +98,17 @@ class PooledScreens(object):
             db_diff = np.abs(db_untreated - db_treated)
         
         return db_untreated, db_treated, db_diff
+
+    def _auto_run_name(self):
+        if len(list(self.phenotypes.keys())) == 1:
+            run_name = list(self.phenotypes.keys())[0]
+        else:
+            raise ValueError(
+                'Multiple phenotype calculation runs found.'
+                'Please specify run_name. Available runs: '
+                '' + ', '.join(self.phenotypes.keys())
+            )
+        return run_name
 
     def filterLowCounts(self, filter_type='all', minimum_reads=50):
         """
@@ -283,19 +294,46 @@ class PooledScreens(object):
         Args:
             run_name (str): name of the phenotype calculation run to retrieve
         """
-        if run_name == 'auto':
-            if len(list(self.phenotypes.keys())) == 1:
-                run_name = list(self.phenotypes.keys())[0]
-            else:
-                raise ValueError(
-                    'Multiple phenotype calculation runs found.'
-                    'Please specify run_name. Available runs: '
-                    '' + ', '.join(self.phenotypes.keys())
-                )
+        if run_name == 'auto': run_name = self._auto_run_name()
 
         out = list(self.phenotypes[run_name]['results'].keys())
 
         return out
+    
+    def buildPhenotypeData(self, run_name='auto',db_rate_col='pop_doublings', **kwargs):
+        if run_name == 'auto': run_name = self._auto_run_name()
+
+        untreated = self.phenotypes[run_name]['config']['untreated']
+        treated = self.phenotypes[run_name]['config']['treated']
+
+        #TODO: fix `_calculateGrowthFactor` and `_getTreatmentDoublingRate`
+        growth_factor_table = self._calculateGrowthFactor(
+            untreated = untreated, treated = treated, 
+            db_rate_col = db_rate_col
+        )
+        
+        pdata_list = []
+
+        for phenotype_name in self.listPhenotypeScores(run_name=run_name):
+
+            score_tag, comparison = phenotype_name.split(':')
+            cond_test, cond_ref = comparison.split('_vs_')
+
+            growth_rate_reps=growth_factor_table.query(
+                f'score=="{score_tag}"'
+            ).set_index('replicate')['growth_factor'].to_dict()
+            
+            pdata = getPhenotypeData(
+                self.adata, score_tag=score_tag, 
+                cond_ref=cond_ref, cond_test=cond_test, 
+                growth_rate_reps=growth_rate_reps,
+                **kwargs
+            )
+            # obs = growth_factor_table.loc[pdata_df.index,:],
+
+            pdata_list.append(pdata)
+
+        self.pdata = pd.concat(pdata_list, axis=1)
     
     def drawVolcano(
             self, ax,
@@ -316,15 +354,7 @@ class PooledScreens(object):
             t_x=0, t_y=0,
             **args
             ):
-        if run_name == 'auto':
-            if len(list(self.phenotypes.keys())) == 1:
-                run_name = list(self.phenotypes.keys())[0]
-            else:
-                raise ValueError(
-                    'Multiple phenotype calculation runs found.'
-                    'Please specify run_name. Available runs: '
-                    '' + ', '.join(self.phenotypes.keys())
-                )
+        if run_name == 'auto': run_name = self._auto_run_name()
         
         score_tag, _ = phenotype_name.split(':')
 
