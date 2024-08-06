@@ -95,6 +95,8 @@ Data analysis for CRISPR screens with NGS readouts can be broken down into three
 
 ### Step 1: FASTQ processing
 
+The first step in analyzing CRISPR screens with deep sequencing readouts is to process the FASTQ files and generate counts for each guide RNA element in the library. ScreenPro2 has built-in functionalities to process FASTQ files and generate counts for different types of CRISPR screens platforms (see [Supported CRISPR Screen Platforms](#supported-crispr-screen-platforms)).
+
 ___
 
 <details>
