@@ -47,7 +47,6 @@ def test_runPhenoScore():
         adata=adat,
         cond_ref='A',
         cond_test='B',
-        transformation='log2',
         test='ttest',
         score_level='compare_reps',
         growth_rate=1,
