@@ -159,6 +159,12 @@ def averageBestN(scores, numToAverage):
     return np.mean(sorted(scores, key=abs, reverse=True)[:numToAverage])
 
 
+def scoreGeneByBestTranscript():
+    #TODO: implement this function
+    # https://github.com/mhorlbeck/ScreenProcessing/blob/0ee5192ecc17348665bd1387ddfa9037efb7964f/process_experiments.py#L311C5-L311C30
+    pass
+
+
 def generatePseudoGeneAnnData(adata, num_pseudogenes='auto', pseudogene_size='auto', ctrl_label='negative_control'):
     """Generate pseudogenes from negative control elements in the library.
 
