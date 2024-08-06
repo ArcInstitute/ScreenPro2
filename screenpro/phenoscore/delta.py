@@ -8,6 +8,48 @@ import pandas as pd
 
 ### Key functions for calculating delta phenotype score
 
+def buildPhenotypeData(adata, score_tag, cond_ref, cond_test, growth_rate_reps=None, ctrl_label='negative_control'):
+    """Calculate phenotype score for each pair of replicates.
+    """
+    score_name = f'{score_tag}:{cond_test}_vs_{cond_ref}'
+
+    adat = adata.copy()
+    
+    #TODO: fix `_calculateGrowthFactor` and `_getTreatmentDoublingRate` to maintain same format
+    # growth_factor_table = self._calculateGrowthFactor(
+    #     untreated = untreated, treated = x_label, db_rate_col = db_rate_col
+    # )
+
+    adat_ctrl = adat[:, adat.var.targetType.eq(ctrl_label)].copy()
+    
+    results = {}
+    
+    if growth_rate_reps is None:
+        growth_rate_reps = dict([(replicate, 1) for replicate in adat.obs.replicate.unique()])
+    
+    for replicate in adat.obs.replicate.unique():
+        x=adat[adat.obs.query(f'condition == "{cond_ref}" & replicate == {str(replicate)}').index].X.T
+        y=adat[adat.obs.query(f'condition == "{cond_test}" & replicate == {str(replicate)}').index].X.T
+    
+        x_ctrl=adat_ctrl[adat_ctrl.obs.query(f'condition == "{cond_ref}" & replicate == {str(replicate)}').index].X.T
+        y_ctrl=adat_ctrl[adat_ctrl.obs.query(f'condition == "{cond_test}" & replicate == {str(replicate)}').index].X.T
+    
+        res = calculateDelta(
+            x=x,y=y,x_ctrl=x_ctrl,y_ctrl=y_ctrl,
+            growth_rate=growth_rate_reps[replicate],
+        )
+    
+        results.update({f'{score_name}::replicate_{replicate}': res.reshape(-1)})
+    
+    out = pd.DataFrame(
+        results,
+        # obs = growth_factor_table.loc[pdata_df.index,:],
+        index=adat.var.index
+    )
+
+    return out
+
+
 def calculateDelta(x, y, x_ctrl, y_ctrl, growth_rate):
     """Calculate phenotype score normalized by negative control and growth rate.
     

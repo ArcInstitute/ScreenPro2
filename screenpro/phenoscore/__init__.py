@@ -13,7 +13,10 @@ import numpy as np
 import anndata as ad
 import pandas as pd
 
-from .delta import calculateDelta, generatePseudoGeneAnnData, averageBestN
+from .delta import (
+    calculateDelta, buildPhenotypeData,
+    generatePseudoGeneAnnData, averageBestN
+)
 from .phenostat import matrixStat
 from .deseq import runDESeq, extractDESeqResults
 from .annotate import annotateScoreTable
@@ -190,46 +193,3 @@ def runPhenoScore(adata, cond_ref, cond_test, score_level, test,
         raise ValueError(f'score_level "{score_level}" not recognized. Currently, "compare_reps" and "compare_guides" are supported.')
     
     return result_name, result
-
-
-def runPhenoScoreForReplicate(adata, x_label, y_label, growth_rate_reps=None, ctrl_label='negative_control'):
-    """Calculate phenotype score for each pair of replicates.
-
-    Args:
-        adata (AnnData): AnnData object
-        x_label: name of the first condition in column `condition` of `screen.adata.obs`
-        y_label: name of the second condition in column `condition` of `screen.adata.obs`
-        growth_rate_reps (dict): dictionary of growth rates for each replicate
-        ctrl_label: string to identify labels of negative control elements in sgRNA library (default is 'negative_control')
-
-    Returns:
-        pd.DataFrame: dataframe of phenotype scores
-    """
-    adat = adata.copy()
-
-    adat_ctrl = adat[:, adat.var.targetType.eq(ctrl_label)].copy()
-
-    results = {}
-
-    if growth_rate_reps is None:
-        growth_rate_reps = dict([(replicate, 1) for replicate in adat.obs.replicate.unique()])
-
-    for replicate in adat.obs.replicate.unique():
-
-        res = calculatePhenotypeScore(
-            x=adat[adat.obs.query(f'condition == "{x_label}" & replicate == {str(replicate)}').index].X,
-            y=adat[adat.obs.query(f'condition == "{y_label}" & replicate == {str(replicate)}').index].X,
-            x_ctrl=adat_ctrl[adat_ctrl.obs.query(f'condition == "{x_label}" & replicate == {str(replicate)}').index].X,
-            y_ctrl=adat_ctrl[adat_ctrl.obs.query(f'condition == "{y_label}" & replicate == {str(replicate)}').index].X,
-            growth_rate=growth_rate_reps[replicate],
-            level='row'  # there is only one column so `row` option here is equivalent to the value before averaging.
-        )
-
-        results.update({f'replicate_{replicate}': res.reshape(-1)})
-
-    out = pd.DataFrame(
-        results,
-        index=adat.var.index
-    )
-
-    return out
