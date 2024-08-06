@@ -38,7 +38,7 @@ ___
 
 <details>
   <summary>Benchmarking</summary>
-  <p>&nbsp;</p> 
+  <br>
   
   Benchmarking ScreenPro2 with other CRISPR screen analysis tools
 
