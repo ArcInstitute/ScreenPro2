@@ -150,18 +150,20 @@ def runPhenoScore(adata, cond_ref, cond_test, score_level, test,
                 growth_rate = growth_rate,
             )
             
-            # get top n scores
-            if keep_top_n is not None and keep_top_n > 0:
-                target_scores = averageBestN(target_scores, numToAverage=keep_top_n)
+            if keep_top_n is None or keep_top_n is False:
+                # average scores across guides
+                target_scores = np.mean(target_scores, axis=0)
 
-            # aggregate score by given level (replicate or target)
+            elif keep_top_n > 0:
+                # get top n scores per target
+                np.apply_along_axis(averageBestN, axis=0, arr=target_scores, numToAverage=keep_top_n)
+            
+            else:
+                raise ValueError(f'Invalid value for keep_top_n: {keep_top_n}')
 
             # compute p-value
             target_p_values = matrixStat(x, y, test=test, level='all')
             
-            if keep_top_n is not None:
-                target_scores[:keep_top_n]
-
             scores.append(target_scores)
             p_values.append(target_p_values)
             targets.append(target_name)
