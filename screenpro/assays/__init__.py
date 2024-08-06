@@ -12,8 +12,10 @@ import pandas as pd
 import anndata as ad
 import scanpy as sc
 
-from ..phenoscore import runDESeq, extractDESeqResults
-from ..phenoscore import runPhenoScore, runPhenoScoreForReplicate
+from ..phenoscore import (
+    runPhenoScore, buildPhenotypeData,
+    runDESeq, extractDESeqResults
+)
 from ..preprocessing import addPseudoCount, findLowCounts, normalizeSeqDepth
 from ..phenoscore.annotate import annotateScoreTable, hit_dict
 from ..plotting import volcano_plot, label_resistance_hit, label_sensitivity_hit
