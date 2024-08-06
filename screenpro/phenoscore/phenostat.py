@@ -78,3 +78,7 @@ def multipleTestsCorrection(p_values, method='fdr_bh'):
         raise ValueError(f'Method "{method}" not recognized')
 
     return adj_p_values
+
+
+def empiricalFDR():
+    pass
