@@ -6,7 +6,7 @@ Log ratio of {math}`y` vs {math}`x`:
 
 ```{math}
 \Delta =
-\log(\frac
+\log_2(\frac
     {\begin{bmatrix}{N_{y}}\end{bmatrix}_{(a,b)}}
     {\begin{bmatrix}{N_{x}}\end{bmatrix}_{(a,b)}}
 )
