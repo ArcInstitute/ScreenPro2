@@ -26,6 +26,7 @@ def runDESeq(adata, design, n_cpus=8,quiet=False):
         inference=inference,
         quiet=quiet
     )
+    dds.var = adata.var.copy()
 
     dds.deseq2()
 
@@ -51,6 +52,6 @@ def extractDESeqResults(dds, design, ref_level, tested_level, n_cpus=8, quiet=Fa
         with contextlib.redirect_stdout(devnull):
             stat_res.summary()
 
-    results = stat_res.results_df
+    results = pd.concat([dds.var['target'], stat_res.results_df], axis=1)
 
     return result_name, results
