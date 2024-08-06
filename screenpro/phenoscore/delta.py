@@ -114,7 +114,7 @@ def getPhenotypeData(adata, score_tag, cond_ref, cond_test, growth_rate_reps=Non
         results.update({f'{score_name}::replicate_{replicate}': res.reshape(-1)})
     
     out = ad.AnnData(
-        pd.DataFrame(results, index=adat.var.index)
+        pd.DataFrame(results, index=adat.var.index).T
     )
 
     return out

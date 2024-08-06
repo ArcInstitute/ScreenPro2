@@ -334,6 +334,7 @@ class PooledScreens(object):
             pdata_list.append(pdata)
 
         self.pdata = ad.concat(pdata_list, axis=0)
+        self.pdata.var = self.adata.var.copy()
     
     def drawVolcano(
             self, ax,
