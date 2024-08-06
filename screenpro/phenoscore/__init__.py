@@ -14,13 +14,12 @@ import anndata as ad
 import pandas as pd
 
 from .delta import (
-    calculateDelta, buildPhenotypeData,
+    compareByReplicates, getPhenotypeData,
+    calculateDelta,
     generatePseudoGeneAnnData, averageBestN
 )
-from .phenostat import matrixStat
 from .deseq import runDESeq, extractDESeqResults
 from .annotate import annotateScoreTable
-from .phenostat import multipleTestsCorrection
 
 
 def runPhenoScore(adata, cond_ref, cond_test, score_level, test,
@@ -76,46 +75,10 @@ def runPhenoScore(adata, cond_ref, cond_test, score_level, test,
 
     # calc phenotype score and p-value
     if score_level in ['compare_reps']:
-        # prep counts for phenoScore calculation
-        df_cond_ref = adat[adat.obs.query(f'condition=="{cond_ref}"').index[:n_reps],].to_df(count_layer).T
-        df_cond_test = adat[adat.obs.query(f'condition=="{cond_test}"').index[:n_reps],].to_df(count_layer).T
-
-        # convert to numpy arrays
-        x = df_cond_ref.to_numpy()
-        y = df_cond_test.to_numpy()
-
-        # get control values
-        x_ctrl = df_cond_ref[adat.var.targetType.eq(ctrl_label)].to_numpy()
-        y_ctrl = df_cond_test[adat.var.targetType.eq(ctrl_label)].to_numpy()
-
-        # calculate phenotype scores
-        scores = calculateDelta(
-            x = x, y = y, 
-            x_ctrl = x_ctrl, y_ctrl = y_ctrl, 
-            growth_rate = growth_rate,
+        result = compareByReplicates(
+            adata=adat, cond_ref=cond_ref, cond_test=cond_test,
+            n_reps=n_reps, count_layer=count_layer, test=test,
         )
-
-        # average scores across replicates
-        scores = [np.mean(s) for s in scores]
-        
-        # compute p-value
-        p_values = matrixStat(x, y, test=test, level = 'col')
-
-        # get adjusted p-values
-        adj_p_values = multipleTestsCorrection(p_values)
-                
-        # get targets
-        targets = adat.var['target'].to_list()
-
-        # combine results into a dataframe
-        result = pd.concat([
-            pd.Series(targets, index=adat.var.index, name='target'),
-            pd.Series(scores, index=adat.var.index, name='score'),
-        ], axis=1)
-        
-        # add p-values
-        result[f'{test} pvalue'] = p_values
-        result['BH adj_pvalue'] = adj_p_values
     
     elif score_level in ['compare_guides']:
 
