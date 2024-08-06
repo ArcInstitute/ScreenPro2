@@ -8,17 +8,20 @@ import pandas as pd
 
 ### Key functions for calculating delta phenotype score
 
-def buildPhenotypeData(adata, score_tag, cond_ref, cond_test, growth_rate_reps=None, ctrl_label='negative_control'):
-    """Calculate phenotype score for each pair of replicates.
+def getPhenotypeData(adata, score_tag, cond_ref, cond_test, growth_rate_reps=None, ctrl_label='negative_control'):
+    """Calculate phenotype score for each pair of replicates
+
+    Args:
+        adata (AnnData): AnnData object
+        score_tag (str): score tag. e.g. 'delta', 'gamma', 'tau', 'rho'.
+        cond_ref (str): condition reference
+        cond_test (str): condition test
+        growth_rate_reps (dict): growth rate for each replicate. Key is replicate number, value is growth rate.
+        ctrl_label (str): control label, default is 'negative_control'
     """
     score_name = f'{score_tag}:{cond_test}_vs_{cond_ref}'
 
     adat = adata.copy()
-    
-    #TODO: fix `_calculateGrowthFactor` and `_getTreatmentDoublingRate` to maintain same format
-    # growth_factor_table = self._calculateGrowthFactor(
-    #     untreated = untreated, treated = x_label, db_rate_col = db_rate_col
-    # )
 
     adat_ctrl = adat[:, adat.var.targetType.eq(ctrl_label)].copy()
     
@@ -41,10 +44,9 @@ def buildPhenotypeData(adata, score_tag, cond_ref, cond_test, growth_rate_reps=N
     
         results.update({f'{score_name}::replicate_{replicate}': res.reshape(-1)})
     
-    out = pd.DataFrame(
-        results,
-        # obs = growth_factor_table.loc[pdata_df.index,:],
-        index=adat.var.index
+    out = ad.AnnData(
+        results.T,
+        var=adat.var.index,
     )
 
     return out
@@ -87,22 +89,6 @@ def calculateLog2e(x, y):
 def averageBestN(scores, numToAverage):
     # Sort and find top n guide per target, see #18
     return np.mean(sorted(scores, key=abs, reverse=True)[:numToAverage])
-
-
-def aggregatePhenotypeScore(scores, level=None):
-    # average delta score by given level (replicate or target)
-    if level == None:
-        pass
-    elif level == 'replicate' or level == 'col':
-        scores = np.mean(scores, axis=1)
-    elif level == 'target' or level == 'row':
-        scores = np.mean(scores, axis=0)
-    elif level == 'all':
-        scores = np.mean(scores)
-    else:
-        raise ValueError(f'Invalid level: {level}')
-
-    return scores
 
 
 def generatePseudoGeneAnnData(adata, num_pseudogenes='auto', pseudogene_size='auto', ctrl_label='negative_control'):
