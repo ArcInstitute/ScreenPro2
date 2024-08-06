@@ -39,19 +39,19 @@ ___
   <summary>Benchmarking</summary>
   <p>
     Benchmarking ScreenPro2 with other CRISPR screen analysis tools
-
-    ### More thoughtful NGS read trimming recovers more sgRNA counts
-
-    ### ScreenPro2 statistical analysis is more accurate than ScreenProcessing
-
-    ### ScreenPro2 is more flexible than ScreenProcessing
-
-    Not only does ScreenPro2 have more features than ScreenProcessing, but it is also more flexible. ScreenPro2 can process data from diverse CRISPR screen platforms and is designed to be modular to enable easy extension to custom CRISPR screen platforms or other commonly used platforms in addition to the ones currently implemented.
-
-    ### ScreenPro2 is faster than ScreenProcessing
-
-    Last but not least, ScreenPro2 runs faster than ScreenProcessing (thanks to [biobear](https://github.com/wheretrue/biobear)) for processing FASTQ files.
   </p>
+
+  ### More thoughtful NGS read trimming recovers more sgRNA counts
+
+  ### ScreenPro2 statistical analysis is more accurate than ScreenProcessing
+
+  ### ScreenPro2 is more flexible than ScreenProcessing
+
+  Not only does ScreenPro2 have more features than ScreenProcessing, but it is also more flexible. ScreenPro2 can process data from diverse CRISPR screen platforms and is designed to be modular to enable easy extension to custom CRISPR screen platforms or other commonly used platforms in addition to the ones currently implemented.
+
+  ### ScreenPro2 is faster than ScreenProcessing
+
+  Last but not least, ScreenPro2 runs faster than ScreenProcessing (thanks to [biobear](https://github.com/wheretrue/biobear)) for processing FASTQ files.
 
 </details>
 
