@@ -31,6 +31,6 @@ from .assays import PooledScreens, GImaps
 from .dashboard import DrugScreenDashboard
 
 
-__version__ = "0.4.8"
+__version__ = "0.4.9"
 __author__ = "Abe Arab"
 __email__ = 'abea@arcinstitute.org' # "abarbiology@gmail.com"
