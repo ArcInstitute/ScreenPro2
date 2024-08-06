@@ -36,8 +36,9 @@ ___
 ___
 
 <details>
-  <summary>Benchmarking</summary>
-  <div style="margin-top: 20px;"></div>
+  <summary>
+    Benchmarking
+  </summary>
   
   Benchmarking ScreenPro2 with other CRISPR screen analysis tools
 
