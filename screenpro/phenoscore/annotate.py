@@ -21,7 +21,7 @@ hit_dict = {
 }
 
 
-def getCombinedScore(df, score_col='score', pvalue_col='pvalue', ctrl_label='control'):
+def getCombinedScore(df, score_col='score', pvalue_col='pvalue', ctrl_label='negative_control'):
     """
     Calculate the combined score column based on the given phenotypic scores and p-values.
     Combined score is calculated as:
