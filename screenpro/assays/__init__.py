@@ -17,7 +17,7 @@ from ..phenoscore import (
     runDESeq, extractDESeqResults
 )
 from ..preprocessing import addPseudoCount, findLowCounts, normalizeSeqDepth
-from ..phenoscore.annotate import annotateScoreTable, hit_dict
+from ..phenoscore._annotate import annotateScoreTable, hit_dict
 from ..plotting import volcano_plot, label_resistance_hit, label_sensitivity_hit
 
 import warnings

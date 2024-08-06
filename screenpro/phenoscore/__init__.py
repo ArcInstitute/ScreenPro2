@@ -19,7 +19,7 @@ from .delta import (
     generatePseudoGeneAnnData, averageBestN
 )
 from .deseq import runDESeq, extractDESeqResults
-from .annotate import annotateScoreTable
+from ._annotate import annotateScoreTable
 
 
 def runPhenoScore(adata, cond_ref, cond_test, score_level, test,
