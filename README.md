@@ -79,7 +79,7 @@ screenpro --help
 ```
 
 ### Python Package Usage
-First, import the ScreenPro2 package:
+You can also use ScreenPro2 as a Python package. To use ScreenPro2 in your Python code, you can import it as follows:
 
 ```python
 import screenpro as scp
