@@ -95,37 +95,42 @@ Data analysis for CRISPR screens with NGS readouts can be broken down into three
 
 ### Step 1: FASTQ processing
 
-ScreenPro2 has a built-in command line interface (CLI) to process FASTQ files and generate counts.
+<details>
+  <summary>command line interface (CLI)</summary>
+  <br>
+  ScreenPro2 has a built-in command line interface (CLI) to process FASTQ files and generate counts.
 
-```bash
-screenpro guidecounter --help
-```
+  ```bash
+  screenpro guidecounter --help
+  ```
 
-A draft code to process FASTQ files and generate counts for [CRISPRa/i-single-sgRNA-screens](#dcas9-crisprai-single-sgrna-screens) dataset:
+  A draft code to process FASTQ files and generate counts for [CRISPRa/i-single-sgRNA-screens](#dcas9-crisprai-single-sgrna-screens) dataset:
 
-```bash
-screenpro guidecounter
-  --cas-type dCas9
-  --single-guide-design
-  -l <path-to-CRISPR-library-table>
-  -p <path-to-fastq-directory>
-  -s <sample-id-1>,<sample2-id>       # comma-separated list of sample ids, i.e. `<sample_id>.fastq.gz` for single sgRNA screens
-  -o <output-directory>
-  --write-count-matrix
-```
+  ```bash
+  screenpro guidecounter
+    --cas-type dCas9
+    --single-guide-design
+    -l <path-to-CRISPR-library-table>
+    -p <path-to-fastq-directory>
+    -s <sample-id-1>,<sample2-id>       # comma-separated list of sample ids, i.e. `<sample_id>.fastq.gz` for single sgRNA screens
+    -o <output-directory>
+    --write-count-matrix
+  ```
 
-A draft code to process FASTQ files and generate counts for [CRISPRa/i-dual-sgRNA-screens](#dcas9-crisprai-dual-sgrna-screens) dataset:
-  
-```bash
-screenpro guidecounter
-  --cas-type dCas9
-  --dual-guide-design
-  -l <path-to-CRISPR-library-table>
-  -p <path-to-fastq-directory>
-  -s <sample-id-1>,<sample2-id>       # comma-separated list of sample ids, i.e. `<sample_id>_R[1,2].fastq.gz` for dual sgRNA screens
-  -o <output-directory>
-  --write-count-matrix
-```
+  A draft code to process FASTQ files and generate counts for [CRISPRa/i-dual-sgRNA-screens](#dcas9-crisprai-dual-sgrna-screens) dataset:
+    
+  ```bash
+  screenpro guidecounter
+    --cas-type dCas9
+    --dual-guide-design
+    -l <path-to-CRISPR-library-table>
+    -p <path-to-fastq-directory>
+    -s <sample-id-1>,<sample2-id>       # comma-separated list of sample ids, i.e. `<sample_id>_R[1,2].fastq.gz` for dual sgRNA screens
+    -o <output-directory>
+    --write-count-matrix
+  ```
+
+</details>
 
 ___
 
