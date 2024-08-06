@@ -6,7 +6,7 @@ Log ratio of {math}`y` vs {math}`x`:
 
 ```{math}
 \Delta =
-\log(\frac
+\log_2(\frac
     {\begin{bmatrix}{N_{y}}\end{bmatrix}_{(a,b)}}
     {\begin{bmatrix}{N_{x}}\end{bmatrix}_{(a,b)}}
 )
@@ -29,11 +29,7 @@ Phenotype score for each {math}`T` comparing {math}`y` vs {math}`x`:
 ```{math}
 \text{PhenoScore}(T,x,y) =
 \left(
-\frac{
-\overline{\Delta_{(x,y)}}
-}{
-\text{median}( {\overline{\Delta_{(x_{ctrl},y_{ctrl})}}} )
-}
+\overline{\Delta_{(x,y)}} - \text{median}( {\overline{\Delta_{(x_{ctrl},y_{ctrl})}}} )
 \right)
 \times \frac{ 1 }{d_{growth}}
 ```

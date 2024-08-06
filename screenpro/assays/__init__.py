@@ -12,10 +12,12 @@ import pandas as pd
 import anndata as ad
 import scanpy as sc
 
-from ..phenoscore import runDESeq, extractDESeqResults
-from ..phenoscore import runPhenoScore, runPhenoScoreForReplicate
+from ..phenoscore import (
+    runPhenoScore, getPhenotypeData,
+    runDESeq, extractDESeqResults
+)
 from ..preprocessing import addPseudoCount, findLowCounts, normalizeSeqDepth
-from ..phenoscore.annotate import annotateScoreTable, hit_dict
+from ..phenoscore._annotate import annotateScoreTable, hit_dict
 from ..plotting import volcano_plot, label_resistance_hit, label_sensitivity_hit
 
 import warnings
@@ -27,18 +29,16 @@ class PooledScreens(object):
     pooledScreens class for processing CRISPR screen datasets
     """
 
-    def __init__(self, adata, fc_transformation='log2', test='ttest', n_reps=3, verbose=False):
+    def __init__(self, adata, test='ttest', n_reps=3, verbose=False):
         """
         Args:
             adata (AnnData): AnnData object with adata.X as a matrix of sgRNA counts
-            fc_transformation (str): fold change transformation to apply for calculating phenotype scores
             test (str): statistical test to use for calculating phenotype scores
             n_reps (int): number of replicates to use for calculating phenotype scores
             verbose (bool): whether to print verbose output
         """
         self.adata = adata.copy()
         self.pdata = None
-        self.fc_transformation = fc_transformation
         self.test = test
         self.n_reps = n_reps
         self.phenotypes = {}
@@ -81,7 +81,7 @@ class PooledScreens(object):
         return out
 
     def _getTreatmentDoublingRate(self, untreated, treated, db_rate_col):
-        if 'pop_doublings' not in self.adata.obs.columns or db_rate_col == None:
+        if 'pop_doubling' not in self.adata.obs.columns or db_rate_col == None:
             warnings.warn('No doubling rate information provided.')
             db_untreated = 1
             db_treated = 1
@@ -98,6 +98,17 @@ class PooledScreens(object):
             db_diff = np.abs(db_untreated - db_treated)
         
         return db_untreated, db_treated, db_diff
+
+    def _auto_run_name(self):
+        if len(list(self.phenotypes.keys())) == 1:
+            run_name = list(self.phenotypes.keys())[0]
+        else:
+            raise ValueError(
+                'Multiple phenotype calculation runs found.'
+                'Please specify run_name. Available runs: '
+                '' + ', '.join(self.phenotypes.keys())
+            )
+        return run_name
 
     def filterLowCounts(self, filter_type='all', minimum_reads=50):
         """
@@ -119,7 +130,6 @@ class PooledScreens(object):
         Steps:
             1. Add pseudocount to counts
             2. Normalize counts by sequencing depth
-            3. Log10 transformation
         
         """
         self.adata.layers['raw_counts'] = self.adata.X.copy()
@@ -133,11 +143,6 @@ class PooledScreens(object):
         normalizeSeqDepth(self.adata)
 
         if self.verbose: print('Counts normalized by sequencing depth.')
-
-        # log scale the counts
-        self.adata.X = np.log10(self.adata.X)
-        
-        if self.verbose: print('`log10` transformation applied to counts.')
 
     def calculateDrugScreenDESeq(self, untreated, treated, t0=None, run_name='pyDESeq2', **kwargs):
         """
@@ -168,29 +173,31 @@ class PooledScreens(object):
         if type(treated) != list: treated = [treated]
 
         # run pyDESeq2 analysis
-        dds = runDESeq(self.adata, 'condition', **kwargs)
+        adt = self.adata.copy()
+        adt.X = adt.layers['raw_counts']
+        dds = runDESeq(adt, 'condition', **kwargs)
 
         # extract comparison results
         if t0 != None and type(t0) == str:
             # Calculate `gamma`, `rho`, and `tau` phenotype scores
             gamma_name, gamma = extractDESeqResults(
-                dds, 'condition', t0, untreated, **kwargs
+                dds, design='condition', ref_level=t0, tested_level=untreated, **kwargs
             )
             self._add_phenotype_results(run_name, f'gamma:{gamma_name}', gamma)
 
             for tr in treated:
                 tau_name, tau = extractDESeqResults(
-                    dds, 'condition', t0, treated, **kwargs
+                    dds, design='condition', ref_level=t0, tested_level=tr, **kwargs
                 )
                 self._add_phenotype_results(run_name, f'tau:{tau_name}', tau)
 
         for tr in treated:
             rho_name, rho = extractDESeqResults(
-                dds, 'condition', untreated, tr, **kwargs
+                dds, design='condition', ref_level=untreated, tested_level=tr, **kwargs
             )
             self._add_phenotype_results(run_name, f'rho:{rho_name}', rho)
 
-    def calculateDrugScreen(self, score_level, untreated, treated, t0=None, db_rate_col='pop_doublings', run_name=None, **kwargs):
+    def calculateDrugScreen(self, score_level, untreated, treated, t0=None, db_rate_col='pop_doubling', run_name=None, **kwargs):
         """
         Calculate `gamma`, `rho`, and `tau` phenotype scores for a drug screen dataset in a given `score_level`.
 
@@ -199,7 +206,7 @@ class PooledScreens(object):
             untreated (str): name of the untreated condition
             treated (str): name of the treated condition
             t0 (str): name of the untreated condition
-            db_rate_col (str): column name for the doubling rate, default is 'pop_doublings'
+            db_rate_col (str): column name for the doubling rate, default is 'pop_doubling'
             run_name (str): name for the phenotype calculation run
             **kwargs: additional arguments to pass to runPhenoScore
         """
@@ -227,7 +234,7 @@ class PooledScreens(object):
             gamma_name, gamma = runPhenoScore(
                 self.adata, cond_ref=t0, cond_test=untreated, growth_rate=db_untreated,
                 n_reps=self.n_reps,
-                transformation=self.fc_transformation, test=self.test, score_level=score_level,
+                test=self.test, score_level=score_level,
                 **kwargs
             )
             self._add_phenotype_results(run_name, f'gamma:{gamma_name}', gamma)
@@ -239,7 +246,7 @@ class PooledScreens(object):
                 tau_name, tau = runPhenoScore(
                     self.adata, cond_ref=t0, cond_test=tr, growth_rate=db_tr,
                     n_reps=self.n_reps,
-                    transformation=self.fc_transformation, test=self.test, score_level=score_level,
+                    test=self.test, score_level=score_level,
                     **kwargs
                 )
                 self._add_phenotype_results(run_name, f'tau:{tau_name}', tau)
@@ -248,7 +255,7 @@ class PooledScreens(object):
             rho_name, rho = runPhenoScore(
                 self.adata, cond_ref=untreated, cond_test=tr, growth_rate=db_diff,
                 n_reps=self.n_reps,
-                transformation=self.fc_transformation, test=self.test, score_level=score_level,
+                test=self.test, score_level=score_level,
                 **kwargs
             )
             self._add_phenotype_results(run_name, f'rho:{rho_name}', rho)
@@ -267,7 +274,7 @@ class PooledScreens(object):
         # calculate phenotype scores
         delta_name, delta = runPhenoScore(
             self.adata, cond_ref=low_bin, cond_test=high_bin, n_reps=self.n_reps,
-            transformation=self.fc_transformation, test=self.test, score_level=score_level,
+            test=self.test, score_level=score_level,
             **kwargs
         )
 
@@ -287,19 +294,51 @@ class PooledScreens(object):
         Args:
             run_name (str): name of the phenotype calculation run to retrieve
         """
-        if run_name == 'auto':
-            if len(list(self.phenotypes.keys())) == 1:
-                run_name = list(self.phenotypes.keys())[0]
-            else:
-                raise ValueError(
-                    'Multiple phenotype calculation runs found.'
-                    'Please specify run_name. Available runs: '
-                    '' + ', '.join(self.phenotypes.keys())
-                )
+        if run_name == 'auto': run_name = self._auto_run_name()
 
         out = list(self.phenotypes[run_name]['results'].keys())
 
         return out
+    
+    def buildPhenotypeData(self, run_name='auto',db_rate_col='pop_doubling', **kwargs):
+        if run_name == 'auto': run_name = self._auto_run_name()
+        if run_name=='compare_reps':
+            pass
+        else:
+            raise ValueError('Only `compare_reps` run_name is supported for now!')
+        
+        untreated = self.phenotypes[run_name]['config']['untreated']
+        treated = self.phenotypes[run_name]['config']['treated']
+
+        #TODO: fix `_calculateGrowthFactor` and `_getTreatmentDoublingRate`
+        growth_factor_table = self._calculateGrowthFactor(
+            untreated = untreated, treated = treated, 
+            db_rate_col = db_rate_col
+        )
+        
+        pdata_list = []
+
+        for phenotype_name in self.listPhenotypeScores(run_name=run_name):
+
+            score_tag, comparison = phenotype_name.split(':')
+            cond_test, cond_ref = comparison.split('_vs_')
+
+            growth_rate_reps=growth_factor_table.query(
+                f'score=="{score_tag}"'
+            ).set_index('replicate')['growth_factor'].to_dict()
+            
+            pdata = getPhenotypeData(
+                self.adata, score_tag=score_tag, 
+                cond_ref=cond_ref, cond_test=cond_test, 
+                growth_rate_reps=growth_rate_reps,
+                **kwargs
+            )
+            # obs = growth_factor_table.loc[pdata_df.index,:],
+
+            pdata_list.append(pdata)
+
+        self.pdata = ad.concat(pdata_list, axis=0)
+        self.pdata.var = self.adata.var.copy()
     
     def drawVolcano(
             self, ax,
@@ -317,17 +356,10 @@ class PooledScreens(object):
             resistance_hits=None,
             sensitivity_hits=None,
             size_txt=None,
+            t_x=0, t_y=0,
             **args
             ):
-        if run_name == 'auto':
-            if len(list(self.phenotypes.keys())) == 1:
-                run_name = list(self.phenotypes.keys())[0]
-            else:
-                raise ValueError(
-                    'Multiple phenotype calculation runs found.'
-                    'Please specify run_name. Available runs: '
-                    '' + ', '.join(self.phenotypes.keys())
-                )
+        if run_name == 'auto': run_name = self._auto_run_name()
         
         score_tag, _ = phenotype_name.split(':')
 
@@ -364,7 +396,8 @@ class PooledScreens(object):
                     x_col=score_col,
                     y_col='-log10(pvalue)',
                     size=dot_size * 2,
-                    size_txt=size_txt
+                    size_txt=size_txt,
+                    t_x=t_x, t_y=t_y
                 )
         
         if sensitivity_hits != None:
@@ -374,9 +407,9 @@ class PooledScreens(object):
                     ax=ax, df_in=df, label=hit,
                     x_col=score_col,
                     y_col='-log10(pvalue)',
-                    pvalue_col=pvalue_col,
                     size=dot_size * 2,
-                    size_txt=size_txt
+                    size_txt=size_txt,
+                    t_x=t_x, t_y=t_y
             )
 
 
