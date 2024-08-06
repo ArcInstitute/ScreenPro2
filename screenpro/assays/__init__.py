@@ -81,7 +81,7 @@ class PooledScreens(object):
         return out
 
     def _getTreatmentDoublingRate(self, untreated, treated, db_rate_col):
-        if 'pop_doublings' not in self.adata.obs.columns or db_rate_col == None:
+        if 'pop_doubling' not in self.adata.obs.columns or db_rate_col == None:
             warnings.warn('No doubling rate information provided.')
             db_untreated = 1
             db_treated = 1
@@ -197,7 +197,7 @@ class PooledScreens(object):
             )
             self._add_phenotype_results(run_name, f'rho:{rho_name}', rho)
 
-    def calculateDrugScreen(self, score_level, untreated, treated, t0=None, db_rate_col='pop_doublings', run_name=None, **kwargs):
+    def calculateDrugScreen(self, score_level, untreated, treated, t0=None, db_rate_col='pop_doubling', run_name=None, **kwargs):
         """
         Calculate `gamma`, `rho`, and `tau` phenotype scores for a drug screen dataset in a given `score_level`.
 
@@ -206,7 +206,7 @@ class PooledScreens(object):
             untreated (str): name of the untreated condition
             treated (str): name of the treated condition
             t0 (str): name of the untreated condition
-            db_rate_col (str): column name for the doubling rate, default is 'pop_doublings'
+            db_rate_col (str): column name for the doubling rate, default is 'pop_doubling'
             run_name (str): name for the phenotype calculation run
             **kwargs: additional arguments to pass to runPhenoScore
         """
@@ -300,9 +300,13 @@ class PooledScreens(object):
 
         return out
     
-    def buildPhenotypeData(self, run_name='auto',db_rate_col='pop_doublings', **kwargs):
+    def buildPhenotypeData(self, run_name='auto',db_rate_col='pop_doubling', **kwargs):
         if run_name == 'auto': run_name = self._auto_run_name()
-
+        if run_name=='compare_reps':
+            pass
+        else:
+            raise ValueError('Only `compare_reps` run_name is supported for now!')
+        
         untreated = self.phenotypes[run_name]['config']['untreated']
         treated = self.phenotypes[run_name]['config']['treated']
 
