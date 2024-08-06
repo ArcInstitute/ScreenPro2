@@ -205,6 +205,7 @@ ___
   ```
 
 </details>
+
 ### Step 2: Phenotype calculation
 
 Once you have the counts, you can use ScreenPro2 `phenoscore` and `phenostats` modules to calculate the phenotype scores and statistics between screen arms.
