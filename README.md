@@ -18,6 +18,7 @@ ScreenPro2 enables perform flexible analysis on high-content CRISPR screening da
 ___
 <details>
   <summary>Background</summary>
+  <p>&nbsp;</p> 
 
   Functional genomics field is evolving rapidly and many more CRISPR screen platforms are now developed. Therefore, 
   it's important to have a standardized workflow to analyze the data from these screens. ScreenPro2 is provided to 
@@ -36,9 +37,8 @@ ___
 ___
 
 <details>
-  <summary>
-    Benchmarking
-  </summary>
+  <summary>Benchmarking</summary>
+  <p>&nbsp;</p> 
   
   Benchmarking ScreenPro2 with other CRISPR screen analysis tools
 
