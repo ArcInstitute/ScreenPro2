@@ -407,7 +407,6 @@ class PooledScreens(object):
                     ax=ax, df_in=df, label=hit,
                     x_col=score_col,
                     y_col='-log10(pvalue)',
-                    pvalue_col=pvalue_col,
                     size=dot_size * 2,
                     size_txt=size_txt,
                     t_x=t_x, t_y=t_y
