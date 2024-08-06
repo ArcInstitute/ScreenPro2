@@ -275,7 +275,7 @@ For example, in a Decitabine CRISPRi drug screen (see Figure 1B-C in [this bioRx
 ##### Flow cytometry based screen workflow: calculate phenotype score to compare high and low bins
 `.calculateFlowBasedScreen` method can be used to calculate the enrichment of each target between high bin vs. low bin 
 of a flow cytometry-based screen experiment. This method calculates `PhenoScore` for each target and adds them to the 
-`.phenotypes` attribute of the `ScreenPro` object.
+`.phenotypes` attribute of the `PooledScreens` object.
 
 ```python
 # Run the ScreenPro2 workflow for CRISPRi-dual-sgRNA-screens
@@ -287,7 +287,7 @@ screen.calculateFlowBasedScreen(
 
 ### Step 3: Data visualization
 
-Once the phenotypes are calculated, you can extract and explore the results using the `.phenotypes` attribute of the `ScreenPro` object. Currently, there are very limited functionalities built-in to visualize the results, but we are working on adding more features to make it easier for users. However, you can easily extract the results and use other libraries like `seaborn` and `matplotlib` in Python or `ggplot2` in R to visualize the results.
+Once the phenotypes are calculated, you can extract and explore the results using the `.phenotypes` attribute of the `PooledScreens` object. Currently, there are very limited functionalities built-in to visualize the results, but we are working on adding more features to make it easier for users. However, you can easily extract the results and use other libraries like `seaborn` and `matplotlib` in Python or `ggplot2` in R to visualize the results.
 
 ___
 
