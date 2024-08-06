@@ -6,7 +6,9 @@
 [![CodeQL](https://github.com/ArcInstitute/ScreenPro2/actions/workflows/github-code-scanning/codeql/badge.svg)](https://github.com/ArcInstitute/ScreenPro2/actions/workflows/github-code-scanning/codeql)
 # ScreenPro2
 
-## TL;DR
+## Introduction
+
+### TL;DR
 
 [**ReadTheDocs**](https://screenpro2.readthedocs.io) |
 [**PyPI**](https://pypi.org/project/ScreenPro2)
@@ -14,18 +16,45 @@
 ScreenPro2 enables perform flexible analysis on high-content CRISPR screening datasets. It has functionalities to process data from diverse CRISPR screen platforms and is designed to be modular to enable easy extension to custom CRISPR screen platforms or other commonly used platforms in addition to the ones currently implemented.
 
 ___
-## Introduction
-Functional genomics field is evolving rapidly and many more CRISPR screen platforms are now developed. Therefore, 
-it's important to have a standardized workflow to analyze the data from these screens. ScreenPro2 is provided to 
-enable researchers to easily process and analyze data from CRISPR screens. Currently, you need to have a basic background in programming (especially Python) to use ScreenPro2.
+<details>
+  <summary>Background</summary>
 
-ScreenPro2 is conceptually similar to the [**ScreenProcessing**](https://github.com/mhorlbeck/ScreenProcessing) pipeline but **ScreenPro2** is designed to be more modular, flexible, and extensible. Common CRISPR screen methods that we have implemented here are illustrated in a recent review paper:
+  Functional genomics field is evolving rapidly and many more CRISPR screen platforms are now developed. Therefore, 
+  it's important to have a standardized workflow to analyze the data from these screens. ScreenPro2 is provided to 
+  enable researchers to easily process and analyze data from CRISPR screens. Currently, you need to have a basic background in programming (especially Python) to use ScreenPro2.
 
-> From: [A new era in functional genomics screens](https://www.nature.com/articles/s41576-021-00409-w)
+  ScreenPro2 is conceptually similar to the [**ScreenProcessing**](https://github.com/mhorlbeck/ScreenProcessing) pipeline but **ScreenPro2** is designed to be more modular, flexible, and extensible. Common CRISPR screen methods that we have implemented here are illustrated in a recent review paper:
 
-> Fig. 1: Common types of CRISPR screening modalities indicating advances in CRISPR methods.
+  > From: [A new era in functional genomics screens](https://www.nature.com/articles/s41576-021-00409-w)
 
-> <img width="1000" alt="image" src="https://github.com/GilbertLabUCSF/ScreenPro2/assets/53412130/a39400ad-b24f-4859-b6e7-b4d5f269119c">
+  > Fig. 1: Common types of CRISPR screening modalities indicating advances in CRISPR methods.
+
+  > <img width="1000" alt="image" src="https://github.com/GilbertLabUCSF/ScreenPro2/assets/53412130/a39400ad-b24f-4859-b6e7-b4d5f269119c">
+
+</details>
+
+___
+
+<details>
+  <summary>Benchmarking</summary>
+
+  Benchmarking ScreenPro2 with other CRISPR screen analysis tools
+
+  ### More thoughtful NGS read trimming recovers more sgRNA counts
+
+  ### ScreenPro2 statistical analysis is more accurate than ScreenProcessing
+
+  ### ScreenPro2 is more flexible than ScreenProcessing
+
+  Not only does ScreenPro2 have more features than ScreenProcessing, but it is also more flexible. ScreenPro2 can process data from diverse CRISPR screen platforms and is designed to be modular to enable easy extension to custom CRISPR screen platforms or other commonly used platforms in addition to the ones currently implemented.
+
+  ### ScreenPro2 is faster than ScreenProcessing
+
+  Last but not least, ScreenPro2 runs faster than ScreenProcessing (thanks to [biobear](https://github.com/wheretrue/biobear)) for processing FASTQ files.
+  
+</details>
+
+___
 
 ## Installation
 ScreenPro2 is available on [PyPI](https://pypi.org/project/ScreenPro2/) and can be installed with pip:
