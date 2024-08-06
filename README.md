@@ -37,9 +37,9 @@ ___
 
 <details>
   <summary>Benchmarking</summary>
-  <p>
-    Benchmarking ScreenPro2 with other CRISPR screen analysis tools
-  </p>
+  <div style="margin-top: 20px;"></div>
+  
+  Benchmarking ScreenPro2 with other CRISPR screen analysis tools
 
   ### More thoughtful NGS read trimming recovers more sgRNA counts
 
