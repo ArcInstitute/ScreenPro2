@@ -14,7 +14,7 @@ import scanpy as sc
 
 from ..phenoscore import (
     runPhenoScore, getPhenotypeData,
-    runDESeq, extractDESeqResults
+    runDESeq, extractDESeqResults,
 )
 from ..preprocessing import addPseudoCount, findLowCounts, normalizeSeqDepth
 from ..phenoscore._annotate import annotateScoreTable, hit_dict
@@ -300,6 +300,28 @@ class PooledScreens(object):
 
         return out
     
+    def getPhenotypeScores(self, phenotype_name, threshold, run_name='auto', **kwargs):
+        """
+        Get phenotype scores for a given phenotype_name
+
+        Args:
+            phenotype_name (str): name of the phenotype score
+            run_name (str): name of the phenotype calculation run to retrieve
+        """
+        if run_name == 'auto': run_name = self._auto_run_name()
+        
+        score_tag, _ = phenotype_name.split(':')
+
+        out = annotateScoreTable(
+            self.phenotypes[run_name]['results'][phenotype_name],
+            up_hit=hit_dict[score_tag]['up_hit'],
+            down_hit=hit_dict[score_tag]['down_hit'],
+            threshold=threshold,
+            **kwargs
+        )
+
+        return out
+
     def buildPhenotypeData(self, run_name='auto',db_rate_col='pop_doubling', **kwargs):
         if run_name == 'auto': run_name = self._auto_run_name()
         if run_name=='compare_reps':
