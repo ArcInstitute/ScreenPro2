@@ -14,7 +14,8 @@ import anndata as ad
 import pandas as pd
 
 from .delta import (
-    compareByReplicates, getPhenotypeData,
+    compareByReplicates, compareByTargetGroup,
+    getPhenotypeData,
     calculateDelta,
     generatePseudoGeneAnnData, averageBestN
 )
@@ -76,9 +77,16 @@ def runPhenoScore(adata, cond_ref, cond_test, score_level, test,
 
     # calc phenotype score and p-value
     if score_level in ['compare_reps']:
+
+        # prep counts for phenoScore calculation
+        df_cond_ref = adat[adat.obs.query(f'condition=="{cond_ref}"').index[:n_reps],].to_df(count_layer).T
+        df_cond_test = adat[adat.obs.query(f'condition=="{cond_test}"').index[:n_reps],].to_df(count_layer).T
+
         result = compareByReplicates(
-            adata=adat, cond_ref=cond_ref, cond_test=cond_test,
-            n_reps=n_reps, count_layer=count_layer, test=test,
+            adata=adat, 
+            df_cond_ref=df_cond_ref, 
+            df_cond_test=df_cond_test,
+            test=test,
         )
     
     elif score_level in ['compare_guides']:
@@ -86,9 +94,6 @@ def runPhenoScore(adata, cond_ref, cond_test, score_level, test,
         # prep counts for phenoScore calculation
         df_cond_ref = adat[adat.obs.query(f'condition=="{cond_ref}"').index].to_df().T
         df_cond_test = adat[adat.obs.query(f'condition=="{cond_test}"').index].to_df().T
-        # get control values
-        x_ctrl = df_cond_ref[adat.var.targetType.eq(ctrl_label)].to_numpy()
-        y_ctrl = df_cond_test[adat.var.targetType.eq(ctrl_label)].to_numpy()
         del df_cond_ref, df_cond_test
         
         adat_pseudo = generatePseudoGeneAnnData(adat, num_pseudogenes=num_pseudogenes, pseudogene_size=pseudogene_size, ctrl_label=ctrl_label)
@@ -100,58 +105,15 @@ def runPhenoScore(adata, cond_ref, cond_test, score_level, test,
         df_cond_ref = adat_test[adat_test.obs.query(f'condition=="{cond_ref}"').index].to_df().T
         df_cond_test = adat_test[adat_test.obs.query(f'condition=="{cond_test}"').index].to_df().T
         
-        targets = []
-        scores = []
-        p_values = []
-        
-        # group by target genes or pseudogenes to aggregate counts for score calculation
-        for target_name, target_group in adat_test.var.groupby('target'):
-            # select target group and convert to numpy arrays
-            x = df_cond_ref.loc[target_group.index,:].to_numpy()
-            y = df_cond_test.loc[target_group.index,:].to_numpy()
-
-            # calculate phenotype scores
-            target_scores = calculateDelta(
-                x = x, y = y, 
-                x_ctrl = x_ctrl, y_ctrl = y_ctrl, 
-                growth_rate = growth_rate,
-            )
-            
-            if keep_top_n is None or keep_top_n is False:
-                # average scores across guides
-                target_scores = np.mean(target_scores, axis=0)
-
-            elif keep_top_n > 0:
-                # get top n scores per target
-                np.apply_along_axis(averageBestN, axis=0, arr=target_scores, numToAverage=keep_top_n)
-            
-            else:
-                raise ValueError(f'Invalid value for keep_top_n: {keep_top_n}')
-
-            # compute p-value
-            target_p_values = matrixStat(x, y, test=test, level='all')
-            
-            scores.append(target_scores)
-            p_values.append(target_p_values)
-            targets.append(target_name)
-
-        # average scores across replicates
-        scores = [np.mean(s) for s in scores]
-
-        # get adjusted p-values
-        adj_p_values = multipleTestsCorrection(np.array(p_values))
-        
-        # combine results into a dataframe
-        result = pd.concat([
-            pd.Series(targets, index=targets, name='target'),
-            pd.Series(scores, index=targets, name='score'),
-            pd.Series(p_values, index=targets, name=f'{test} pvalue'),
-            pd.Series(adj_p_values, index=targets, name='BH adj_pvalue'),
-        ], axis=1)
-
-        # rename pseudo genes in target column to `ctrl_label`
-        result['target'] = result['target'].apply(lambda x: ctrl_label if 'pseudo' in x else x)
-
+        result = compareByTargetGroup(
+            adata=adat_test, 
+            df_cond_ref=df_cond_ref, 
+            df_cond_test=df_cond_test,
+            keep_top_n=keep_top_n,
+            test=test,
+            ctrl_label=ctrl_label,
+            growth_rate=growth_rate,
+        )
     
     else:
         raise ValueError(f'score_level "{score_level}" not recognized. Currently, "compare_reps" and "compare_guides" are supported.')

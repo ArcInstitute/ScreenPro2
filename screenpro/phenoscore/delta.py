@@ -12,15 +12,13 @@ from .phenostat import (
 
 ### Key functions for calculating delta phenotype score
 
-def compareByReplicates(adata, cond_ref, cond_test, n_reps='auto', count_layer=None, test='ttest', ctrl_label='negative_control', growth_rate=1):
+def compareByReplicates(adata, df_cond_ref, df_cond_test, test='ttest', ctrl_label='negative_control', growth_rate=1):
     """Calculate phenotype score and p-values comparing `cond_test` vs `cond_ref`.
 
     Args:
         adata (AnnData): AnnData object
-        cond_ref (str): condition reference
-        cond_test (str): condition test
-        n_reps (int): number of replicates
-        count_layer (str): count layer to use for calculating score, default is None (use default count layer in adata.X)
+        df_cond_ref (pd.DataFrame): dataframe of condition reference
+        df_cond_test (pd.DataFrame): dataframe of condition test
         test (str): test to use for calculating p-value ('MW': Mann-Whitney U rank; 'ttest' : t-test)
         ctrl_label (str): control label, default is 'negative_control'
         growth_rate (int): growth rate
@@ -29,13 +27,6 @@ def compareByReplicates(adata, cond_ref, cond_test, n_reps='auto', count_layer=N
         pd.DataFrame: result dataframe
     """
     adat = adata.copy()
-
-    if n_reps == 'auto':
-        n_reps = adat.obs['replicate'].unique().size
-    
-    # prep counts for phenoScore calculation
-    df_cond_ref = adat[adat.obs.query(f'condition=="{cond_ref}"').index[:n_reps],].to_df(count_layer).T
-    df_cond_test = adat[adat.obs.query(f'condition=="{cond_test}"').index[:n_reps],].to_df(count_layer).T
 
     # convert to numpy arrays
     x = df_cond_ref.to_numpy()
@@ -73,6 +64,69 @@ def compareByReplicates(adata, cond_ref, cond_test, n_reps='auto', count_layer=N
     # add p-values
     result[f'{test} pvalue'] = p_values
     result['BH adj_pvalue'] = adj_p_values
+
+    return result
+
+
+def compareByTargetGroup(adata, df_cond_ref, df_cond_test, keep_top_n, test='ttest', ctrl_label='negative_control', growth_rate=1):
+
+    adat = adata.copy()
+
+    # get control values
+    x_ctrl = df_cond_ref[adat.var.targetType.eq(ctrl_label)].to_numpy()
+    y_ctrl = df_cond_test[adat.var.targetType.eq(ctrl_label)].to_numpy()
+
+    targets = []
+    scores = []
+    p_values = []
+
+    # group by target genes or pseudogenes to aggregate counts for score calculation
+    for target_name, target_group in adat.var.groupby('target'):
+        # select target group and convert to numpy arrays
+        x = df_cond_ref.loc[target_group.index,:].to_numpy()
+        y = df_cond_test.loc[target_group.index,:].to_numpy()
+
+        # calculate phenotype scores
+        target_scores = calculateDelta(
+            x = x, y = y, 
+            x_ctrl = x_ctrl, y_ctrl = y_ctrl, 
+            growth_rate = growth_rate,
+        )
+        
+        if keep_top_n is None or keep_top_n is False:
+            # average scores across guides
+            target_scores = np.mean(target_scores, axis=0)
+
+        elif keep_top_n > 0:
+            # get top n scores per target
+            np.apply_along_axis(averageBestN, axis=0, arr=target_scores, numToAverage=keep_top_n)
+        
+        else:
+            raise ValueError(f'Invalid value for keep_top_n: {keep_top_n}')
+
+        # compute p-value
+        target_p_values = matrixStat(x, y, test=test, level='all')
+        
+        scores.append(target_scores)
+        p_values.append(target_p_values)
+        targets.append(target_name)
+
+    # average scores across replicates
+    scores = [np.mean(s) for s in scores]
+
+    # get adjusted p-values
+    adj_p_values = multipleTestsCorrection(np.array(p_values))
+
+    # combine results into a dataframe
+    result = pd.concat([
+        pd.Series(targets, index=targets, name='target'),
+        pd.Series(scores, index=targets, name='score'),
+        pd.Series(p_values, index=targets, name=f'{test} pvalue'),
+        pd.Series(adj_p_values, index=targets, name='BH adj_pvalue'),
+    ], axis=1)
+
+    # rename pseudo genes in target column to `ctrl_label`
+    result['target'] = result['target'].apply(lambda x: ctrl_label if 'pseudo' in x else x)
 
     return result
 
