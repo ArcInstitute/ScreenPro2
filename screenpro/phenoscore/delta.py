@@ -160,8 +160,10 @@ def averageBestN(scores, numToAverage):
 
 
 def scoreGeneByBestTranscript():
-    #TODO: implement this function
-    # https://github.com/mhorlbeck/ScreenProcessing/blob/0ee5192ecc17348665bd1387ddfa9037efb7964f/process_experiments.py#L311C5-L311C30
+    """
+    collapse the gene-transcript indices into a single score for a gene by best p-value
+    """
+    #TODO: implement this function, see #90
     pass
 
 
