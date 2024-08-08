@@ -122,6 +122,9 @@ def compareByTargetGroup(adata, df_cond_ref, df_cond_test, keep_top_n, var_names
 
     # add targets information
     result = pd.concat([targets_df, result], axis=1)
+
+    # set index
+    result.index = result[var_names].apply(lambda x: '-'.join(x), axis=1)
     
     return result
 
