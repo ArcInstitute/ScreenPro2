@@ -123,8 +123,11 @@ def compareByTargetGroup(adata, df_cond_ref, df_cond_test, keep_top_n, var_names
     # add targets information
     result = pd.concat([targets_df, result], axis=1)
 
-    # set index
-    result.index = result[var_names].apply(lambda x: '-'.join(x) if 'pseudo' not in x else x[0])
+    # set index to var_names 
+    if len(var_names) > 1: 
+        result.index = result[var_names].agg('-'.join, axis=1)
+    else:
+        result.index = result[var_names]
 
     # change target name to control label if it is a pseudo gene
     result['target'] = result['target'].apply(lambda x: ctrl_label if 'pseudo' in x else x)
