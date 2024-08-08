@@ -116,7 +116,7 @@ def runPhenoScore(adata, cond_ref, cond_test, score_level, test,
         )
         
         # rename pseudo genes in target column to `ctrl_label`
-        result['target'] = result['target'].apply(lambda x: ctrl_label if 'pseudo' in x else x)
+        result['target'] = result.rest_index()['target'].apply(lambda x: ctrl_label if 'pseudo' in x else x)
 
     else:
         raise ValueError(f'score_level "{score_level}" not recognized. Currently, "compare_reps" and "compare_guides" are supported.')
