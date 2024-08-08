@@ -24,7 +24,7 @@ from ._annotate import annotateScoreTable
 from .phenostat import matrixStat, multipleTestsCorrection
 
 
-def runPhenoScore(adata, cond_ref, cond_test, score_level, test,
+def runPhenoScore(adata, cond_ref, cond_test, score_level, var_names='target', test='ttest',
                   growth_rate=1, n_reps='auto', keep_top_n = None,
                   num_pseudogenes='auto', pseudogene_size='auto',
                   count_layer=None, ctrl_label='negative_control'):
@@ -35,6 +35,7 @@ def runPhenoScore(adata, cond_ref, cond_test, score_level, test,
         cond_ref (str): condition reference
         cond_test (str): condition test
         score_level (str): score level
+        var_names (str): variable names to use as index in the result dataframe
         test (str): test to use for calculating p-value ('MW': Mann-Whitney U rank; 'ttest' : t-test)
         growth_rate (int): growth rate
         n_reps (int): number of replicates
@@ -69,12 +70,6 @@ def runPhenoScore(adata, cond_ref, cond_test, score_level, test,
     elif count_layer in adat.layers.keys():
         adat.X = adat.layers[count_layer].copy()
     
-    # evaluate library table to get targets and riase error if not present
-    required_columns = ['target'] #, 'sequence']
-    missing_columns = list(set(required_columns) - set(adat.var.columns))
-    if len(missing_columns) > 0:
-        raise ValueError(f"Missing required columns in library table: {missing_columns}")
-
     # calc phenotype score and p-value
     if score_level in ['compare_reps']:
 
@@ -86,7 +81,10 @@ def runPhenoScore(adata, cond_ref, cond_test, score_level, test,
             adata=adat, 
             df_cond_ref=df_cond_ref, 
             df_cond_test=df_cond_test,
+            var_names=var_names,
             test=test,
+            ctrl_label=ctrl_label,
+            growth_rate=growth_rate
         )
     
     elif score_level in ['compare_guides']:
@@ -97,7 +95,8 @@ def runPhenoScore(adata, cond_ref, cond_test, score_level, test,
         del df_cond_ref, df_cond_test
         
         adat_pseudo = generatePseudoGeneAnnData(adat, num_pseudogenes=num_pseudogenes, pseudogene_size=pseudogene_size, ctrl_label=ctrl_label)
-        
+        if 'transcript' in var_names: adat_pseudo.var['transcript'] = 'na'
+
         adat_test = ad.concat([adat[:,~adat.var.targetType.eq(ctrl_label)], adat_pseudo], axis=1)
         adat_test.obs = adat.obs.copy()
 
@@ -110,14 +109,12 @@ def runPhenoScore(adata, cond_ref, cond_test, score_level, test,
             df_cond_ref=df_cond_ref, 
             df_cond_test=df_cond_test,
             keep_top_n=keep_top_n,
+            var_names=var_names,
             test=test,
             ctrl_label=ctrl_label,
             growth_rate=growth_rate,
         )
         
-        # rename pseudo genes in target column to `ctrl_label`
-        result['target'] = result.reset_index()['target'].apply(lambda x: ctrl_label if 'pseudo' in x else x)
-
     else:
         raise ValueError(f'score_level "{score_level}" not recognized. Currently, "compare_reps" and "compare_guides" are supported.')
     
