@@ -55,17 +55,19 @@ def compareByReplicates(adata, df_cond_ref, df_cond_test, var_names='target', te
 
     # get adjusted p-values
     adj_p_values = multipleTestsCorrection(p_values)
-            
+
+    # get target information            
+    targets_df = adat.var[var_names].copy()
+
     # combine results into a dataframe
     result = pd.concat([
-        pd.Series(scores, name='score'),
-        pd.Series(p_values, name=f'{test} pvalue'),
-        pd.Series(adj_p_values, name='BH adj_pvalue'),
+        pd.Series(scores, index=adat.var.index, name='score'),
+        pd.Series(p_values, index=adat.var.index, name=f'{test} pvalue'),
+        pd.Series(adj_p_values, index=adat.var.index, name='BH adj_pvalue'),
     ], axis=1)
     
-    # set target names as index (for given `var_names`)
-    indices = pd.DataFrame(indices, columns=var_names)
-    result = pd.concat([indices, result], axis=1).set_index(var_names)
+    # add targets information 
+    result = pd.concat([targets_df, result], axis=1)
 
     return result
 
@@ -108,6 +110,9 @@ def compareByTargetGroup(adata, df_cond_ref, df_cond_test, keep_top_n, var_names
     # get adjusted p-values
     adj_p_values = multipleTestsCorrection(np.array(p_values))
 
+    # get target information
+    targets_df = pd.DataFrame(targets, columns=var_names)
+
     # combine results into a dataframe
     result = pd.concat([
         pd.Series(scores, name='score'),
@@ -115,9 +120,8 @@ def compareByTargetGroup(adata, df_cond_ref, df_cond_test, keep_top_n, var_names
         pd.Series(adj_p_values, name='BH adj_pvalue'),
     ], axis=1)
 
-    # set target names as index (for given `var_names`)
-    indices = pd.DataFrame(targets, columns=var_names)
-    result = pd.concat([indices, result], axis=1).set_index(var_names)
+    # add targets information
+    result = pd.concat([targets_df, result], axis=1)
     
     return result
 
