@@ -82,7 +82,7 @@ def compareByTargetGroup(adata, df_cond_ref, df_cond_test, keep_top_n, var_names
 
     # group by target genes or pseudogenes to aggregate counts for score calculation
     for target_name, target_group in adat.var.groupby(var_names):
-        
+
         # calculate phenotype scores and p-values for each target group
         target_scores, target_p_values = scoreTargetGroup(
             target_group=target_group, 
@@ -102,7 +102,7 @@ def compareByTargetGroup(adata, df_cond_ref, df_cond_test, keep_top_n, var_names
 
     # get adjusted p-values
     adj_p_values = multipleTestsCorrection(np.array(p_values))
-
+    
     # combine results into a dataframe
     result = pd.concat([
         pd.Series(targets, index=targets, name='target'),
