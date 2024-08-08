@@ -12,13 +12,14 @@ from .phenostat import (
 
 ### Key functions for calculating delta phenotype score
 
-def compareByReplicates(adata, df_cond_ref, df_cond_test, test='ttest', ctrl_label='negative_control', growth_rate=1):
+def compareByReplicates(adata, df_cond_ref, df_cond_test, var_names='target', test='ttest', ctrl_label='negative_control', growth_rate=1):
     """Calculate phenotype score and p-values comparing `cond_test` vs `cond_ref`.
 
     Args:
         adata (AnnData): AnnData object
         df_cond_ref (pd.DataFrame): dataframe of condition reference
         df_cond_test (pd.DataFrame): dataframe of condition test
+        var_names (str): variable names to use as index in the result dataframe
         test (str): test to use for calculating p-value ('MW': Mann-Whitney U rank; 'ttest' : t-test)
         ctrl_label (str): control label, default is 'negative_control'
         growth_rate (int): growth rate
@@ -27,6 +28,9 @@ def compareByReplicates(adata, df_cond_ref, df_cond_test, test='ttest', ctrl_lab
         pd.DataFrame: result dataframe
     """
     adat = adata.copy()
+
+    # convert var_names to list
+    if not isinstance(var_names, list): var_names = [var_names]
 
     # convert to numpy arrays
     x = df_cond_ref.to_numpy()
@@ -52,18 +56,16 @@ def compareByReplicates(adata, df_cond_ref, df_cond_test, test='ttest', ctrl_lab
     # get adjusted p-values
     adj_p_values = multipleTestsCorrection(p_values)
             
-    # get targets
-    targets = adat.var['target'].to_list()
-
     # combine results into a dataframe
     result = pd.concat([
-        pd.Series(targets, index=adat.var.index, name='target'),
-        pd.Series(scores, index=adat.var.index, name='score'),
+        pd.Series(scores, name='score'),
+        pd.Series(p_values, name=f'{test} pvalue'),
+        pd.Series(adj_p_values, name='BH adj_pvalue'),
     ], axis=1)
     
-    # add p-values
-    result[f'{test} pvalue'] = p_values
-    result['BH adj_pvalue'] = adj_p_values
+    # set target names as index (for given `var_names`)
+    indices = pd.DataFrame(indices, columns=var_names)
+    result = pd.concat([indices, result], axis=1).set_index(var_names)
 
     return result
 
