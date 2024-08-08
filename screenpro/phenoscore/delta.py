@@ -72,6 +72,9 @@ def compareByTargetGroup(adata, df_cond_ref, df_cond_test, keep_top_n, var_names
 
     adat = adata.copy()
 
+    # convert var_names to list
+    if not isinstance(var_names, list): var_names = [var_names]
+
     # get control values
     x_ctrl = df_cond_ref[adat.var.targetType.eq(ctrl_label)].to_numpy()
     y_ctrl = df_cond_test[adat.var.targetType.eq(ctrl_label)].to_numpy()
