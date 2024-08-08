@@ -68,7 +68,7 @@ def compareByReplicates(adata, df_cond_ref, df_cond_test, test='ttest', ctrl_lab
     return result
 
 
-def compareByTargetGroup(adata, df_cond_ref, df_cond_test, keep_top_n, test='ttest', ctrl_label='negative_control', growth_rate=1):
+def compareByTargetGroup(adata, df_cond_ref, df_cond_test, keep_top_n, var_names='target', test='ttest', ctrl_label='negative_control', growth_rate=1):
 
     adat = adata.copy()
 
@@ -81,31 +81,17 @@ def compareByTargetGroup(adata, df_cond_ref, df_cond_test, keep_top_n, test='tte
     p_values = []
 
     # group by target genes or pseudogenes to aggregate counts for score calculation
-    for target_name, target_group in adat.var.groupby('target'):
-        # select target group and convert to numpy arrays
-        x = df_cond_ref.loc[target_group.index,:].to_numpy()
-        y = df_cond_test.loc[target_group.index,:].to_numpy()
-
-        # calculate phenotype scores
-        target_scores = calculateDelta(
-            x = x, y = y, 
-            x_ctrl = x_ctrl, y_ctrl = y_ctrl, 
-            growth_rate = growth_rate,
+    for target_name, target_group in adat.var.groupby(var_names):
+        
+        # calculate phenotype scores and p-values for each target group
+        target_scores, target_p_values = scoreTargetGroup(
+            target_group=target_group, 
+            df_cond_ref=df_cond_ref, 
+            df_cond_test=df_cond_test,
+            x_ctrl=x_ctrl, y_ctrl=y_ctrl, 
+            test=test, growth_rate=growth_rate, 
+            keep_top_n=keep_top_n
         )
-        
-        if keep_top_n is None or keep_top_n is False:
-            # average scores across guides
-            target_scores = np.mean(target_scores, axis=0)
-
-        elif keep_top_n > 0:
-            # get top n scores per target
-            np.apply_along_axis(averageBestN, axis=0, arr=target_scores, numToAverage=keep_top_n)
-        
-        else:
-            raise ValueError(f'Invalid value for keep_top_n: {keep_top_n}')
-
-        # compute p-value
-        target_p_values = matrixStat(x, y, test=test, level='all')
         
         scores.append(target_scores)
         p_values.append(target_p_values)
@@ -219,6 +205,35 @@ def scoreGeneByBestTranscript():
     """
     #TODO: implement this function, see #90
     pass
+
+
+def scoreTargetGroup(target_group, df_cond_ref, df_cond_test, x_ctrl, y_ctrl, test='ttest', growth_rate=1, keep_top_n=None):
+    # select target group and convert to numpy arrays
+    x = df_cond_ref.loc[target_group.index,:].to_numpy()
+    y = df_cond_test.loc[target_group.index,:].to_numpy()
+
+    # calculate phenotype scores
+    target_scores = calculateDelta(
+        x = x, y = y, 
+        x_ctrl = x_ctrl, y_ctrl = y_ctrl, 
+        growth_rate = growth_rate,
+    )
+    
+    if keep_top_n is None or keep_top_n is False:
+        # average scores across guides
+        target_scores = np.mean(target_scores, axis=0)
+
+    elif keep_top_n > 0:
+        # get top n scores per target
+        np.apply_along_axis(averageBestN, axis=0, arr=target_scores, numToAverage=keep_top_n)
+    
+    else:
+        raise ValueError(f'Invalid value for keep_top_n: {keep_top_n}')
+
+    # compute p-value
+    target_p_values = matrixStat(x, y, test=test, level='all')
+    
+    return target_scores, target_p_values
 
 
 def generatePseudoGeneAnnData(adata, num_pseudogenes='auto', pseudogene_size='auto', ctrl_label='negative_control'):
