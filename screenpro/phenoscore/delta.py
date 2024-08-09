@@ -121,7 +121,7 @@ def compareByTargetGroup(adata, df_cond_ref, df_cond_test, keep_top_n, var_names
     result = pd.concat([targets_df, result], axis=1)
 
     # set index to var_names 
-    if len(var_names) > 1: 
+    if type(var_names) == list and len(var_names) > 1:
         result.index = result[var_names].agg('-'.join, axis=1)
     else:
         result.index = result[var_names]
