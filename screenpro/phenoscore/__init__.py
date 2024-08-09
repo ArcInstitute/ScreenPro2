@@ -55,11 +55,6 @@ def runPhenoScore(adata, cond_ref, cond_test, score_level, var_names='target', t
     # format result name
     result_name = f'{cond_test}_vs_{cond_ref}'
     print(f'\t{cond_test} vs {cond_ref}')
-
-    # check if collapse_var exists in adata.var.columns
-    if collapse_var not in [False, None]:
-        if collapse_var not in adat.var.columns:
-            raise ValueError(f'collapse_var "{collapse_var}" not found in adata.var.columns.')
     
     # set n_reps if not provided
     if n_reps == 'auto':
@@ -122,10 +117,14 @@ def runPhenoScore(adata, cond_ref, cond_test, score_level, var_names='target', t
         )
 
         # get best best transcript as lowest p-value for each target
-        if collapse_var:
-            result = getBestTargetByTSS(
-                score_df=result, target_col=collapse_var, pvalue_col=f'{test} pvalue'
-            )
+        if collapse_var not in [False, None]:
+            if collapse_var not in result.columns:
+                raise ValueError(f'collapse_var "{collapse_var}" not found in result columns.')
+            else:
+                result = getBestTargetByTSS(
+                    score_df=result, target_col=collapse_var, pvalue_col=f'{test} pvalue'
+                )
+                result.index.name = None
         
         # change target name to control label if it is a pseudo gene
         result['target'] = result['target'].apply(lambda x: ctrl_label if 'pseudo' in x else x)
