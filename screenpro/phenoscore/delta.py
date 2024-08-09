@@ -12,15 +12,14 @@ from .phenostat import (
 
 ### Key functions for calculating delta phenotype score
 
-def compareByReplicates(adata, cond_ref, cond_test, n_reps='auto', count_layer=None, test='ttest', ctrl_label='negative_control', growth_rate=1):
+def compareByReplicates(adata, df_cond_ref, df_cond_test, var_names='target', test='ttest', ctrl_label='negative_control', growth_rate=1):
     """Calculate phenotype score and p-values comparing `cond_test` vs `cond_ref`.
 
     Args:
         adata (AnnData): AnnData object
-        cond_ref (str): condition reference
-        cond_test (str): condition test
-        n_reps (int): number of replicates
-        count_layer (str): count layer to use for calculating score, default is None (use default count layer in adata.X)
+        df_cond_ref (pd.DataFrame): dataframe of condition reference
+        df_cond_test (pd.DataFrame): dataframe of condition test
+        var_names (str): variable names to use as index in the result dataframe
         test (str): test to use for calculating p-value ('MW': Mann-Whitney U rank; 'ttest' : t-test)
         ctrl_label (str): control label, default is 'negative_control'
         growth_rate (int): growth rate
@@ -29,13 +28,6 @@ def compareByReplicates(adata, cond_ref, cond_test, n_reps='auto', count_layer=N
         pd.DataFrame: result dataframe
     """
     adat = adata.copy()
-
-    if n_reps == 'auto':
-        n_reps = adat.obs['replicate'].unique().size
-    
-    # prep counts for phenoScore calculation
-    df_cond_ref = adat[adat.obs.query(f'condition=="{cond_ref}"').index[:n_reps],].to_df(count_layer).T
-    df_cond_test = adat[adat.obs.query(f'condition=="{cond_test}"').index[:n_reps],].to_df(count_layer).T
 
     # convert to numpy arrays
     x = df_cond_ref.to_numpy()
@@ -60,19 +52,79 @@ def compareByReplicates(adata, cond_ref, cond_test, n_reps='auto', count_layer=N
 
     # get adjusted p-values
     adj_p_values = multipleTestsCorrection(p_values)
-            
-    # get targets
-    targets = adat.var['target'].to_list()
+
+    # get target information            
+    targets_df = adat.var[var_names].copy()
 
     # combine results into a dataframe
     result = pd.concat([
-        pd.Series(targets, index=adat.var.index, name='target'),
         pd.Series(scores, index=adat.var.index, name='score'),
+        pd.Series(p_values, index=adat.var.index, name=f'{test} pvalue'),
+        pd.Series(adj_p_values, index=adat.var.index, name='BH adj_pvalue'),
     ], axis=1)
     
-    # add p-values
-    result[f'{test} pvalue'] = p_values
-    result['BH adj_pvalue'] = adj_p_values
+    # add targets information 
+    result = pd.concat([targets_df, result], axis=1)
+
+    return result
+
+
+def compareByTargetGroup(adata, df_cond_ref, df_cond_test, keep_top_n, var_names='target', test='ttest', ctrl_label='negative_control', growth_rate=1):
+
+    adat = adata.copy()
+
+    # get control values
+    x_ctrl = df_cond_ref[adat.var.targetType.eq(ctrl_label)].to_numpy()
+    y_ctrl = df_cond_test[adat.var.targetType.eq(ctrl_label)].to_numpy()
+
+    targets = []
+    scores = []
+    p_values = []
+
+    # group by target genes or pseudogenes to aggregate counts for score calculation
+    for target_name, target_group in adat.var.groupby(var_names):
+
+        # calculate phenotype scores and p-values for each target group
+        target_scores, target_p_values = scoreTargetGroup(
+            target_group=target_group, 
+            df_cond_ref=df_cond_ref, 
+            df_cond_test=df_cond_test,
+            x_ctrl=x_ctrl, y_ctrl=y_ctrl, 
+            test=test, growth_rate=growth_rate, 
+            keep_top_n=keep_top_n
+        )
+        
+        scores.append(target_scores)
+        p_values.append(target_p_values)
+        targets.append(target_name)
+
+    # average scores across replicates
+    scores = [np.mean(s) for s in scores]
+
+    # get adjusted p-values
+    adj_p_values = multipleTestsCorrection(np.array(p_values))
+
+    # get target information
+    if type(var_names) == str:
+        targets_df = pd.DataFrame(targets, columns=[var_names])
+    elif type(var_names) == list:
+        targets_df = pd.DataFrame(targets, columns=var_names)
+
+    # combine results into a dataframe
+    result = pd.concat([
+        pd.Series(scores, name='score'),
+        pd.Series(p_values, name=f'{test} pvalue'),
+        pd.Series(adj_p_values, name='BH adj_pvalue'),
+    ], axis=1)
+
+    # add targets information
+    result = pd.concat([targets_df, result], axis=1)
+
+    # set index to var_names 
+    if type(var_names) == list and len(var_names) > 1:
+        result.index = result[var_names].agg('-'.join, axis=1)
+    else:
+        result.index = result[var_names]
 
     return result
 
@@ -159,6 +211,45 @@ def averageBestN(scores, numToAverage):
     return np.mean(sorted(scores, key=abs, reverse=True)[:numToAverage])
 
 
+def getBestTargetByTSS(score_df,target_col,pvalue_col):
+    """
+    collapse the gene-transcript indices into a single score for a gene by best p-value
+    """
+    #TODO: implement this function, see #90
+    return score_df.groupby(target_col).apply(
+        lambda x: x.loc[x[pvalue_col].idxmin()]
+    )
+
+
+def scoreTargetGroup(target_group, df_cond_ref, df_cond_test, x_ctrl, y_ctrl, test='ttest', growth_rate=1, keep_top_n=None):
+    # select target group and convert to numpy arrays
+    x = df_cond_ref.loc[target_group.index,:].to_numpy()
+    y = df_cond_test.loc[target_group.index,:].to_numpy()
+
+    # calculate phenotype scores
+    target_scores = calculateDelta(
+        x = x, y = y, 
+        x_ctrl = x_ctrl, y_ctrl = y_ctrl, 
+        growth_rate = growth_rate,
+    )
+    
+    if keep_top_n is None or keep_top_n is False:
+        # average scores across guides
+        target_scores = np.mean(target_scores, axis=0)
+
+    elif keep_top_n > 0:
+        # get top n scores per target
+        np.apply_along_axis(averageBestN, axis=0, arr=target_scores, numToAverage=keep_top_n)
+    
+    else:
+        raise ValueError(f'Invalid value for keep_top_n: {keep_top_n}')
+
+    # compute p-value
+    target_p_values = matrixStat(x, y, test=test, level='all')
+    
+    return target_scores, target_p_values
+
+
 def generatePseudoGeneAnnData(adata, num_pseudogenes='auto', pseudogene_size='auto', ctrl_label='negative_control'):
     """Generate pseudogenes from negative control elements in the library.
 
@@ -171,6 +262,9 @@ def generatePseudoGeneAnnData(adata, num_pseudogenes='auto', pseudogene_size='au
     Returns:
         AnnData: AnnData object with pseudogenes
     """
+    #TODO: check for `target` and `targetType` columns in adata.var
+    #TODO: add input arg to replace "target" and name it `target_col` or something similar
+    
     if pseudogene_size == 'auto':
         # sgRNA elements / target in the library
         pseudogene_size = int(adata.var[~adata.var.targetType.eq(ctrl_label)].groupby('target').size().mean())
