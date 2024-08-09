@@ -17,7 +17,8 @@ from .delta import (
     compareByReplicates, compareByTargetGroup,
     getPhenotypeData,
     calculateDelta,
-    generatePseudoGeneAnnData, averageBestN
+    getBestTargetByTSS,
+    generatePseudoGeneAnnData
 )
 from .deseq import runDESeq, extractDESeqResults
 from ._annotate import annotateScoreTable
@@ -25,7 +26,7 @@ from .phenostat import matrixStat, multipleTestsCorrection
 
 
 def runPhenoScore(adata, cond_ref, cond_test, score_level, var_names='target', test='ttest',
-                  growth_rate=1, n_reps='auto', keep_top_n = None,
+                  growth_rate=1, n_reps='auto', keep_top_n = None, collapse_var=False,
                   num_pseudogenes='auto', pseudogene_size='auto',
                   count_layer=None, ctrl_label='negative_control'):
     """Calculate phenotype score and p-values when comparing `cond_test` vs `cond_ref`.
@@ -55,6 +56,11 @@ def runPhenoScore(adata, cond_ref, cond_test, score_level, var_names='target', t
     result_name = f'{cond_test}_vs_{cond_ref}'
     print(f'\t{cond_test} vs {cond_ref}')
 
+    # check if collapse_var exists in adata.var.columns
+    if collapse_var not in [False, None]:
+        if collapse_var not in adat.var.columns:
+            raise ValueError(f'collapse_var "{collapse_var}" not found in adata.var.columns.')
+    
     # set n_reps if not provided
     if n_reps == 'auto':
         n_reps = min(
@@ -114,6 +120,15 @@ def runPhenoScore(adata, cond_ref, cond_test, score_level, var_names='target', t
             ctrl_label=ctrl_label,
             growth_rate=growth_rate,
         )
+
+        # get best best transcript as lowest p-value for each target
+        if collapse_var:
+            result = getBestTargetByTSS(
+                score_df=result, target_col=collapse_var, pvalue_col=f'{test} pvalue'
+            )
+        
+        # change target name to control label if it is a pseudo gene
+        result['target'] = result['target'].apply(lambda x: ctrl_label if 'pseudo' in x else x)
         
     else:
         raise ValueError(f'score_level "{score_level}" not recognized. Currently, "compare_reps" and "compare_guides" are supported.')

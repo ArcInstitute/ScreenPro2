@@ -129,9 +129,6 @@ def compareByTargetGroup(adata, df_cond_ref, df_cond_test, keep_top_n, var_names
     else:
         result.index = result[var_names]
 
-    # change target name to control label if it is a pseudo gene
-    result['target'] = result['target'].apply(lambda x: ctrl_label if 'pseudo' in x else x)
-    
     return result
 
 
@@ -217,12 +214,14 @@ def averageBestN(scores, numToAverage):
     return np.mean(sorted(scores, key=abs, reverse=True)[:numToAverage])
 
 
-def scoreGeneByBestTranscript():
+def getBestTargetByTSS(score_df,target_col,pvalue_col):
     """
     collapse the gene-transcript indices into a single score for a gene by best p-value
     """
     #TODO: implement this function, see #90
-    pass
+    return score_df.groupby(target_col).apply(
+        lambda x: x.loc[x[pvalue_col].idxmin()]
+    )
 
 
 def scoreTargetGroup(target_group, df_cond_ref, df_cond_test, x_ctrl, y_ctrl, test='ttest', growth_rate=1, keep_top_n=None):
