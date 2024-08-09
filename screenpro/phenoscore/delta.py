@@ -29,9 +29,6 @@ def compareByReplicates(adata, df_cond_ref, df_cond_test, var_names='target', te
     """
     adat = adata.copy()
 
-    # convert var_names to list
-    if not isinstance(var_names, list): var_names = [var_names]
-
     # convert to numpy arrays
     x = df_cond_ref.to_numpy()
     y = df_cond_test.to_numpy()
@@ -75,9 +72,6 @@ def compareByReplicates(adata, df_cond_ref, df_cond_test, var_names='target', te
 def compareByTargetGroup(adata, df_cond_ref, df_cond_test, keep_top_n, var_names='target', test='ttest', ctrl_label='negative_control', growth_rate=1):
 
     adat = adata.copy()
-
-    # convert var_names to list
-    if not isinstance(var_names, list): var_names = [var_names]
 
     # get control values
     x_ctrl = df_cond_ref[adat.var.targetType.eq(ctrl_label)].to_numpy()
