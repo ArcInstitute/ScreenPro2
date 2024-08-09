@@ -105,7 +105,7 @@ def compareByTargetGroup(adata, df_cond_ref, df_cond_test, keep_top_n, var_names
     adj_p_values = multipleTestsCorrection(np.array(p_values))
 
     # get target information
-    targets_df = pd.DataFrame(targets, columns=var_names)
+    targets_df = pd.DataFrame(targets); targets_df.columns = var_names
 
     # combine results into a dataframe
     result = pd.concat([
