@@ -262,6 +262,9 @@ def generatePseudoGeneAnnData(adata, num_pseudogenes='auto', pseudogene_size='au
     Returns:
         AnnData: AnnData object with pseudogenes
     """
+    #TODO: check for `target` and `targetType` columns in adata.var
+    #TODO: add input arg to replace "target" and name it `target_col` or something similar
+    
     if pseudogene_size == 'auto':
         # sgRNA elements / target in the library
         pseudogene_size = int(adata.var[~adata.var.targetType.eq(ctrl_label)].groupby('target').size().mean())
