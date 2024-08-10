@@ -12,7 +12,7 @@ from .phenostat import (
 
 ### Key functions for calculating delta phenotype score
 
-def compareByReplicates(adata, df_cond_ref, df_cond_test, var_names='target', test='ttest', ctrl_label='negative_control', growth_rate=1):
+def compareByReplicates(adata, df_cond_ref, df_cond_test, var_names='target', test='ttest', ctrl_label='negative_control', growth_rate=1, filter_type='mean', filter_threshold=40):
     """Calculate phenotype score and p-values comparing `cond_test` vs `cond_ref`.
 
     Args:
@@ -28,6 +28,13 @@ def compareByReplicates(adata, df_cond_ref, df_cond_test, var_names='target', te
         pd.DataFrame: result dataframe
     """
     adat = adata.copy()
+
+    # apply NA to low counts
+    df_cond_ref, df_cond_test = applyNAtoLowCounts(
+        df_cond_ref=df_cond_ref, df_cond_test=df_cond_test,
+        filter_type=filter_type, 
+        filter_threshold=filter_threshold
+    )
 
     # convert to numpy arrays
     x = df_cond_ref.to_numpy()
@@ -69,9 +76,16 @@ def compareByReplicates(adata, df_cond_ref, df_cond_test, var_names='target', te
     return result
 
 
-def compareByTargetGroup(adata, df_cond_ref, df_cond_test, keep_top_n, var_names='target', test='ttest', ctrl_label='negative_control', growth_rate=1):
+def compareByTargetGroup(adata, df_cond_ref, df_cond_test, keep_top_n, var_names='target', test='ttest', ctrl_label='negative_control', growth_rate=1, filter_type='mean', filter_threshold=40):
 
     adat = adata.copy()
+
+    # apply NA to low counts
+    df_cond_ref, df_cond_test = applyNAtoLowCounts(
+        df_cond_ref=df_cond_ref, df_cond_test=df_cond_test,
+        filter_type=filter_type, 
+        filter_threshold=filter_threshold
+    )
 
     # get control values
     x_ctrl = df_cond_ref[adat.var.targetType.eq(ctrl_label)].to_numpy()
@@ -185,18 +199,22 @@ def calculateDelta(x, y, x_ctrl, y_ctrl, growth_rate):
     Returns:
         np.array: array of scores
     """
-    # calculate control median and std 
-    ctrl_median = np.median(
-        calculateLog2e(x=x_ctrl, y=y_ctrl), 
-        axis=0 # for each individual sample (i.e. replicate)
-    )
-
-    # calculate log2e (i.e. log2 fold change enrichment y / x)
-    log2e = calculateLog2e(x=x, y=y)
-
-    # calculate delta score normalized by control median and growth rate
-    delta = (log2e - ctrl_median) / growth_rate
+    if (x == np.nan or y == np.nan) or (len(x) == 0 or len(y) == 0):
+        delta = np.nan
     
+    else:
+        # calculate control median and std 
+        ctrl_median = np.median(
+            calculateLog2e(x=x_ctrl, y=y_ctrl), 
+            axis=0 # for each individual sample (i.e. replicate)
+        )
+
+        # calculate log2e (i.e. log2 fold change enrichment y / x)
+        log2e = calculateLog2e(x=x, y=y)
+
+        # calculate delta score normalized by control median and growth rate
+        delta = (log2e - ctrl_median) / growth_rate
+        
     return delta
 
 
@@ -299,3 +317,28 @@ def generatePseudoGeneAnnData(adata, num_pseudogenes='auto', pseudogene_size='au
     out.obs = adata_ctrl.obs.copy()
     
     return out
+
+
+def applyNAtoLowCounts(df_cond_ref, df_cond_test, filter_type, filter_threshold):
+    # more flexible read filtering by adding np.nan scores and/or pvalues to low count rows
+    # keep row if either both/all columns are above threshold, or if either/any column is
+    # in other words, mask if any column is below threshold or only if all columns are below
+    # source https://github.com/mhorlbeck/ScreenProcessing/blob/master/process_experiments.py#L464C1-L478C1
+
+    df = pd.concat({'ref':df_cond_ref, 'test':df_cond_test},axis=1)
+    
+    if filter_type == 'mean':
+        failFilterColumn = df.apply(
+            lambda row: np.mean(row) < filter_threshold, axis=1)
+    elif filter_type == 'both' or filter_type == 'all':
+        failFilterColumn = df.apply(
+            lambda row: min(row) < filter_threshold, axis=1)
+    elif filter_type == 'either' or filter_type == 'any':
+        failFilterColumn = df.apply(
+            lambda row: max(row) < filter_threshold, axis=1)
+    else:
+        raise ValueError('filter type not recognized or not implemented')
+
+    df.loc[failFilterColumn, :] = np.nan
+
+    return df['ref'], df['test']
