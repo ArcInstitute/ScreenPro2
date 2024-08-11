@@ -254,11 +254,11 @@ def scoreTargetGroup(target_group, df_cond_ref, df_cond_test, x_ctrl, y_ctrl, te
     # get target size
     target_size = target_scores.shape[0] # number of guide elements in the target group
     
-    if (keep_top_n is None or keep_top_n is False) and target_size <= keep_top_n:
+    if (keep_top_n is None or keep_top_n is False) or target_size <= keep_top_n:
         # average scores across guides
         target_score = np.mean(target_scores, axis=0)
 
-    elif keep_top_n > 0 and target_size > keep_top_n:
+    elif keep_top_n > 0 or target_size > keep_top_n:
         # get top n scores per target
         target_score = np.apply_along_axis(averageBestN, axis=0, arr=target_scores, numToAverage=keep_top_n)
         target_size = keep_top_n # update target size to keep_top_n
