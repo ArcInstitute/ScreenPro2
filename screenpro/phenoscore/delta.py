@@ -23,6 +23,8 @@ def compareByReplicates(adata, df_cond_ref, df_cond_test, var_names='target', te
         test (str): test to use for calculating p-value ('MW': Mann-Whitney U rank; 'ttest' : t-test)
         ctrl_label (str): control label, default is 'negative_control'
         growth_rate (int): growth rate
+        filter_type (str): filter type to apply to low counts ('mean', 'both', 'either')
+        filter_threshold (int): filter threshold for low counts (default is 40)
     
     Returns:
         pd.DataFrame: result dataframe
@@ -328,17 +330,17 @@ def applyNAtoLowCounts(df_cond_ref, df_cond_test, filter_type, filter_threshold)
     df = pd.concat({'ref':df_cond_ref, 'test':df_cond_test},axis=1)
     
     if filter_type == 'mean':
-        failFilterColumn = df.apply(
+        filter = df.apply(
             lambda row: np.mean(row) < filter_threshold, axis=1)
     elif filter_type == 'both' or filter_type == 'all':
-        failFilterColumn = df.apply(
+        filter = df.apply(
             lambda row: min(row) < filter_threshold, axis=1)
     elif filter_type == 'either' or filter_type == 'any':
-        failFilterColumn = df.apply(
+        filter = df.apply(
             lambda row: max(row) < filter_threshold, axis=1)
     else:
         raise ValueError('filter type not recognized or not implemented')
 
-    df.loc[failFilterColumn, :] = np.nan
+    df.loc[filter, :] = np.nan
 
     return df['ref'], df['test']
