@@ -204,23 +204,18 @@ def calculateDelta(x, y, x_ctrl, y_ctrl, growth_rate):
     Returns:
         np.array: array of scores
     """
-    # check if x and y are empty
-    if len(x) == 0 or len(y) == 0:
-        delta = np.nan
+    # calculate control median and std 
+    ctrl_median = np.median(
+        calculateLog2e(x=x_ctrl, y=y_ctrl), 
+        axis=0 # for each individual sample (i.e. replicate)
+    )
+
+    # calculate log2e (i.e. log2 fold change enrichment y / x)
+    log2e = calculateLog2e(x=x, y=y)
+
+    # calculate delta score normalized by control median and growth rate
+    delta = (log2e - ctrl_median) / growth_rate
     
-    else:
-        # calculate control median and std 
-        ctrl_median = np.median(
-            calculateLog2e(x=x_ctrl, y=y_ctrl), 
-            axis=0 # for each individual sample (i.e. replicate)
-        )
-
-        # calculate log2e (i.e. log2 fold change enrichment y / x)
-        log2e = calculateLog2e(x=x, y=y)
-
-        # calculate delta score normalized by control median and growth rate
-        delta = (log2e - ctrl_median) / growth_rate
-        
     return delta
 
 
