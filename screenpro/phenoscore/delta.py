@@ -204,7 +204,7 @@ def calculateDelta(x, y, x_ctrl, y_ctrl, growth_rate):
     Returns:
         np.array: array of scores
     """
-    if (x == np.nan or y == np.nan) or (len(x) == 0 or len(y) == 0):
+    if (x.all() == np.nan or y.all() == np.nan) or (len(x) == 0 or len(y) == 0):
         delta = np.nan
     
     else:
