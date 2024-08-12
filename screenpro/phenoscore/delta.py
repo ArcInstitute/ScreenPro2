@@ -116,8 +116,8 @@ def compareByTargetGroup(adata, df_cond_ref, df_cond_test, keep_top_n, var_names
         targets.append(target_name)
         target_sizes.append(target_size)
 
-    # # average scores across replicates
-    # scores = [np.mean(s) for s in scores]
+    # average scores across replicates
+    scores = [np.mean(s) for s in scores]
 
     # get adjusted p-values
     adj_p_values = multipleTestsCorrection(np.array(p_values))
