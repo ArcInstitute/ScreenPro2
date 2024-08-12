@@ -235,6 +235,7 @@ Once you have the counts, you can use ScreenPro2 `phenoscore` and `phenostats` m
 
 <details>
   <summary>Perform Screen Processing Analysis</summary>
+  <br>
 
   Once the screen object is created, you can use several available workflows to calculate the phenotype scores and statisitics by comparing each entry in reference sgRNA library between screen arms. Then, these scores and statistics are used to nominate hits.
 
