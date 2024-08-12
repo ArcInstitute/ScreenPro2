@@ -190,10 +190,9 @@ The first step in analyzing CRISPR screens with deep sequencing readouts is to p
 Once you have the counts, you can use ScreenPro2 `phenoscore` and `phenostats` modules to calculate the phenotype scores and statistics between screen arms.
 
 <details>
-  <summary>Python Package Usage</summary>
+  <summary>Load Data</summary>
   <br>
 
-  #### Load Data
   First, load your data into an `AnnData` object (see [anndata](https://anndata.readthedocs.io/en/latest/index.html) for more information).
 
   The `AnnData` object must have the following contents:
@@ -230,7 +229,13 @@ Once you have the counts, you can use ScreenPro2 `phenoscore` and `phenostats` m
 
   <img width="600" alt="image" src="https://github.com/ArcInstitute/ScreenPro2/assets/53412130/bb38d119-8f24-44fa-98ab-7ef4457ef8d2">
 
-  #### Perform Screen Processing Analysis
+  ___
+
+</details>
+
+<details>
+  <summary>Perform Screen Processing Analysis</summary>
+
   Once the screen object is created, you can use several available workflows to calculate the phenotype scores and statisitics by comparing each entry in reference sgRNA library between screen arms. Then, these scores and statistics are used to nominate hits.
 
   ##### Drug Screen Workflow: calculate `gamma`, `rho`, and `tau` scores
@@ -270,7 +275,7 @@ Once you have the counts, you can use ScreenPro2 `phenoscore` and `phenostats` m
 </details>
 
 <details>
-  <summary>Benchmarking</summary>
+  <summary>Benchmarking ScreenPro2 vs other CRISPR screen processing tools</summary>
   <br>
   
   Coming soon...
