@@ -36,28 +36,6 @@ ___
 
 ___
 
-<details>
-  <summary>Benchmarking</summary>
-  <br>
-  
-  Benchmarking ScreenPro2 with other CRISPR screen analysis tools
-
-  ### More thoughtful NGS read trimming recovers more sgRNA counts
-
-  ### ScreenPro2 statistical analysis is more accurate than ScreenProcessing
-
-  ### ScreenPro2 is more flexible than ScreenProcessing
-
-  Not only does ScreenPro2 have more features than ScreenProcessing, but it is also more flexible. ScreenPro2 can process data from diverse CRISPR screen platforms and is designed to be modular to enable easy extension to custom CRISPR screen platforms or other commonly used platforms in addition to the ones currently implemented.
-
-  ### ScreenPro2 is faster than ScreenProcessing
-
-  Last but not least, ScreenPro2 runs faster than ScreenProcessing (thanks to [biobear](https://github.com/wheretrue/biobear)) for processing FASTQ files.
-
-</details>
-
-___
-
 ## Installation
 ScreenPro2 is available on [PyPI](https://pypi.org/project/ScreenPro2/) and can be installed with pip:
 ```bash
@@ -97,8 +75,6 @@ Data analysis for CRISPR screens with NGS readouts can be broken down into three
 
 The first step in analyzing CRISPR screens with deep sequencing readouts is to process the FASTQ files and generate counts for each guide RNA element in the library. ScreenPro2 has built-in functionalities to process FASTQ files and generate counts for different types of CRISPR screens platforms (see [Supported CRISPR Screen Platforms](#supported-crispr-screen-platforms)).
 
-___
-
 <details>
   <summary>Command Line Interface (CLI)</summary>
   <br>
@@ -133,10 +109,9 @@ ___
     -o <output-directory>
     --write-count-matrix
   ```
+  ___
 
 </details>
-
-___
 
 <details>
   <summary>Python Package Usage</summary>
@@ -205,6 +180,8 @@ ___
   ```python
   adata = counter.build_counts_anndata()
   ```
+  
+  ___
 
 </details>
 
@@ -284,6 +261,31 @@ screen.calculateFlowBasedScreen(
   score_level='compare_reps'
 )
 ```
+
+___
+
+<details>
+  <summary>Benchmarking</summary>
+  <br>
+  
+  Coming soon...
+
+</details>
+
+  <!-- Benchmarking ScreenPro2 with other CRISPR screen analysis tools
+
+  ### More thoughtful NGS read trimming recovers more sgRNA counts
+
+  ### ScreenPro2 statistical analysis is more accurate than ScreenProcessing
+
+  ### ScreenPro2 is more flexible than ScreenProcessing
+
+  Not only does ScreenPro2 have more features than ScreenProcessing, but it is also more flexible. ScreenPro2 can process data from diverse CRISPR screen platforms and is designed to be modular to enable easy extension to custom CRISPR screen platforms or other commonly used platforms in addition to the ones currently implemented.
+
+  ### ScreenPro2 is faster than ScreenProcessing
+
+  Last but not least, ScreenPro2 runs faster than ScreenProcessing (thanks to [biobear](https://github.com/wheretrue/biobear)) for processing FASTQ files. -->
+
 
 ### Step 3: Data visualization
 
