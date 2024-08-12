@@ -12,7 +12,7 @@ from .phenostat import (
 
 ### Key functions for calculating delta phenotype score
 
-def compareByReplicates(adata, df_cond_ref, df_cond_test, var_names='target', test='ttest', ctrl_label='negative_control', growth_rate=1):
+def compareByReplicates(adata, df_cond_ref, df_cond_test, var_names='target', test='ttest', ctrl_label='negative_control', growth_rate=1, filter_type='mean', filter_threshold=40):
     """Calculate phenotype score and p-values comparing `cond_test` vs `cond_ref`.
 
     Args:
@@ -23,11 +23,20 @@ def compareByReplicates(adata, df_cond_ref, df_cond_test, var_names='target', te
         test (str): test to use for calculating p-value ('MW': Mann-Whitney U rank; 'ttest' : t-test)
         ctrl_label (str): control label, default is 'negative_control'
         growth_rate (int): growth rate
+        filter_type (str): filter type to apply to low counts ('mean', 'both', 'either')
+        filter_threshold (int): filter threshold for low counts (default is 40)
     
     Returns:
         pd.DataFrame: result dataframe
     """
     adat = adata.copy()
+
+    # apply NA to low counts
+    df_cond_ref, df_cond_test = applyNAtoLowCounts(
+        df_cond_ref=df_cond_ref, df_cond_test=df_cond_test,
+        filter_type=filter_type, 
+        filter_threshold=filter_threshold
+    )
 
     # convert to numpy arrays
     x = df_cond_ref.to_numpy()
@@ -69,23 +78,31 @@ def compareByReplicates(adata, df_cond_ref, df_cond_test, var_names='target', te
     return result
 
 
-def compareByTargetGroup(adata, df_cond_ref, df_cond_test, keep_top_n, var_names='target', test='ttest', ctrl_label='negative_control', growth_rate=1):
+def compareByTargetGroup(adata, df_cond_ref, df_cond_test, keep_top_n, var_names='target', test='ttest', ctrl_label='negative_control', growth_rate=1, filter_type='mean', filter_threshold=40):
 
     adat = adata.copy()
 
+    # apply NA to low counts
+    df_cond_ref, df_cond_test = applyNAtoLowCounts(
+        df_cond_ref=df_cond_ref, df_cond_test=df_cond_test,
+        filter_type=filter_type, 
+        filter_threshold=filter_threshold
+    )
+
     # get control values
-    x_ctrl = df_cond_ref[adat.var.targetType.eq(ctrl_label)].to_numpy()
-    y_ctrl = df_cond_test[adat.var.targetType.eq(ctrl_label)].to_numpy()
+    x_ctrl = df_cond_ref[adat.var.targetType.eq(ctrl_label)].dropna().to_numpy()
+    y_ctrl = df_cond_test[adat.var.targetType.eq(ctrl_label)].dropna().to_numpy()
 
     targets = []
     scores = []
     p_values = []
+    target_sizes = []
 
     # group by target genes or pseudogenes to aggregate counts for score calculation
     for target_name, target_group in adat.var.groupby(var_names):
 
         # calculate phenotype scores and p-values for each target group
-        target_scores, target_p_values = scoreTargetGroup(
+        target_score, target_p_value, target_size  = scoreTargetGroup(
             target_group=target_group, 
             df_cond_ref=df_cond_ref, 
             df_cond_test=df_cond_test,
@@ -94,9 +111,10 @@ def compareByTargetGroup(adata, df_cond_ref, df_cond_test, keep_top_n, var_names
             keep_top_n=keep_top_n
         )
         
-        scores.append(target_scores)
-        p_values.append(target_p_values)
+        scores.append(target_score)
+        p_values.append(target_p_value)
         targets.append(target_name)
+        target_sizes.append(target_size)
 
     # average scores across replicates
     scores = [np.mean(s) for s in scores]
@@ -115,6 +133,7 @@ def compareByTargetGroup(adata, df_cond_ref, df_cond_test, keep_top_n, var_names
         pd.Series(scores, name='score'),
         pd.Series(p_values, name=f'{test} pvalue'),
         pd.Series(adj_p_values, name='BH adj_pvalue'),
+        pd.Series(target_sizes, name='number_of_guide_elements'),
     ], axis=1)
 
     # add targets information
@@ -215,16 +234,15 @@ def getBestTargetByTSS(score_df,target_col,pvalue_col):
     """
     collapse the gene-transcript indices into a single score for a gene by best p-value
     """
-    #TODO: implement this function, see #90
-    return score_df.groupby(target_col).apply(
+    return score_df.dropna().groupby(target_col).apply(
         lambda x: x.loc[x[pvalue_col].idxmin()]
     )
 
 
 def scoreTargetGroup(target_group, df_cond_ref, df_cond_test, x_ctrl, y_ctrl, test='ttest', growth_rate=1, keep_top_n=None):
     # select target group and convert to numpy arrays
-    x = df_cond_ref.loc[target_group.index,:].to_numpy()
-    y = df_cond_test.loc[target_group.index,:].to_numpy()
+    x = df_cond_ref.loc[target_group.index,:].dropna().to_numpy()
+    y = df_cond_test.loc[target_group.index,:].dropna().to_numpy()
 
     # calculate phenotype scores
     target_scores = calculateDelta(
@@ -232,22 +250,29 @@ def scoreTargetGroup(target_group, df_cond_ref, df_cond_test, x_ctrl, y_ctrl, te
         x_ctrl = x_ctrl, y_ctrl = y_ctrl, 
         growth_rate = growth_rate,
     )
-    
-    if keep_top_n is None or keep_top_n is False:
-        # average scores across guides
-        target_scores = np.mean(target_scores, axis=0)
 
-    elif keep_top_n > 0:
+    # get target size
+    target_size = target_scores.shape[0] # number of guide elements in the target group
+    
+    if target_size == 0:
+        target_score = np.full(target_scores.shape[1], np.nan)
+    
+    elif (keep_top_n is None or keep_top_n is False) or target_size <= keep_top_n:
+        # average scores across guides
+        target_score = np.mean(target_scores, axis=0)
+
+    elif keep_top_n > 0 or target_size > keep_top_n:
         # get top n scores per target
-        np.apply_along_axis(averageBestN, axis=0, arr=target_scores, numToAverage=keep_top_n)
+        target_score = np.apply_along_axis(averageBestN, axis=0, arr=target_scores, numToAverage=keep_top_n)
+        target_size = keep_top_n # update target size to keep_top_n
     
     else:
         raise ValueError(f'Invalid value for keep_top_n: {keep_top_n}')
 
     # compute p-value
-    target_p_values = matrixStat(x, y, test=test, level='all')
+    target_p_value = matrixStat(x, y, test=test, level='all')
     
-    return target_scores, target_p_values
+    return target_score, target_p_value, target_size
 
 
 def generatePseudoGeneAnnData(adata, num_pseudogenes='auto', pseudogene_size='auto', ctrl_label='negative_control'):
@@ -300,3 +325,28 @@ def generatePseudoGeneAnnData(adata, num_pseudogenes='auto', pseudogene_size='au
     out.obs = adata_ctrl.obs.copy()
     
     return out
+
+
+def applyNAtoLowCounts(df_cond_ref, df_cond_test, filter_type, filter_threshold):
+    # more flexible read filtering by adding np.nan scores and/or pvalues to low count rows
+    # keep row if either both/all columns are above threshold, or if either/any column is
+    # in other words, mask if any column is below threshold or only if all columns are below
+    # source https://github.com/mhorlbeck/ScreenProcessing/blob/master/process_experiments.py#L464C1-L478C1
+
+    df = pd.concat({'ref':df_cond_ref, 'test':df_cond_test},axis=1)
+    
+    if filter_type == 'mean':
+        filter = df.apply(
+            lambda row: np.mean(row) < filter_threshold, axis=1)
+    elif filter_type == 'both' or filter_type == 'all':
+        filter = df.apply(
+            lambda row: min(row) < filter_threshold, axis=1)
+    elif filter_type == 'either' or filter_type == 'any':
+        filter = df.apply(
+            lambda row: max(row) < filter_threshold, axis=1)
+    else:
+        raise ValueError('filter type not recognized or not implemented')
+
+    df.loc[filter, :] = np.nan
+
+    return df['ref'], df['test']

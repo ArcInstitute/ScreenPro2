@@ -28,7 +28,9 @@ from .phenostat import matrixStat, multipleTestsCorrection
 def runPhenoScore(adata, cond_ref, cond_test, score_level, var_names='target', test='ttest',
                   growth_rate=1, n_reps='auto', keep_top_n = None, collapse_var=False,
                   num_pseudogenes='auto', pseudogene_size='auto',
-                  count_layer=None, ctrl_label='negative_control'):
+                  count_layer=None, count_filter_type='mean', count_filter_threshold=40,
+                  ctrl_label='negative_control'
+                  ):
     """Calculate phenotype score and p-values when comparing `cond_test` vs `cond_ref`.
 
     Args:
@@ -44,6 +46,8 @@ def runPhenoScore(adata, cond_ref, cond_test, score_level, var_names='target', t
         num_pseudogenes (int): number of pseudogenes to generate
         pseudogene_size (int): number of sgRNA elements in each pseudogene
         count_layer (str): count layer to use for calculating score, default is None (use default count layer in adata.X)
+        count_filter_type (str): filter type for counts, default is 'mean'
+        count_filter_threshold (int): filter threshold for counts, default is 40
         ctrl_label (str): control label, default is 'negative_control'
     
     Returns:
@@ -85,7 +89,9 @@ def runPhenoScore(adata, cond_ref, cond_test, score_level, var_names='target', t
             var_names=var_names,
             test=test,
             ctrl_label=ctrl_label,
-            growth_rate=growth_rate
+            growth_rate=growth_rate,
+            filter_type=count_filter_type,
+            filter_threshold=count_filter_threshold
         )
     
     elif score_level in ['compare_guides']:
@@ -114,6 +120,8 @@ def runPhenoScore(adata, cond_ref, cond_test, score_level, var_names='target', t
             test=test,
             ctrl_label=ctrl_label,
             growth_rate=growth_rate,
+            filter_type=count_filter_type,
+            filter_threshold=count_filter_threshold
         )
 
         # get best best transcript as lowest p-value for each target
