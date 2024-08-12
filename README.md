@@ -189,80 +189,85 @@ The first step in analyzing CRISPR screens with deep sequencing readouts is to p
 
 Once you have the counts, you can use ScreenPro2 `phenoscore` and `phenostats` modules to calculate the phenotype scores and statistics between screen arms.
 
-#### Load Data
-First, load your data into an `AnnData` object (see [anndata](https://anndata.readthedocs.io/en/latest/index.html) for more information).
+<details>
+  <summary>Python Package Usage</summary>
+  <br>
 
-The `AnnData` object must have the following contents:
-- `adata.X` – counts matrix (samples x targets) where each value represents the sequencing count from NGS data.
-- `adata.obs` – a pandas dataframe of samples metadata including "condition" and "replicate" columns.
-  - "condition": the condition for each sample in the experiment.
-  - "replicate": the replicate number for each sample in the experiment.
-- `adata.var` – a pandas dataframe of targets in sgRNA library including "target" and "targetType" columns.
-  - "target": the target for each entry in reference sgRNA library. For single sgRNA libraries, this column can be 
-    used to store gene names. For dual or multiple targeting sgRNA libraries, this column can be used to store gene pairs
-    or any other relevant information about the target.
-  - "targetType": the type of target for each entry in reference sgRNA library. Note that this column is used to 
-    distinguish between different types of sgRNAs in the library and negative control sgRNAs can be defined as `"targetType" == "negative_control"`.
-    This is important for the phenotype calculation step.
+  #### Load Data
+  First, load your data into an `AnnData` object (see [anndata](https://anndata.readthedocs.io/en/latest/index.html) for more information).
+
+  The `AnnData` object must have the following contents:
+  - `adata.X` – counts matrix (samples x targets) where each value represents the sequencing count from NGS data.
+  - `adata.obs` – a pandas dataframe of samples metadata including "condition" and "replicate" columns.
+    - "condition": the condition for each sample in the experiment.
+    - "replicate": the replicate number for each sample in the experiment.
+  - `adata.var` – a pandas dataframe of targets in sgRNA library including "target" and "targetType" columns.
+    - "target": the target for each entry in reference sgRNA library. For single sgRNA libraries, this column can be 
+      used to store gene names. For dual or multiple targeting sgRNA libraries, this column can be used to store gene pairs
+      or any other relevant information about the target.
+    - "targetType": the type of target for each entry in reference sgRNA library. Note that this column is used to 
+      distinguish between different types of sgRNAs in the library and negative control sgRNAs can be defined as `"targetType" == "negative_control"`.
+      This is important for the phenotype calculation step.
 
 
-ScreenPro2 has a built-in class for different types of CRISPR screen assays. Currently, there is a class called `PooledScreens` 
-that can be used to process data from pooled CRISPR screens. To create a `PooledScreens` object from an `AnnData` object, 
-you can use the following example code:
+  ScreenPro2 has a built-in class for different types of CRISPR screen assays. Currently, there is a class called `PooledScreens` 
+  that can be used to process data from pooled CRISPR screens. To create a `PooledScreens` object from an `AnnData` object, 
+  you can use the following example code:
 
-```python
-import pandas as pd
-import anndata as ad
-from screenpro.assays import PooledScreens
+  ```python
+  import pandas as pd
+  import anndata as ad
+  from screenpro.assays import PooledScreens
 
-adata = ad.AnnData(
-    X   = counts_df, # pandas dataframe of counts (samples x targets)
-    obs = meta_df,   # pandas dataframe of samples metadata including "condition" and "replicate" columns
-    var = target_df  # pandas dataframe of targets metadata including "target" and "targetType" columns
-)
+  adata = ad.AnnData(
+      X   = counts_df, # pandas dataframe of counts (samples x targets)
+      obs = meta_df,   # pandas dataframe of samples metadata including "condition" and "replicate" columns
+      var = target_df  # pandas dataframe of targets metadata including "target" and "targetType" columns
+  )
 
-screen = PooledScreens(adata)
-```
+  screen = PooledScreens(adata)
+  ```
 
-<img width="600" alt="image" src="https://github.com/ArcInstitute/ScreenPro2/assets/53412130/bb38d119-8f24-44fa-98ab-7ef4457ef8d2">
+  <img width="600" alt="image" src="https://github.com/ArcInstitute/ScreenPro2/assets/53412130/bb38d119-8f24-44fa-98ab-7ef4457ef8d2">
 
-#### Perform Screen Processing Analysis
-Once the screen object is created, you can use several available workflows to calculate the phenotype scores and statisitics by comparing each entry in reference sgRNA library between screen arms. Then, these scores and statistics are used to nominate hits.
+  #### Perform Screen Processing Analysis
+  Once the screen object is created, you can use several available workflows to calculate the phenotype scores and statisitics by comparing each entry in reference sgRNA library between screen arms. Then, these scores and statistics are used to nominate hits.
 
-##### Drug Screen Workflow: calculate `gamma`, `rho`, and `tau` scores
-`.calculateDrugScreen` method can be used to calculate the enrichment of each gene between screen arms for a drug 
-screen experiment. This method calculates `gamma`, `rho`, and `tau` scores for each gene and adds them to the 
-`.phenotypes` attribute of the `PooledScreens` object.
+  ##### Drug Screen Workflow: calculate `gamma`, `rho`, and `tau` scores
+  `.calculateDrugScreen` method can be used to calculate the enrichment of each gene between screen arms for a drug 
+  screen experiment. This method calculates `gamma`, `rho`, and `tau` scores for each gene and adds them to the 
+  `.phenotypes` attribute of the `PooledScreens` object.
 
-Here is an example for running the workflow on a [CRISPRi-dual-sgRNA-screens](#dcas9-crisprai-dual-sgrna-screens) dataset:
+  Here is an example for running the workflow on a [CRISPRi-dual-sgRNA-screens](#dcas9-crisprai-dual-sgrna-screens) dataset:
 
-```python
-# Run the ScreenPro2 workflow for CRISPRi-dual-sgRNA-screens
-screen.calculateDrugScreen(
-  t0='T0',
-  untreated='DMSO',  # replace with the label for untreated condition
-  treated='Drug',    # replace with the label for treated condition
-  score_level='compare_reps'
-)
-```
-___
-For example, in a Decitabine CRISPRi drug screen (see Figure 1B-C in [this bioRxiv paper](https://www.biorxiv.org/content/10.1101/2022.12.14.518457v2.full)), each phenotype score represents a comparison between different arms of the screen and `rho` scores shows the main drug phenotype as illustrated here:
-<img width="800" alt="image" src="https://github.com/abearab/ScreenPro2/assets/53412130/b84b3e1f-e049-4da6-b63d-d4c72bc97cda">
+  ```python
+  # Run the ScreenPro2 workflow for CRISPRi-dual-sgRNA-screens
+  screen.calculateDrugScreen(
+    t0='T0',
+    untreated='DMSO',  # replace with the label for untreated condition
+    treated='Drug',    # replace with the label for treated condition
+    score_level='compare_reps'
+  )
+  ```
+  ___
+  For example, in a Decitabine CRISPRi drug screen (see Figure 1B-C in [this bioRxiv paper](https://www.biorxiv.org/content/10.1101/2022.12.14.518457v2.full)), each phenotype score represents a comparison between different arms of the screen and `rho` scores shows the main drug phenotype as illustrated here:
+  <img width="800" alt="image" src="https://github.com/abearab/ScreenPro2/assets/53412130/b84b3e1f-e049-4da6-b63d-d4c72bc97cda">
 
-##### Flow cytometry based screen workflow: calculate phenotype score to compare high and low bins
-`.calculateFlowBasedScreen` method can be used to calculate the enrichment of each target between high bin vs. low bin 
-of a flow cytometry-based screen experiment. This method calculates `PhenoScore` for each target and adds them to the 
-`.phenotypes` attribute of the `PooledScreens` object.
+  ##### Flow cytometry based screen workflow: calculate phenotype score to compare high and low bins
+  `.calculateFlowBasedScreen` method can be used to calculate the enrichment of each target between high bin vs. low bin 
+  of a flow cytometry-based screen experiment. This method calculates `PhenoScore` for each target and adds them to the 
+  `.phenotypes` attribute of the `PooledScreens` object.
 
-```python
-# Run the ScreenPro2 workflow for CRISPRi-dual-sgRNA-screens
-screen.calculateFlowBasedScreen(
-  low_bin='low_bin', high_bin='high_bin',
-  score_level='compare_reps'
-)
-```
+  ```python
+  # Run the ScreenPro2 workflow for CRISPRi-dual-sgRNA-screens
+  screen.calculateFlowBasedScreen(
+    low_bin='low_bin', high_bin='high_bin',
+    score_level='compare_reps'
+  )
+  ```
+  ___
 
-___
+</details>
 
 <details>
   <summary>Benchmarking</summary>
