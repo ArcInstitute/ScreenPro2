@@ -116,15 +116,15 @@ def runPhenoScore(adata, cond_ref, cond_test, score_level, var_names='target', t
             growth_rate=growth_rate,
         )
 
-        # # get best best transcript as lowest p-value for each target
-        # if collapse_var not in [False, None]:
-        #     if collapse_var not in result.columns:
-        #         raise ValueError(f'collapse_var "{collapse_var}" not found in result columns.')
-        #     else:
-        #         result = getBestTargetByTSS(
-        #             score_df=result, target_col=collapse_var, pvalue_col=f'{test} pvalue'
-        #         )
-        #         result.index.name = None
+        # get best best transcript as lowest p-value for each target
+        if collapse_var not in [False, None]:
+            if collapse_var not in result.columns:
+                raise ValueError(f'collapse_var "{collapse_var}" not found in result columns.')
+            else:
+                result = getBestTargetByTSS(
+                    score_df=result, target_col=collapse_var, pvalue_col=f'{test} pvalue'
+                )
+                result.index.name = None
         
         # change target name to control label if it is a pseudo gene
         result['target'] = result['target'].apply(lambda x: ctrl_label if 'pseudo' in x else x).to_list()

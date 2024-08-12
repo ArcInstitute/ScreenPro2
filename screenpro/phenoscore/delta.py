@@ -234,7 +234,7 @@ def getBestTargetByTSS(score_df,target_col,pvalue_col):
     """
     collapse the gene-transcript indices into a single score for a gene by best p-value
     """
-    return score_df.groupby(target_col).apply(
+    return score_df.dropna().groupby(target_col).apply(
         lambda x: x.loc[x[pvalue_col].idxmin()]
     )
 
