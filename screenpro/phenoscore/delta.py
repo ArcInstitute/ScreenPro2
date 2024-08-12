@@ -90,8 +90,8 @@ def compareByTargetGroup(adata, df_cond_ref, df_cond_test, keep_top_n, var_names
     )
 
     # get control values
-    x_ctrl = df_cond_ref[adat.var.targetType.eq(ctrl_label)].to_numpy()
-    y_ctrl = df_cond_test[adat.var.targetType.eq(ctrl_label)].to_numpy()
+    x_ctrl = df_cond_ref[adat.var.targetType.eq(ctrl_label)].dropna().to_numpy()
+    y_ctrl = df_cond_test[adat.var.targetType.eq(ctrl_label)].dropna().to_numpy()
 
     targets = []
     scores = []
@@ -116,8 +116,8 @@ def compareByTargetGroup(adata, df_cond_ref, df_cond_test, keep_top_n, var_names
         targets.append(target_name)
         target_sizes.append(target_size)
 
-    # average scores across replicates
-    scores = [np.mean(s) for s in scores]
+    # # average scores across replicates
+    # scores = [np.mean(s) for s in scores]
 
     # get adjusted p-values
     adj_p_values = multipleTestsCorrection(np.array(p_values))
@@ -254,7 +254,10 @@ def scoreTargetGroup(target_group, df_cond_ref, df_cond_test, x_ctrl, y_ctrl, te
     # get target size
     target_size = target_scores.shape[0] # number of guide elements in the target group
     
-    if (keep_top_n is None or keep_top_n is False) or target_size <= keep_top_n:
+    if target_size == 0:
+        target_score = np.full(target_scores.shape[1], np.nan)
+    
+    elif (keep_top_n is None or keep_top_n is False) or target_size <= keep_top_n:
         # average scores across guides
         target_score = np.mean(target_scores, axis=0)
 
