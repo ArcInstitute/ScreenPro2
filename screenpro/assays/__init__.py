@@ -385,7 +385,7 @@ class PooledScreens(object):
         
         score_tag, _ = phenotype_name.split(':')
 
-        df = self.phenotypes[run_name]['results'][phenotype_name]
+        df = self.phenotypes[run_name]['results'][phenotype_name].dropna()
 
         df = annotateScoreTable(
             df, 
