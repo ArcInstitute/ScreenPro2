@@ -45,8 +45,8 @@ def compareByReplicates(adata, df_cond_ref, df_cond_test, var_names='target', te
     y = df_cond_test.to_numpy()
 
     # get control values
-    x_ctrl = df_cond_ref[adat.var.targetType.eq(ctrl_label)].dropna.to_numpy()
-    y_ctrl = df_cond_test[adat.var.targetType.eq(ctrl_label)].dropna.to_numpy()
+    x_ctrl = df_cond_ref[adat.var.targetType.eq(ctrl_label)].dropna().to_numpy()
+    y_ctrl = df_cond_test[adat.var.targetType.eq(ctrl_label)].dropna().to_numpy()
 
     # calculate phenotype scores
     scores = calculateDelta(
