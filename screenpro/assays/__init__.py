@@ -332,11 +332,14 @@ class PooledScreens(object):
         untreated = self.phenotypes[run_name]['config']['untreated']
         treated = self.phenotypes[run_name]['config']['treated']
 
-        #TODO: fix `_calculateGrowthFactor` and `_getTreatmentDoublingRate`
-        growth_factor_table = self._calculateGrowthFactor(
-            untreated = untreated, treated = treated, 
-            db_rate_col = db_rate_col
-        )
+        if type(treated) != list: treated = [treated]
+
+        if db_rate_col:
+            #TODO: fix `_calculateGrowthFactor` and `_getTreatmentDoublingRate`
+            growth_factor_table = self._calculateGrowthFactor(
+                untreated = untreated, treated = treated, 
+                db_rate_col = db_rate_col
+            )
         
         pdata_list = []
 
@@ -345,9 +348,12 @@ class PooledScreens(object):
             score_tag, comparison = phenotype_name.split(':')
             cond_test, cond_ref = comparison.split('_vs_')
 
-            growth_rate_reps=growth_factor_table.query(
-                f'score=="{score_tag}"'
-            ).set_index('replicate')['growth_factor'].to_dict()
+            if db_rate_col:
+                growth_rate_reps=growth_factor_table.query(
+                    f'score=="{score_tag}"'
+                ).set_index('replicate')['growth_factor'].to_dict()
+            else:
+                growth_rate_reps=None
             
             pdata = getPhenotypeData(
                 self.adata, score_tag=score_tag, 
