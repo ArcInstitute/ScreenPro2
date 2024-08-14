@@ -48,7 +48,6 @@ def rank_plot(df, rank_col, color_col=None, name_col='target', highlight_values_
         s=dot_size,
         c=color_col, ax=ax,
         colorbar=False,
-        rasterized=True,
         **args
     )
 
