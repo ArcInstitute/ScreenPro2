@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 from ._utils import yellow_blue
 
 
-def rank_plot(df, rank_col, color_col=None, name_col='target', highlight_values_dict=None, xlabel='Rank', ylabel='Values', title='Rank Plot', ax=None, dot_size=1.5, highlight_size_factor=100, **args):
+def rank_plot(df, rank_col, color_col=None, name_col='target', highlight_values_dict=None, xlabel='Rank', ylabel='Values', title='Rank Plot', ax=None, dot_size=1.5, highlight_size_factor=100, txt_font_size=8, **args):
     """
     Plot the ranks against their values with specified color.
 
@@ -22,6 +22,7 @@ def rank_plot(df, rank_col, color_col=None, name_col='target', highlight_values_
         ax (matplotlib.axes.Axes, optional): The axis object to plot on. If not provided, a new axis will be created.
         dot_size (float, optional): The size of the dots in the scatter plot. Default is 1.5.
         highlight_size_factor (int, optional): The size factor for the highlighted dots. Default is 100.
+        txt_font_size (int, optional): The font size for the text labels. Default is 8.
         **args: Additional keyword arguments to be passed to the scatter plot.
 
     Returns:
@@ -47,6 +48,7 @@ def rank_plot(df, rank_col, color_col=None, name_col='target', highlight_values_
         s=dot_size,
         c=color_col, ax=ax,
         colorbar=False,
+        rasterized=True,
         **args
     )
 
@@ -57,7 +59,7 @@ def rank_plot(df, rank_col, color_col=None, name_col='target', highlight_values_
     
             if highlight_values['text'] is not False:
                 for i, row in highlight_ranks.iterrows():
-                    ax.text(row['Rank'] + .01, row[rank_col] + .001, row[name_col], fontsize=8, color=highlight_color, ha='right')
+                    ax.text(row['Rank'] + .01, row[rank_col] + .001, row[name_col], fontsize=txt_font_size, color=highlight_color, ha='right')
 
     # Add labels and title
     ax.set_xlabel(xlabel)
