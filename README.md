@@ -185,6 +185,8 @@ The first step in analyzing CRISPR screens with deep sequencing readouts is to p
 
 </details>
 
+<br>
+
 ### Step 2: Phenotype calculation
 
 Once you have the counts, you can use ScreenPro2 `phenoscore` and `phenostats` modules to calculate the phenotype scores and statistics between screen arms.
@@ -297,6 +299,8 @@ Once you have the counts, you can use ScreenPro2 `phenoscore` and `phenostats` m
 
   Last but not least, ScreenPro2 runs faster than ScreenProcessing (thanks to [biobear](https://github.com/wheretrue/biobear)) for processing FASTQ files. -->
 
+
+<br>
 
 ### Step 3: Data visualization
 

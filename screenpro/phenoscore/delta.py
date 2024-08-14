@@ -15,6 +15,8 @@ from .phenostat import (
 def compareByReplicates(adata, df_cond_ref, df_cond_test, var_names='target', test='ttest', ctrl_label='negative_control', growth_rate=1, filter_type='mean', filter_threshold=40):
     """Calculate phenotype score and p-values comparing `cond_test` vs `cond_ref`.
 
+    In this function, the phenotype calculation is done by comparing multiple replicates of `cond_test` vs `cond_ref`.
+
     Args:
         adata (AnnData): AnnData object
         df_cond_ref (pd.DataFrame): dataframe of condition reference
@@ -43,8 +45,8 @@ def compareByReplicates(adata, df_cond_ref, df_cond_test, var_names='target', te
     y = df_cond_test.to_numpy()
 
     # get control values
-    x_ctrl = df_cond_ref[adat.var.targetType.eq(ctrl_label)].to_numpy()
-    y_ctrl = df_cond_test[adat.var.targetType.eq(ctrl_label)].to_numpy()
+    x_ctrl = df_cond_ref[adat.var.targetType.eq(ctrl_label)].dropna().to_numpy()
+    y_ctrl = df_cond_test[adat.var.targetType.eq(ctrl_label)].dropna().to_numpy()
 
     # calculate phenotype scores
     scores = calculateDelta(
@@ -79,6 +81,27 @@ def compareByReplicates(adata, df_cond_ref, df_cond_test, var_names='target', te
 
 
 def compareByTargetGroup(adata, df_cond_ref, df_cond_test, keep_top_n, var_names='target', test='ttest', ctrl_label='negative_control', growth_rate=1, filter_type='mean', filter_threshold=40):
+    """Calculate phenotype score and p-values comparing `cond_test` vs `cond_ref`.
+
+    In this function, the phenotype calculation is done by comparing groups of 
+    guide elements (e.g. sgRNAs) that target the same gene or groups of pseudogene (i.e.
+    subsampled groups of non-targeting control elements) between `cond_test` vs `cond_ref`.
+
+    Args:
+        adata (AnnData): AnnData object
+        df_cond_ref (pd.DataFrame): dataframe of condition reference
+        df_cond_test (pd.DataFrame): dataframe of condition test
+        keep_top_n (int): number of top guide elements to keep
+        var_names (str): variable names to use as index in the result dataframe
+        test (str): test to use for calculating p-value ('MW': Mann-Whitney U rank; 'ttest' : t-test)
+        ctrl_label (str): control label, default is 'negative_control'
+        growth_rate (int): growth rate
+        filter_type (str): filter type to apply to low counts ('mean', 'both', 'either')
+        filter_threshold (int): filter threshold for low counts (default is 40)
+        
+    Returns:
+        pd.DataFrame: result dataframe
+    """
 
     adat = adata.copy()
 
