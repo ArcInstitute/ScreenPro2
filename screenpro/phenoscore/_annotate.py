@@ -21,7 +21,7 @@ hit_dict = {
 }
 
 
-def getCombinedScore(df, score_col='score', pvalue_col='pvalue', ctrl_label='negative_control'):
+def getCombinedScore(df_in, score_col='score', pvalue_col='pvalue', target_col='target', ctrl_label='negative_control'):
     """
     Calculate the combined score column based on the given phenotypic scores and p-values.
     Combined score is calculated as:
@@ -29,7 +29,7 @@ def getCombinedScore(df, score_col='score', pvalue_col='pvalue', ctrl_label='neg
         $combined\_score = \frac{score}{pseudo\_sd} \times -\log_{10}(pvalue)$
 
     Parameters:
-        df (pandas.DataFrame): The input DataFrame.
+        df_in (pandas.DataFrame): The input DataFrame.
         score_col (str): The column name for the individual scores. Default is 'score'.
         pvalue_col (str): The column name for the p-values. Default is 'pvalue'.
         target_col (str): The column name for the target variable. Default is 'target'.
@@ -39,18 +39,22 @@ def getCombinedScore(df, score_col='score', pvalue_col='pvalue', ctrl_label='neg
     Returns:
         pandas.Series: The calculated combined score column.
     """
-    if 'target' not in df.columns:
-        raise ValueError('Column "target" not found in the input DataFrame.')
+    # make a copy of input dataframe
+    df = df_in.copy()
+
+    for col in [score_col, pvalue_col, target_col]:
+        if col not in df.columns:
+            raise ValueError(f'Column "{col}" not found in the input DataFrame.')
     
     # calculate pseudo_sd
-    pseudo_sd = df[df['target'].eq(ctrl_label)][score_col].tolist()
+    pseudo_sd = df[df[target_col].eq(ctrl_label)][score_col].tolist()
     pseudo_sd = np.std(pseudo_sd)
 
     # calculate combined score
     return df[score_col]/pseudo_sd * -np.log10(df[pvalue_col])
 
 
-def annotateScoreTable(df_in, up_hit, down_hit, threshold, score_col=None, pvalue_col=None, ctrl_label='negative_control'):
+def annotateScoreTable(df_in, up_hit, down_hit, threshold, score_col='score', pvalue_col='pvalue', target_col='target', ctrl_label='negative_control'):
     """
     Annotate the given score tabel 
     
@@ -60,26 +64,21 @@ def annotateScoreTable(df_in, up_hit, down_hit, threshold, score_col=None, pvalu
         up_hit (str): up hit label
         down_hit (str): down hit label
         threshold (int): threshold value
-        score_col (str): score column name
-        pvalue_col (str): pvalue column name
-        ctrl_label (str): control label value
+        score_col (str): score column name. Default is 'score'.
+        target_col (str): column name for the target variable. Default is 'target'.
+        pvalue_col (str): pvalue column name. Default is 'pvalue'.
+        ctrl_label (str): control label value. Default is 'negative_control'.
     
     Returns:
         pd.DataFrame: annotated score dataframe
     """
-    if score_col is None: score_col = 'score'
-    if pvalue_col is None: pvalue_col = 'pvalue'
-
-    sel = ['target',score_col, pvalue_col]
-    
-    for col in sel:
-        if col not in df_in.columns:
+    for col in [score_col, pvalue_col, target_col]:
+        if col not in df.columns:
             raise ValueError(f'Column "{col}" not found in the input DataFrame.')
-    
+
     # make a copy of input dataframe
-    df = df_in[sel].copy()
-    # # rename/reformat columns
-    # df.columns = ['target', 'score', 'pvalue']
+    df = df_in.copy()
+
     df[score_col] = df[score_col].astype(float)
     df[pvalue_col] = df[pvalue_col].astype(float)
 
@@ -91,18 +90,18 @@ def annotateScoreTable(df_in, up_hit, down_hit, threshold, score_col=None, pvalu
 
     # annotate hits: up
     df.loc[
-        (df[score_col] > 0) & (~df['target'].eq(ctrl_label)) &
+        (df[score_col] > 0) & (~df[target_col].eq(ctrl_label)) &
         (df['combined_score'] >= threshold), 'label'
     ] = up_hit
 
     # annotate hits: down
     df.loc[
-        (df[score_col] < 0) & (~df['target'].eq(ctrl_label)) &
+        (df[score_col] < 0) & (~df[target_col].eq(ctrl_label)) &
         (df['combined_score'] <= -threshold), 'label'
     ] = down_hit
 
     # annotate control
-    df.loc[df['target'].eq(ctrl_label), 'label'] = ctrl_label
+    df.loc[df[target_col].eq(ctrl_label), 'label'] = ctrl_label
 
     # annotate non-hit
     df.loc[df['label'] == '.', 'label'] = 'target_non_hit'
