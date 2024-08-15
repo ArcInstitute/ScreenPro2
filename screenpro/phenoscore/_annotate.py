@@ -72,12 +72,12 @@ def annotateScoreTable(df_in, up_hit, down_hit, threshold, score_col='score', pv
     Returns:
         pd.DataFrame: annotated score dataframe
     """
+    # make a copy of input dataframe
+    df = df_in.copy()
+
     for col in [score_col, pvalue_col, target_col]:
         if col not in df.columns:
             raise ValueError(f'Column "{col}" not found in the input DataFrame.')
-
-    # make a copy of input dataframe
-    df = df_in.copy()
 
     df[score_col] = df[score_col].astype(float)
     df[pvalue_col] = df[pvalue_col].astype(float)
