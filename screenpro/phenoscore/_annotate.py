@@ -83,7 +83,10 @@ def annotateScoreTable(df_in, up_hit, down_hit, threshold, score_col='score', pv
     df[pvalue_col] = df[pvalue_col].astype(float)
 
     # add combined score column
-    df['combined_score'] = getCombinedScore(df, score_col, pvalue_col, ctrl_label)
+    df['combined_score'] = getCombinedScore(
+        df,
+        score_col=score_col, pvalue_col=pvalue_col, target_col=target_col,
+        ctrl_label=ctrl_label)
 
     # add label column
     df['label'] = '.'
