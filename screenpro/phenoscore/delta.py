@@ -153,10 +153,10 @@ def compareByTargetGroup(adata, df_cond_ref, df_cond_test, keep_top_n, var_names
 
     # combine results into a dataframe
     result = pd.concat([
-        pd.Series(scores, name='score'),
-        pd.Series(p_values, name=f'{test} pvalue'),
-        pd.Series(adj_p_values, name='BH adj_pvalue'),
-        pd.Series(target_sizes, name='number_of_guide_elements'),
+        pd.Series(scores, name='score', dtype=float),
+        pd.Series(p_values, name=f'{test} pvalue', dtype=float),
+        pd.Series(adj_p_values, name='BH adj_pvalue', dtype=float),
+        pd.Series(target_sizes, name='number_of_guide_elements', dtype=int),
     ], axis=1)
 
     # add targets information
