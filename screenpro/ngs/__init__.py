@@ -195,7 +195,7 @@ class GuideCounter:
                 if get_recombinant:
                     raise ValueError("Recombinants are not applicable for single guide design!")
                 if protospacer_length == 'auto':
-                    protospacer_length = self.library['protospacer'].str.lengths().unique().to_list()[0]
+                    protospacer_length = self.library['protospacer'].str.len_bytes().unique().to_list()[0]
 
                 for sample_id in samples:
                     cnt = self._process_cas9_single_guide_sample(
@@ -218,8 +218,8 @@ class GuideCounter:
                 if get_recombinant: recombinants = {}
 
                 if protospacer_length == 'auto':
-                    protospacer_A_length = self.library['protospacer_A'].str.lengths().unique().to_list()[0]
-                    protospacer_B_length = self.library['protospacer_B'].str.lengths().unique().to_list()[0]
+                    protospacer_A_length = self.library['protospacer_A'].str.len_bytes().unique().to_list()[0]
+                    protospacer_B_length = self.library['protospacer_B'].str.len_bytes().unique().to_list()[0]
                 elif isinstance(protospacer_length, dict):
                     protospacer_A_length = protospacer_length['protospacer_A']
                     protospacer_B_length = protospacer_length['protospacer_B']
