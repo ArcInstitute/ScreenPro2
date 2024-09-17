@@ -65,10 +65,9 @@ class PooledScreens(object):
         Returns:
             pd.DataFrame: growth factor dataframe
         """
-        if 'condition' not in adat.obs.columns or 'replicate' not in adat.obs.columns:
-            raise ValueError("The 'condition' and 'replicate' columns must exist in 'adata.obs'.")
-
         adat = self.adata.copy()
+        if 'condition' not in adat.obs.columns or 'replicate' not in adat.obs.columns:
+            raise ValueError("The 'condition' and 'replicate' columns self.adata.")
         growth_factors = []
         # calculate growth factor for gamma, tau, or rho score per replicates
         for replicate in adat.obs.replicate.unique():
@@ -211,7 +210,7 @@ class PooledScreens(object):
         unexpected behavior when the user relies on filterLowCounts, we specify both the count_filter_threshold and
         count_filter_type arguments of runPhenoScore explicitly here.
 
-        If doubling infomation is provided, self.adata.obs must have a 'condition' and a 'replicate' column.
+        self.adata.obs must have a 'condition' column. If doubling infomation is provided, it also needs a 'replicate' column.
 
         Args:
             score_level (str): name of the score level. Must be "compare_reps" or "compare_guides"
