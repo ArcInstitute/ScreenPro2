@@ -11,6 +11,7 @@ import numpy as np
 import pandas as pd
 import anndata as ad
 import scanpy as sc
+from typing import Literal
 
 from ..phenoscore import (
     runPhenoScore, getPhenotypeData,
@@ -65,6 +66,8 @@ class PooledScreens(object):
             pd.DataFrame: growth factor dataframe
         """
         adat = self.adata.copy()
+        if 'condition' not in adat.obs.columns or 'replicate' not in adat.obs.columns:
+            raise ValueError("The 'condition' and 'replicate' columns self.adata.")
         growth_factors = []
         # calculate growth factor for gamma, tau, or rho score per replicates
         for replicate in adat.obs.replicate.unique():
@@ -197,17 +200,27 @@ class PooledScreens(object):
             )
             self._add_phenotype_results(run_name, f'rho:{rho_name}', rho)
 
-    def calculateDrugScreen(self, score_level, untreated, treated, t0=None, db_rate_col='pop_doubling', run_name=None, **kwargs):
+    def calculateDrugScreen(self, score_level: Literal["compare_reps", "compare_guides"], untreated: str, treated: str, t0: str=None, db_rate_col: str='pop_doubling', run_name: str=None, count_filter_threshold: int=40, count_filter_type: Literal['mean', 'both', 'either']='mean', **kwargs):
         """
-        Calculate `gamma`, `rho`, and `tau` phenotype scores for a drug screen dataset in a given `score_level`.
+        Calculate `gamma`, `rho`, and `tau` phenotype scores for a drug screen dataset in a given `score_level`. This function
+        is a wrapper around runPhenoScore. Check the args of runPhenoScore carefully before using it.
+        
+        For a given phenotype score, runPhenoScore implements a count filter threshold. By default this threshold changes
+        any guide or target whose mean count across replicates being compared is <40 to NAs. Because this can lead to
+        unexpected behavior when the user relies on filterLowCounts, we specify both the count_filter_threshold and
+        count_filter_type arguments of runPhenoScore explicitly here.
+
+        self.adata.obs must have a 'condition' column. If doubling infomation is provided, it also needs a 'replicate' column.
 
         Args:
-            score_level (str): name of the score level
+            score_level (str): name of the score level. Must be "compare_reps" or "compare_guides"
             untreated (str): name of the untreated condition
             treated (str): name of the treated condition
             t0 (str): name of the untreated condition
             db_rate_col (str): column name for the doubling rate, default is 'pop_doubling'
             run_name (str): name for the phenotype calculation run
+            count_filter_threshold (int): filter threshold for counts across compared replicates. Default is 40.
+            count_filter_type (str): type of filter for counts across replicates. Default is 'mean.'
             **kwargs: additional arguments to pass to runPhenoScore
         """
         if not run_name: run_name = score_level
@@ -256,6 +269,8 @@ class PooledScreens(object):
                 self.adata, cond_ref=untreated, cond_test=tr, growth_rate=db_diff,
                 n_reps=self.n_reps,
                 test=self.test, score_level=score_level,
+                count_filter_threshold=count_filter_threshold,
+                count_filter_type=count_filter_type,
                 **kwargs
             )
             self._add_phenotype_results(run_name, f'rho:{rho_name}', rho)
