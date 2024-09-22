@@ -26,4 +26,5 @@ dependencies:
       - numba
       - pydeseq2
       - simple_colors
+      - adjustText
       - watermark
