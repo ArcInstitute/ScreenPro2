@@ -1,5 +1,7 @@
 import pandas as pd
 import matplotlib.pyplot as plt
+
+from adjustText import adjust_text
 from ._utils import yellow_blue
 
 
@@ -57,8 +59,23 @@ def rank_plot(df, rank_col, color_col=None, name_col='target', highlight_values_
             ax.plot(highlight_ranks['Rank'], highlight_ranks[rank_col], 'o', color=highlight_color, markersize=dot_size * highlight_size_factor)
     
             if highlight_values['text'] is not False:
+                texts = []
                 for i, row in highlight_ranks.iterrows():
-                    ax.text(row['Rank'] + .01, row[rank_col] + .001, row[name_col], fontsize=txt_font_size, color=highlight_color, ha='right')
+                    t = ax.text(
+                        row['Rank'] + .01, 
+                        row[rank_col] + .001, 
+                        row[name_col], 
+                        fontsize=txt_font_size, 
+                        color=highlight_color, 
+                        ha='right'
+                    )
+                    texts.append(t)
+
+                adjust_text(
+                    texts, 
+                    arrowprops=dict(arrowstyle='-', color=highlight_color, lw=0.5),
+                    ax=ax
+                )
 
     # Add labels and title
     ax.set_xlabel(xlabel)
