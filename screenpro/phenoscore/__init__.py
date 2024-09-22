@@ -56,6 +56,9 @@ def runPhenoScore(adata, cond_ref, cond_test, score_level, var_names='target', t
     """
     adat = adata.copy()
 
+    if 'condition' not in adat.obs.columns:
+        raise ValueError("The AnnData object must have a 'condition' column in its obs.")
+
     # format result name
     result_name = f'{cond_test}_vs_{cond_ref}'
     print(f'\t{cond_test} vs {cond_ref}')
