@@ -18,9 +18,9 @@ dependencies:
   - ipykernel
   - mscorefonts
   - rust>=1.72
+  - polars>0.20
   - pip
   - pip:
-      - polars
       - pyarrow
       - biobear
       - numba
