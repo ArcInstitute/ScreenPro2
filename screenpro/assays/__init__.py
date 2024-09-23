@@ -344,6 +344,8 @@ class PooledScreens(object):
         else:
             raise ValueError('Only `compare_reps` run_name is supported for now!')
         
+        untreated = self.phenotypes[run_name]['config']['untreated']
+        
         pdata_list = []
 
         for phenotype_name in self.listPhenotypeScores(run_name=run_name):
@@ -354,7 +356,8 @@ class PooledScreens(object):
             #TODO: fix `_calculateGrowthFactor` and `_getTreatmentDoublingRate`
             if db_rate_col:
                 growth_rate_reps = self._calculateGrowthFactor(
-                    untreated = cond_ref, treated = cond_test,
+                    untreated = untreated, 
+                    treated = cond_test, # should be part of "treated" list!
                     db_rate_col = db_rate_col
                 ).query(
                     f'score=="{score_tag}"'
