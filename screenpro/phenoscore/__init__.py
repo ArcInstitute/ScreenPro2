@@ -25,8 +25,9 @@ from ._annotate import annotateScoreTable
 from .phenostat import matrixStat, multipleTestsCorrection
 
 
-def runPhenoScore(adata, cond_ref, cond_test, score_level, var_names='target', test='ttest',
-                  growth_rate=1, n_reps='auto', keep_top_n = None, collapse_var=False,
+def runPhenoScore(adata, cond_ref, cond_test, score_level, 
+                  var_names='target', collapse_var=False,
+                  test='ttest', growth_rate=1, n_reps='auto', keep_top_n = None, 
                   num_pseudogenes='auto', pseudogene_size='auto',
                   count_layer=None, count_filter_type='mean', count_filter_threshold=40,
                   ctrl_label='negative_control'
@@ -39,6 +40,7 @@ def runPhenoScore(adata, cond_ref, cond_test, score_level, var_names='target', t
         cond_test (str): condition test
         score_level (str): score level
         var_names (str): variable names to use as index in the result dataframe
+        collapse_var (str): variable to use for `getBestTargetByTSS` function, default is False
         test (str): test to use for calculating p-value ('MW': Mann-Whitney U rank; 'ttest' : t-test)
         growth_rate (int): growth rate
         n_reps (int): number of replicates
@@ -127,7 +129,7 @@ def runPhenoScore(adata, cond_ref, cond_test, score_level, var_names='target', t
             filter_threshold=count_filter_threshold
         )
 
-        # get best best transcript as lowest p-value for each target
+        # get the best transcript as lowest p-value for each target
         if collapse_var not in [False, None]:
             if collapse_var not in result.columns:
                 raise ValueError(f'collapse_var "{collapse_var}" not found in result columns.')

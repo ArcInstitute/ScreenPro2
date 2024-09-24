@@ -19,6 +19,7 @@ dependencies:
   - mscorefonts
   - rust>=1.72
   - polars>0.20
+  - pycairo
   - pip
   - pip:
       - pyarrow
