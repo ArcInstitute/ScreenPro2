@@ -17,6 +17,10 @@ hit_dict = {
     'rho':{
         'up_hit':'resistance_hit', 
         'down_hit':'sensitivity_hit'
+    },
+    'delta':{
+        'up_hit':'up_hit',
+        'down_hit':'down_hit'
     }
 }
 
