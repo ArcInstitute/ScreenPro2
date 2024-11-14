@@ -286,6 +286,20 @@ class PooledScreens(object):
             run_name (str): name for the phenotype calculation run
             **kwargs: additional arguments to pass to runPhenoScore
         """
+        if not run_name: run_name = score_level
+        if run_name in self.phenotypes.keys():
+            raise ValueError(f"Phenotype calculation run '{run_name}' already exists in self.phenoypes!")
+        else:
+            self.phenotypes[run_name] = {}
+            self.phenotypes[run_name]['config'] = {
+                'method':'ScreenPro2 - phenoscore',
+                'low_bin':low_bin,
+                'high_bin':high_bin,
+                'test':self.test,
+                'score_level':score_level,
+            }
+            self.phenotypes[run_name]['results'] = {}
+            
         # calculate phenotype scores
         delta_name, delta = runPhenoScore(
             self.adata, cond_ref=low_bin, cond_test=high_bin, n_reps=self.n_reps,
@@ -293,15 +307,8 @@ class PooledScreens(object):
             **kwargs
         )
 
-        if not run_name: run_name = score_level
-        # save all results into a multi-index dataframe
-        self.phenotypes[run_name] = pd.concat({
-            f'delta:{delta_name}': delta
-        }, axis=1)
-
-        # save phenotype name for reference
-        self._add_phenotype_results(f'delta:{delta_name}')
-
+        self._add_phenotype_results(run_name, f'delta:{delta_name}', delta)
+        
     def listPhenotypeScores(self, run_name='auto'):
         """
         List available phenotype scores for a given run_name
