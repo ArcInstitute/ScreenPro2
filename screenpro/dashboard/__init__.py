@@ -38,18 +38,23 @@ class DataDashboard:
 
 class DrugScreenDashboard(DataDashboard):
     
-    def __init__(self, screen, treated, untreated, t0='T0', threshold=3, ctrl_label='negative_control',run_name='auto'):
+    def __init__(
+            self, screen, treated, untreated, 
+            t0='T0', threshold=3, ctrl_label='negative_control', 
+            run_name='auto', 
+            score_col='score', pvalue_col='pvalue'
+            ):
         self.screen = screen
         self.threshold = threshold
         self.ctrl_label = ctrl_label
         self.run_name = run_name
         self.gamma_score_name = f'gamma:{untreated}_vs_{t0}'
         self.rho_score_name = f'rho:{treated}_vs_{untreated}'
-        self.df = None
+        self.df = self._prep_data(screen, score_col=score_col, pvalue_col=pvalue_col)
         self.plots = {}
         super().__init__()
 
-    def prep_data(self,screen, score_col='score', pvalue_col='pvalue'):
+    def _prep_data(self,screen, score_col='score', pvalue_col='pvalue'):
 
         gamma = screen.getPhenotypeScores(
             phenotype_name=self.gamma_score_name,
@@ -81,7 +86,7 @@ class DrugScreenDashboard(DataDashboard):
             '-log10(gamma_pvalue)': np.log10(gamma.loc[rho.index,pvalue_col]) * -1,
         })
 
-        self.df = df
+        return df
 
     def _plot_scatter(
             self,
