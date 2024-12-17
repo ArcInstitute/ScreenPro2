@@ -38,21 +38,27 @@ class DataDashboard:
 
 class DrugScreenDashboard(DataDashboard):
     
-    def __init__(self, screen, treated, untreated, t0='T0', threshold=3, ctrl_label='negative_control',run_name='auto'):
+    def __init__(
+            self, screen, treated, untreated, 
+            t0='T0', threshold=3, ctrl_label='negative_control', 
+            run_name='auto', 
+            score_col='score', pvalue_col='pvalue'
+            ):
         self.screen = screen
         self.threshold = threshold
         self.ctrl_label = ctrl_label
         self.run_name = run_name
         self.gamma_score_name = f'gamma:{untreated}_vs_{t0}'
         self.rho_score_name = f'rho:{treated}_vs_{untreated}'
+        self.df = self._prep_data(screen, score_col=score_col, pvalue_col=pvalue_col)
         self.plots = {}
         super().__init__()
 
     def _prep_data(self,screen, score_col='score', pvalue_col='pvalue'):
 
         gamma = screen.getPhenotypeScores(
+            phenotype_name=self.gamma_score_name,
             run_name=self.run_name,
-            score_name=self.gamma_score_name,
             threshold=self.threshold,
             ctrl_label=self.ctrl_label,
             score_col=score_col,
@@ -60,8 +66,8 @@ class DrugScreenDashboard(DataDashboard):
         )
 
         rho = screen.getPhenotypeScores(
+            phenotype_name=self.rho_score_name,
             run_name=self.run_name,
-            score_name=self.rho_score_name,
             threshold=self.threshold,
             ctrl_label=self.ctrl_label,
             score_col=score_col,
@@ -71,17 +77,17 @@ class DrugScreenDashboard(DataDashboard):
         df = pd.DataFrame({
             'target': rho['target'],
             'rho_score': rho['score'],
-            'rho_pvalue': rho['pvalue'],
+            'rho_pvalue': rho[pvalue_col],
             'rho_label': rho['label'],
-            '-log10(rho_pvalue)': np.log10(rho['pvalue']) * -1,
+            '-log10(rho_pvalue)': np.log10(rho[pvalue_col]) * -1,
             'gamma_score': gamma.loc[rho.index,'score'],
-            'gamma_pvalue': gamma.loc[rho.index,'pvalue'],
+            'gamma_pvalue': gamma.loc[rho.index,pvalue_col],
             'gamma_label': gamma.loc[rho.index,'label'],
-            '-log10(gamma_pvalue)': np.log10(gamma.loc[rho.index,'pvalue']) * -1,
+            '-log10(gamma_pvalue)': np.log10(gamma.loc[rho.index,pvalue_col]) * -1,
         })
 
         return df
-    
+
     def _plot_scatter(
             self,
             x_source,y_source,
@@ -93,11 +99,9 @@ class DrugScreenDashboard(DataDashboard):
             dot_size=1,
             width=500, height=400,
             toolbar_location='below',
-            legend_loc="top_left"
+            legend_loc="top_left",
         ):
-
-        df = self._prep_data(self.screen)
-
+        df = self.df.copy()
         if y_max == 'auto': y_max = df[y_source].max() * 1.2
         if x_max == 'auto': x_max = df[x_source].max() * 1.2
         if y_min == 'auto': y_min = df[y_source].min() * 1.2
@@ -216,7 +220,6 @@ class DrugScreenDashboard(DataDashboard):
         hit_label_col='rho_label',
         x_min=-2.5, x_max=2.5, y_min=0, y_max='auto',
         return_html=True,
-        **kwargs
         ):
         p = self._plot_scatter(
             x_source, y_source,
@@ -224,7 +227,6 @@ class DrugScreenDashboard(DataDashboard):
             up_hit, down_hit,
             hit_label_col,
             x_min, x_max, y_min, y_max,
-            **kwargs
         )
 
         if return_html:
@@ -243,7 +245,6 @@ class DrugScreenDashboard(DataDashboard):
         hit_label_col='gamma_label',
         x_min=-2.5, x_max=2.5, y_min=0, y_max='auto',
         return_html=True,
-        **kwargs
         ):
         p = self._plot_scatter(
             x_source, y_source,
@@ -251,7 +252,6 @@ class DrugScreenDashboard(DataDashboard):
             up_hit, down_hit,
             hit_label_col,
             x_min, x_max, y_min, y_max,
-            **kwargs
         )
 
         if return_html:
@@ -270,7 +270,6 @@ class DrugScreenDashboard(DataDashboard):
         hit_label_col='rho_label',
         return_html=True,
         x_min=-2.5, x_max=2.5, y_min=-2.5, y_max=2.5,
-        **kwargs
         ):
         p = self._plot_scatter(
             x_source, y_source,
@@ -278,7 +277,6 @@ class DrugScreenDashboard(DataDashboard):
             up_hit, down_hit,
             hit_label_col,
             x_min, x_max, y_min, y_max,
-            **kwargs
         )
 
         if return_html:
