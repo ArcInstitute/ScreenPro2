@@ -248,18 +248,21 @@ class PooledScreens(object):
                 self.adata, cond_ref=t0, cond_test=untreated, growth_rate=db_untreated,
                 n_reps=self.n_reps,
                 test=self.test, score_level=score_level,
+                count_filter_threshold=count_filter_threshold,
+                count_filter_type=count_filter_type
                 **kwargs
             )
             self._add_phenotype_results(run_name, f'gamma:{gamma_name}', gamma)
 
         for tr in treated:
             _, db_tr, db_diff = self._getTreatmentDoublingRate(untreated, tr, db_rate_col)
-
             if t0 != None and type(t0) == str:
                 tau_name, tau = runPhenoScore(
                     self.adata, cond_ref=t0, cond_test=tr, growth_rate=db_tr,
                     n_reps=self.n_reps,
                     test=self.test, score_level=score_level,
+                    count_filter_threshold=count_filter_threshold,
+                    count_filter_type=count_filter_type
                     **kwargs
                 )
                 self._add_phenotype_results(run_name, f'tau:{tau_name}', tau)
