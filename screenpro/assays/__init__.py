@@ -249,7 +249,7 @@ class PooledScreens(object):
                 n_reps=self.n_reps,
                 test=self.test, score_level=score_level,
                 count_filter_threshold=count_filter_threshold,
-                count_filter_type=count_filter_type
+                count_filter_type=count_filter_type,
                 **kwargs
             )
             self._add_phenotype_results(run_name, f'gamma:{gamma_name}', gamma)
