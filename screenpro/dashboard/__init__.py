@@ -220,6 +220,7 @@ class DrugScreenDashboard(DataDashboard):
         hit_label_col='rho_label',
         x_min=-2.5, x_max=2.5, y_min=0, y_max='auto',
         return_html=True,
+        **kwargs
         ):
         p = self._plot_scatter(
             x_source, y_source,
@@ -227,6 +228,7 @@ class DrugScreenDashboard(DataDashboard):
             up_hit, down_hit,
             hit_label_col,
             x_min, x_max, y_min, y_max,
+            **kwargs
         )
 
         if return_html:
@@ -245,6 +247,7 @@ class DrugScreenDashboard(DataDashboard):
         hit_label_col='gamma_label',
         x_min=-2.5, x_max=2.5, y_min=0, y_max='auto',
         return_html=True,
+        **kwargs
         ):
         p = self._plot_scatter(
             x_source, y_source,
@@ -252,6 +255,7 @@ class DrugScreenDashboard(DataDashboard):
             up_hit, down_hit,
             hit_label_col,
             x_min, x_max, y_min, y_max,
+            **kwargs
         )
 
         if return_html:
@@ -268,8 +272,9 @@ class DrugScreenDashboard(DataDashboard):
         yaxis_label='gamma score',
         up_hit='resistance_hit', down_hit='sensitivity_hit',
         hit_label_col='rho_label',
-        return_html=True,
         x_min=-2.5, x_max=2.5, y_min=-2.5, y_max=2.5,
+        return_html=True,
+        **kwargs
         ):
         p = self._plot_scatter(
             x_source, y_source,
@@ -277,6 +282,7 @@ class DrugScreenDashboard(DataDashboard):
             up_hit, down_hit,
             hit_label_col,
             x_min, x_max, y_min, y_max,
+            **kwargs
         )
 
         if return_html:

@@ -29,8 +29,3 @@ from . import dashboard
 from .ngs import GuideCounter
 from .assays import PooledScreens, GImaps
 from .dashboard import DrugScreenDashboard
-
-
-__version__ = "0.4.18"
-__author__ = "Abe Arab"
-__email__ = 'abea@arcinstitute.org' # "abarbiology@gmail.com"
