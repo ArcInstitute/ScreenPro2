@@ -54,7 +54,7 @@ jobs:
     - name: Build package
       shell: bash -l {0}
       run: | 
-        python setup.py bdist_wheel --universal
+        python -m build
     - name: Publish package
       uses: pypa/gh-action-pypi-publish@release/v1
       with:
