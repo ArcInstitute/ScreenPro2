@@ -29,3 +29,5 @@ from . import dashboard
 from .ngs import GuideCounter
 from .assays import PooledScreens, GImaps
 from .dashboard import DrugScreenDashboard
+
+__version__ = "0.5.1"
