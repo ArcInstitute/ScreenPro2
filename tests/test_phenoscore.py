@@ -1,7 +1,7 @@
 import numpy as np
 import anndata as ad
 import pandas as pd
-from ..screenpro.phenoscore import runPhenoScore
+from screenpro.phenoscore import runPhenoScore
 
 
 def test_runPhenoScore():
