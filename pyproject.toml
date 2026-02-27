@@ -1,9 +1,10 @@
 [tool.poetry]
 name = "ScreenPro2"
 description = "Flexible analysis of high-content CRISPR screening"
-version = "0.5.1"
+version = "0.6.0"
 authors = [
-	"Abe Arab <abea@arcinstitute.org>"
+	"Abolfazl Arab <abolfazl.arab@ucsf.edu>",
+	"Nick Youngblut <nick.youngblut@arcinstitute.org>",
 ]
 license = "MIT"
 readme = "README.md"
