@@ -154,9 +154,9 @@ def map_to_library_single_guide(df_count, library, return_type='all', verbose=Fa
         )
 
     if verbose:
-        print("% mapped reads", 100 * \
-            res_map['count'].sum() / \
-            res["count"].sum()
+        print(
+            "% mapped reads",
+            100 * res_map['count'].sum() / res["count"].sum()
         )
     
     if return_type == 'unmapped':
