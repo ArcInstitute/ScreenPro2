@@ -154,10 +154,9 @@ def map_to_library_single_guide(df_count, library, return_type='all', verbose=Fa
         )
 
     if verbose:
-        print("% mapped reads",
-            100 * \
-            res_map.to_pandas()['count'].fillna(0).sum() / \
-            int(res.select(pl.sum("count")).to_pandas()['count'])
+        print(
+            "% mapped reads",
+            100 * res_map['count'].sum() / res["count"].sum()
         )
     
     if return_type == 'unmapped':
@@ -221,8 +220,8 @@ def map_to_library_dual_guide(df_count, library, get_recombinant=False, return_t
     if verbose:
         print("% mapped reads",
             100 * \
-            res_map.to_pandas()['count'].fillna(0).sum() / \
-            int(res.select(pl.sum("count")).to_pandas()['count'])
+            res_map['count'].sum() / \
+            res["count"].sum()
         )
     
     if get_recombinant:
@@ -230,8 +229,8 @@ def map_to_library_dual_guide(df_count, library, get_recombinant=False, return_t
         if verbose:
             print("% unmapped reads",
                 100 * \
-                res_unmap.to_pandas()['count'].fillna(0).sum() / \
-                int(res.select(pl.sum("count")).to_pandas()['count'])
+                res_unmap['count'].sum() / \
+                res["count"].sum()
             )
         
         sgRNA_table = pd.concat([
@@ -253,8 +252,8 @@ def map_to_library_dual_guide(df_count, library, get_recombinant=False, return_t
         if verbose:
             print("% fully remapped recombination events",
                 100 * \
-                res_recomb_events.drop_nulls().to_pandas()['count'].fillna(0).sum() / \
-                int(res.select(pl.sum("count")).to_pandas()['count'])
+                res_recomb_events.drop_nulls()['count'].sum() / \
+                res['count'].sum()
             )
     
     if return_type == 'unmapped':
