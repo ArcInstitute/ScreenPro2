@@ -71,8 +71,8 @@ class PooledScreens(object):
         growth_factors = []
         # calculate growth factor for gamma, tau, or rho score per replicates
         for replicate in adat.obs.replicate.unique():
-            db_untreated = adat.obs.query(f'condition == "{untreated}" & replicate == {str(replicate)}')[db_rate_col][0]
-            db_treated = adat.obs.query(f'condition == "{treated}" & replicate == {str(replicate)}')[db_rate_col][0]
+            db_untreated = adat.obs.query(f'condition == "{untreated}" & replicate == {str(replicate)}')[db_rate_col].iloc[0]
+            db_treated = adat.obs.query(f'condition == "{treated}" & replicate == {str(replicate)}')[db_rate_col].iloc[0]
 
             growth_factors.append(('gamma', db_untreated, replicate, f'gamma_replicate_{replicate}'))
             growth_factors.append(('tau', db_treated, replicate, f'tau_replicate_{replicate}'))
