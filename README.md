@@ -339,7 +339,9 @@ by Abolfazl (Abe) Arab ([@abearab](https://github.com/abearab)) as a Research As
 ## Citation
 If you use ScreenPro2 in your research, please cite the following paper.
 
-  Coming soon...
+O’Loughlin, T.A., Arab, A., Gilbert, L.A. et al. _Chemogenomic maps reveal a PRDX1-dependent iron–damage axis in the DNA damage response_. _Nat Chem Biol_ (2026). https://doi.org/10.1038/s41589-026-02312-z
+
+Citation metadata is also available in [`CITATION.cff`](CITATION.cff).
 
 ## Development
 ### Testing
