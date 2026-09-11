@@ -338,7 +338,7 @@ ScreenPro2 is licensed under the terms of the MIT license (see [LICENSE](LICENSE
 by Abolfazl (Abe) Arab ([@abearab](https://github.com/abearab)) as a Research Associate in the Gilbert lab at UCSF and Arc Institute.  
 
 ## Citation
-If you use ScreenPro2 in your research, please cite both the software release (Zenodo) and the published paper (Nat Chem Biol).
+If you use ScreenPro2 in your research, please cite both the software release and the published paper.
 
 - **Software (Zenodo)**: 
 > Arab, A., et al. ArcInstitute/ScreenPro2. _Zenodo_ (2026). https://doi.org/10.5281/zenodo.18884467
