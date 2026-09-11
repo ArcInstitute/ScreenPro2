@@ -1,6 +1,6 @@
 [![website](https://img.shields.io/badge/website-live-brightgreen)](https://arcinstitute.org/tools/screenpro2)
-[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.18807934.svg)](https://doi.org/10.5281/zenodo.18807934)
-[![DOI](https://img.shields.io/badge/DOI-10.1038%2Fs41589--026--02312--z-blue.svg)](https://doi.org/10.1038/s41589-026-02312-z)
+[![zenodo](https://zenodo.org/badge/DOI/10.5281/zenodo.18807934.svg)](https://doi.org/10.5281/zenodo.18807934)
+[![NCB](https://img.shields.io/badge/DOI-10.1038%2Fs41589--026--02312--z-blue.svg)](https://doi.org/10.1038/s41589-026-02312-z)
 [![PyPI version](https://badge.fury.io/py/ScreenPro2.svg)](https://badge.fury.io/py/ScreenPro2)
 [![Documentation Status](https://readthedocs.org/projects/screenpro2/badge/?version=latest)](https://screenpro2.readthedocs.io/en/latest/?version=latest)
 [![Downloads](https://static.pepy.tech/badge/screenpro2)](https://pepy.tech/project/screenpro2)
@@ -340,8 +340,8 @@ by Abolfazl (Abe) Arab ([@abearab](https://github.com/abearab)) as a Research As
 ## Citation
 If you use ScreenPro2 in your research, please cite both the software release (Zenodo) and the published paper (Nat Chem Biol).
 
-- **Software (Zenodo)**: ScreenPro2. https://doi.org/10.5281/zenodo.18807934
+- **Software (Zenodo)**: 
+> Arab, A., Gilbert, L.A. et al. ArcInstitute/ScreenPro2. _Zenodo_ (2026). https://doi.org/10.5281/zenodo.18884467
 
-- **Paper (Nat Chem Biol)**: O’Loughlin, T.A., Arab, A., Gilbert, L.A. et al. **Chemogenomic maps reveal a PRDX1-dependent iron–damage axis in the DNA damage response.** _Nat Chem Biol_ (2026). https://doi.org/10.1038/s41589-026-02312-z
-
-Citation metadata is also available in [`CITATION.cff`](CITATION.cff).
+- **Paper (Nature Chemical Biology)**:
+> O’Loughlin, T.A., Arab, A., Gilbert, L.A. et al. **Chemogenomic maps reveal a PRDX1-dependent iron–damage axis in the DNA damage response.** _Nat Chem Biol_ (2026). https://doi.org/10.1038/s41589-026-02312-z
