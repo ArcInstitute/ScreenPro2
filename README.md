@@ -340,6 +340,8 @@ by Abolfazl (Abe) Arab ([@abearab](https://github.com/abearab)) as a Research As
 ## Citation
 If you use ScreenPro2 in your research, please cite both the software release and the published paper.
 
+**Final publication note**: The final ScreenPro2 publication is now available in _Nature Chemical Biology_ (2026): https://doi.org/10.1038/s41589-026-02312-z
+
 - **Software (Zenodo)**: 
 > Arab, A., et al. ArcInstitute/ScreenPro2. _Zenodo_ (2026). https://doi.org/10.5281/zenodo.18884467
 
