@@ -342,10 +342,6 @@ If you use ScreenPro2 in your research, please cite both the software release (Z
 
 - **Software (Zenodo)**: ScreenPro2. https://doi.org/10.5281/zenodo.18807934
 
-- **Paper (Nat Chem Biol)**: O’Loughlin, T.A., Arab, A., Gilbert, L.A. et al. _Chemogenomic maps reveal a PRDX1-dependent iron–damage axis in the DNA damage response_. _Nat Chem Biol_ (2026). https://doi.org/10.1038/s41589-026-02312-z
+- **Paper (Nat Chem Biol)**: O’Loughlin, T.A., Arab, A., Gilbert, L.A. et al. **Chemogenomic maps reveal a PRDX1-dependent iron–damage axis in the DNA damage response.** _Nat Chem Biol_ (2026). https://doi.org/10.1038/s41589-026-02312-z
 
 Citation metadata is also available in [`CITATION.cff`](CITATION.cff).
-
-## Development
-### Testing
-Tests can be easily run using the `pytest` framework.
