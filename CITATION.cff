@@ -1,0 +1,24 @@
+cff-version: 1.2.0
+title: ScreenPro2
+message: >-
+  If you use this software, please cite the associated publication below.
+authors:
+  - family-names: O'Loughlin
+    given-names: Timothy A.
+  - family-names: Arab
+    given-names: Abolfazl
+  - family-names: Gilbert
+    given-names: Luke A.
+preferred-citation:
+  type: article
+  title: Chemogenomic maps reveal a PRDX1-dependent iron–damage axis in the DNA damage response
+  authors:
+    - family-names: O'Loughlin
+      given-names: T.A.
+    - family-names: Arab
+      given-names: A.
+    - family-names: Gilbert
+      given-names: L.A.
+  journal: Nature Chemical Biology
+  year: 2026
+  doi: 10.1038/s41589-026-02312-z
