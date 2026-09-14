@@ -1,5 +1,4 @@
 [![website](https://img.shields.io/badge/website-live-brightgreen)](https://arcinstitute.org/tools/screenpro2)
-[![zenodo](https://zenodo.org/badge/DOI/10.5281/zenodo.18807934.svg)](https://doi.org/10.5281/zenodo.18807934)
 [![NCB](https://img.shields.io/badge/DOI-10.1038%2Fs41589--026--02312--z-blue.svg)](https://doi.org/10.1038/s41589-026-02312-z)
 [![PyPI version](https://badge.fury.io/py/ScreenPro2.svg)](https://badge.fury.io/py/ScreenPro2)
 [![Documentation Status](https://readthedocs.org/projects/screenpro2/badge/?version=latest)](https://screenpro2.readthedocs.io/en/latest/?version=latest)
