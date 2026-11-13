@@ -18,7 +18,22 @@ packages = [
 dynamic = ["version"]
 
 [tool.poetry.dependencies]
-python = ">=3.9"
+python = ">=3.9,<3.12"
+pandas = "<2.0"
+numpy = "<2.0"
+scipy = "*"
+matplotlib = "<3.7"
+bokeh = "*"
+anndata = "*"
+scanpy = "*"
+polars = ">0.20"
+pyarrow = "<26"
+biobear = "*"
+pydeseq2 = "<0.5"
+statsmodels = "*"
+scikit-learn = "*"
+simple_colors = "*"
+adjustText = "*"
 
 [tool.poetry.scripts]
 screenpro = "screenpro.main:main"
