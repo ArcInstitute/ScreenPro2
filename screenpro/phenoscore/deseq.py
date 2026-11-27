@@ -18,10 +18,11 @@ def runDESeq(adata, design, n_cpus=8,quiet=False):
 
     print(f'\tcreating `dds` object...')
     
+    factors = design if isinstance(design, list) else [design]
     dds = DeseqDataSet(
         counts=adata.to_df().astype(int),
         metadata=adata.obs,
-        design_factors=design,  # compare samples based on the "condition"
+        design="~" + " + ".join(factors),  # compare samples based on the "condition"
         refit_cooks=True,
         inference=inference,
         quiet=quiet
