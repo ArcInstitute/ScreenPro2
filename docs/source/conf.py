@@ -12,7 +12,7 @@ from screenpro import __version__
 # General information about the project.
 project = 'ScreenPro2'
 author = "ScreenPro2 Development Team"
-copyright = "2022-2024 – ScreenPro2 Developers Team"
+copyright = "2022-2026 – ScreenPro2 Developers Team"
 # Gilbart Lab, UCSF / Arc Institute.
 # Multi-Omics Tech Center, Arc Insititue.
 
